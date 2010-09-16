@@ -1,0 +1,8 @@
+Raconteur is my Senior Design project. It takes video, audio, and location
+streams and builds an index of metadata from them using:
+*Face Recognition
+*Voice Recognition
+*Voice to Text
+From this index social networking / lifecasting type things can be done, as 
+well as queries about one's life.
+More detail to follow.
