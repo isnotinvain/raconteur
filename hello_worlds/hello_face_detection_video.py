@@ -40,14 +40,17 @@ if __name__ == "__main__":
 	capture = cvCreateCameraCapture(0)	
 	if not capture:
 		raise Exception("Couldn't get your camera...")
+
+	#writer=cvCreateVideoWriter("out.avi",CV_FOURCC('P','I','M','1'),30,cvSize(640,480),True)
 				
 	cvNamedWindow("Camera Face Detection")
 	while True:
 		frame = cvQueryFrame(capture)
 		if frame is None: break
 		
-		faces = find_faces(frame,scale_factor=1.1, min_neighbors=3, flags=0, min_size=(50, 50))
+		faces = find_faces(frame,scale_factor=1.1, min_neighbors=3, flags=0, min_size=(100, 100))
 		draw_faces(frame,faces)
 		cvShowImage("Camera Face Detection",frame)
+	#	cvWriteFrame(writer,frame)
 		k = cvWaitKey(10)
 		if k == '\x1b': break
