@@ -1,0 +1,10 @@
+.metadata
+*.avi
+android/RaconteurApp/.classpath
+android/RaconteurApp/.project
+android/RaconteurApp/.settings/
+android/RaconteurApp/bin/
+android/RaconteurApp/default.properties
+android/RaconteurApp/gen/
+android/RaconteurApp/res/
+
