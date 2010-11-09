@@ -2,14 +2,14 @@
 
 package com.isnotinvain.raconteur;
 
-import java.io.FileWriter;
 import java.io.IOException;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.os.Environment;
 import android.util.Log;
-import android.widget.TextView;
+import android.view.View;
+import android.widget.Button;
+import android.widget.LinearLayout;
 
 /***
  * The main Raconteur {@link Activity}
@@ -24,26 +24,48 @@ import android.widget.TextView;
  * @author Alex Levenson (alex@isnotinvain.com)
  * 
  */
+
 public class Raconteur extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-		TextView tv = new TextView(this);
-		tv.setText("Hello, Android");
-		setContentView(tv);
-		String state = Environment.getExternalStorageState();
-
-		if (Environment.MEDIA_MOUNTED.equals(state)) {
-			try {
-				FileWriter writer = new FileWriter(Util.getGPSFile(),true);
-				writer.write("Hello, this is a test\n");
-				writer.close();
-			} catch (IOException e) {
-				Log.e("raconteur", "Encountered an error while trying to write to the external storage device", e);
-			}
-			
-		} else {
-			Log.e("raconteur", "External storage device not writeable at this time");
-		}
+		
+        buildUi();
 	}
+    
+    private void recordGps() {
+    	Log.v("raconteur","recording gps...");    	
+    }
+    
+    private void recordBookmark() {
+    	Log.v("raconteur","recording bookmark...");
+		try {
+			Util.writeToExternalStorage(Util.getBookmarksFile(), "Bookmark!\n");
+		} catch (IOException e) {
+			Log.e("raconteur","Could not write bookmark to external storage",e);
+		}
+    }
+    
+    private void buildUi() {
+    	LinearLayout content = new LinearLayout(this);
+		content.setOrientation(LinearLayout.VERTICAL);
+		
+		Button recordGps = new Button(this);
+		recordGps.setText("Record my Location!");
+		recordGps.setOnClickListener(new View.OnClickListener() {			
+			public void onClick(View v) {
+				recordGps();
+			}
+		});
+        
+		Button setBookmark = new Button(this);
+		setBookmark.setText("Record my Location!");
+		setBookmark.setOnClickListener(new View.OnClickListener() {			
+			public void onClick(View v) {
+				recordBookmark();
+			}
+		});
+		
+		setContentView(content);
+    }
 }
