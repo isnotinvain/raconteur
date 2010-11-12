@@ -39,6 +39,8 @@ public class Raconteur extends Activity {
     
     private void recordBookmark() {
     	Log.v("raconteur","recording bookmark...");
+    	
+    	
 		try {
 			Util.writeToExternalStorage(Util.getBookmarksFile(), "Bookmark!\n");
 		} catch (IOException e) {

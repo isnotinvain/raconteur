@@ -21,17 +21,39 @@ public final class Util {
 	private static final String DIRECTORY_ERROR = "Could not make the directory '%s' on external storage device";
 	private static final String RACONTEUR = "raconteur";
 	
-	public static final File getGPSFile() throws IOException{
+	/**
+	 * @return the file on the external storage where gps data is stored 
+	 * @throws IOException
+	 */
+	public static final File getGpsFile() throws IOException{
 		return getExternalStorageFile(RACONTEUR,GPS_FILE);
 	}
 	
+	/**
+	 * @return the file on the external storage where bookmarks data is stored 
+	 * @throws IOException
+	 */
 	public static final File getBookmarksFile() throws IOException{
 		return getExternalStorageFile(RACONTEUR,BOOKMARKS_FILE);
 	}
 	
+	/**
+	 * Appends string s to file f	 
+	 * @throws IOException
+	 */
 	public static final void writeToExternalStorage(File f, String s) throws IOException {
+		writeToExternalStorage(f,s,true);
+	}
+	
+	/**
+	 * Writes String s to File f
+	 * @param append whether to append s to f 
+	 * @throws IOException
+	 */
+	public static final void writeToExternalStorage(File f, String s, boolean append) throws IOException {
 		String state = Environment.getExternalStorageState();
 		if (Environment.MEDIA_MOUNTED.equals(state)) {
+			// sd card is readable and writable!
 			try {
 				FileWriter writer = new FileWriter(f,true);
 				writer.write(s);
@@ -39,8 +61,7 @@ public final class Util {
 			} catch (IOException e) {
 				Log.e("raconteur", "Encountered an error while trying to write to the external storage device", e);
 				throw e;
-			}
-			
+			}			
 		} else {
 			throw new IOException("External storage device not writeable at this time");
 		}
@@ -51,7 +72,7 @@ public final class Util {
 	 * /<directory>/<fileName> on the external storage device,
 	 * creating directory and fileName if they do not exist
 	 * 
-	 * @return a File objec that points to /<directory>/<fileName> on the external storage device
+	 * @return a File object that points to /<directory>/<fileName> on the external storage device
 	 * @throws IOException if directory does not exist and cannot be created
 	 */
 	private static final File getExternalStorageFile(String directory, String fileName) throws IOException {
