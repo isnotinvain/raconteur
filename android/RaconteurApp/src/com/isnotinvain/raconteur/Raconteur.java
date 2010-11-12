@@ -9,7 +9,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 /***
  * The main Raconteur {@link Activity}
@@ -26,6 +28,8 @@ import android.widget.LinearLayout;
  */
 
 public class Raconteur extends Activity {
+	private TextView captionBox; 
+	
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,7 +43,7 @@ public class Raconteur extends Activity {
     
     private void recordBookmark() {
     	Log.v("raconteur","recording bookmark...");
-    	Bookmark b = new Bookmark("Test!");    	
+    	Bookmark b = new Bookmark(captionBox.getText().toString());    	
     	
 		try {
 			Util.writeToExternalStorage(Util.getBookmarksFile(), b.toYaml()+"\n");
@@ -67,8 +71,13 @@ public class Raconteur extends Activity {
 				recordBookmark();
 			}
 		});
+		TextView captionLabel = new TextView(this);
+		captionLabel.setText("Enter a caption for the bookmark:");
+		captionBox = new EditText(this);		
 		
 		content.addView(recordGps);
+		content.addView(captionLabel);
+		content.addView(captionBox);
 		content.addView(setBookmark);
 		
 		setContentView(content);
