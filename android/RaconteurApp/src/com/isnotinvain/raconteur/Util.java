@@ -55,7 +55,7 @@ public final class Util {
 	 * @throws IOException if directory does not exist and cannot be created
 	 */
 	private static final File getExternalStorageFile(String directory, String fileName) throws IOException {
-		File sdRoot = Environment.getExternalStorageDirectory();
+		File sdRoot = Environment.getExternalStorageDirectory();		
 		File raconteurDir = new File(sdRoot,directory);
 		if(!raconteurDir.exists()) {
 			if(!raconteurDir.mkdir()) {
@@ -66,6 +66,6 @@ public final class Util {
 		if(!f.exists()) {
 			f.createNewFile();
 		}
-		return f;	   
+		return f;
 	}
 }

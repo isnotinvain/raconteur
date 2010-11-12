@@ -59,12 +59,15 @@ public class Raconteur extends Activity {
 		});
         
 		Button setBookmark = new Button(this);
-		setBookmark.setText("Record my Location!");
+		setBookmark.setText("Set a Bookmark!");
 		setBookmark.setOnClickListener(new View.OnClickListener() {			
 			public void onClick(View v) {
 				recordBookmark();
 			}
 		});
+		
+		content.addView(recordGps);
+		content.addView(setBookmark);
 		
 		setContentView(content);
     }
