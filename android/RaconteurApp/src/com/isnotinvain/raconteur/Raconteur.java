@@ -39,10 +39,10 @@ public class Raconteur extends Activity {
     
     private void recordBookmark() {
     	Log.v("raconteur","recording bookmark...");
-    	
+    	Bookmark b = new Bookmark("Test!");    	
     	
 		try {
-			Util.writeToExternalStorage(Util.getBookmarksFile(), "Bookmark!\n");
+			Util.writeToExternalStorage(Util.getBookmarksFile(), b.toYaml()+"\n");
 		} catch (IOException e) {
 			Log.e("raconteur","Could not write bookmark to external storage",e);
 		}
