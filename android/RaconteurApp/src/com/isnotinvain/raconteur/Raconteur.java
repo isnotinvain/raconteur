@@ -48,8 +48,10 @@ public class Raconteur extends Activity {
 		try {
 			Util.writeToExternalStorage(Util.getBookmarksFile(), b.toYaml()+"\n");
 		} catch (IOException e) {
+			// TODO: Alert the user that there was a problem
 			Log.e("raconteur","Could not write bookmark to external storage",e);
-		}
+		}		
+		captionBox.setText("");
     }
     
     private void buildUi() {
@@ -72,13 +74,12 @@ public class Raconteur extends Activity {
 			}
 		});
 		TextView captionLabel = new TextView(this);
-		captionLabel.setText("Enter a caption for the bookmark:");
 		captionBox = new EditText(this);		
+		captionBox.setHint("Enter a caption for the bookmark");
 		
 		content.addView(recordGps);
-		content.addView(captionLabel);
-		content.addView(captionBox);
 		content.addView(setBookmark);
+		content.addView(captionBox);
 		
 		setContentView(content);
     }
