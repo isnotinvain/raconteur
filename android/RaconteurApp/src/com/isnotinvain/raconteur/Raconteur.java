@@ -5,6 +5,10 @@ package com.isnotinvain.raconteur;
 import java.io.IOException;
 
 import android.app.Activity;
+import android.content.Context;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -29,16 +33,61 @@ import android.widget.TextView;
 
 public class Raconteur extends Activity {
 	private TextView captionBox; 
+	// Acquire a reference to the system Location Manager
+	LocationManager locationManager;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-		
+        
+        setupLocationListener();
+        
         buildUi();
 	}
     
-    private void recordGps() {
-    	Log.v("raconteur","recording gps...");    	
+    private void setupLocationListener() {
+		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+		LocationListener listener = new LocationListener() {
+
+			public void onLocationChanged(Location location) {
+				recordGps(location);
+			}
+
+			public void onProviderDisabled(String provider) {
+
+			}
+
+			public void onProviderEnabled(String provider) {
+				
+			}
+
+			public void onStatusChanged(String provider, int status,
+					Bundle extras) {
+				
+			}
+			
+		};
+		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, listener);
+    }
+    
+    private void recordGps(Location location) {
+    	StringBuilder msg = new StringBuilder();
+    	msg.append("Recording gps location:\n")
+	    	.append("\tLongitude: ")
+	    	.append(location.getLongitude())
+	    	.append("\n\tLatitude: ")
+	    	.append(location.getLatitude())
+	    	.append("\n\tAltitude: ")
+	    	.append(location.getAltitude())
+	    	.append("\n");
+    	
+    	if(location.hasAccuracy()) {
+    		msg.append("\tAccuracy: ")
+    			.append(location.getAccuracy())
+    			.append("\n");
+    	}
+    	
+    	Log.v("raconteur",msg.toString());
     }
     
     private void recordBookmark() {
@@ -57,14 +106,6 @@ public class Raconteur extends Activity {
     private void buildUi() {
     	LinearLayout content = new LinearLayout(this);
 		content.setOrientation(LinearLayout.VERTICAL);
-		
-		Button recordGps = new Button(this);
-		recordGps.setText("Record my Location!");
-		recordGps.setOnClickListener(new View.OnClickListener() {			
-			public void onClick(View v) {
-				recordGps();
-			}
-		});
         
 		Button setBookmark = new Button(this);
 		setBookmark.setText("Set a Bookmark!");
@@ -73,11 +114,9 @@ public class Raconteur extends Activity {
 				recordBookmark();
 			}
 		});
-		TextView captionLabel = new TextView(this);
 		captionBox = new EditText(this);		
 		captionBox.setHint("Enter a caption for the bookmark");
 		
-		content.addView(recordGps);
 		content.addView(setBookmark);
 		content.addView(captionBox);
 		
