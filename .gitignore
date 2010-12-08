@@ -8,3 +8,5 @@ android/RaconteurApp/default.properties
 android/RaconteurApp/gen/
 android/RaconteurApp/res/
 android/RaconteurApp/lib/
+desktop/.project
+desktop/.pydevproject
