@@ -11,6 +11,7 @@ import sys
 import os
 import shutil
 import datetime
+import fnmatch
 
 import util.filesystem as fsutil
 
@@ -52,7 +53,7 @@ class StreamImporter(object):
             print self.root_destination_dir + " is not a directory!"
             raise
         
-    def import_dir(self,dir_path,filter_function=lambda x: True):
+    def import_dir(self,dir_path,filter_function=None):
         """
         imports the contents of a directory to self.root_destination_dir
                         
@@ -68,9 +69,12 @@ class StreamImporter(object):
         for root,_,files in os.walk(dir_path):
             for name in files:
                 path = os.path.join(root,name)
-                if filter_function(path):
+                if filter_function:
+                    if filter_function(path):                        
+                        self.import_file(path)
+                else:
                     self.import_file(path)
-        
+                    
     def import_file(self,file_path):
         """
         imports file_path to self.root_destination_dir
@@ -109,15 +113,19 @@ class StreamImporter(object):
         #copy the file
         print "copying " + file_path
         shutil.copy2(file_path,dest_file)
-        
-        
+
 if __name__ == "__main__":
-    if not len(sys.argv) == 4: raise Exception("Requires 3 command line arguments: <source file or directory> <destination directory> <stream type>")
+    if len(sys.argv) < 4: raise Exception("Requires 3 command line arguments: <source file or directory> <destination directory> <stream type> <optional unix wildcards>")
     
     importer = StreamImporter(sys.argv[3],sys.argv[2])
     
-    if os.path.isdir(sys.argv[1]):        
-        importer.import_dir(sys.argv[1])
+    if len(sys.argv) >= 4:
+        filter = lambda x : fnmatch.fnmatch(x,sys.argv[4])
     else:
-        importer.import_file(sys.argv[1])
+        filter = None    
+    
+    if os.path.isdir(sys.argv[1]):   
+        importer.import_dir(sys.argv[1],filter)
+    else:
+        importer.import_file(sys.argv[1],filter)
         
