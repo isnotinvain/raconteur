@@ -5,9 +5,22 @@
 '''
 
 import os
+import random
 
 class NotADirectoryError(Exception):
     pass
+
+def unique_file_name(dir,extension):
+    """
+    generate a filename that does not exist in dir
+    TODO: let's use something more descriptive about the file?
+    """
+    extension = extension.lower()
+    f = str(random.randint(0,100000000000)) + extension
+    while os.path.exists(os.path.join(dir,f)):
+        f = str(random.randint(0,100000000000)) + extension
+
+    return f
 
 def datetime_to_path(d):
     """

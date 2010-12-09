@@ -1,5 +1,7 @@
 .metadata
 *.avi
+*.mov
+*.pyc
 android/RaconteurApp/.classpath
 android/RaconteurApp/.project
 android/RaconteurApp/.settings/

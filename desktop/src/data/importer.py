@@ -9,7 +9,9 @@ Copies raw data files to the filesytem and organizes them in a useful manner
 
 import sys
 import os
+import shutil
 import datetime
+
 import util.filesystem as fsutil
 
 class NoSuchDirectoryError(Exception):
@@ -26,43 +28,42 @@ class StreamImporter(object):
     of streams.
     """
     
-    def __init__(self,stream_type,destination_dir_path):
+    def __init__(self,stream_type,root_destination_dir):
         """
         @param stream_type: a string representing what kind of stream this is, eg "video" or "image" or "gps"
                             should be a valid folder name in the filesystem
         
-        @param destination_dir_path: path to the top level directory where this stream should be imported to
+        @param root_destination_dir: path to the top level directory where this stream should be imported to
+        @raise OSError:
+        
+        @raise NotADirectoryError:        
         """
+
         self.stream_type= stream_type
-        self.destination_dir_path = destination_dir_path
+        self.root_destination_dir = root_destination_dir
+        
+        #check if dir_path exists / create it if it doesn't
+        try:
+            fsutil.ensure_dir_exists(self.root_destination_dir)
+        except OSError:
+            print self.root_destination_dir + " does not exist and could not be created."
+            raise
+        except fsutil.NotADirectoryError:
+            print self.root_destination_dir + " is not a directory!"
+            raise
         
     def import_dir(self,dir_path,filter_function=lambda x: True):
         """
-        imports the contents of a directory to self.destination_dir_path
+        imports the contents of a directory to self.root_destination_dir
                         
         @param filter_function: will be called on each file encountered to
         determine whether or not to import it
         
-        @raise OSError:
-        
-        @raise NotADirectoryError:
-        
-        @riase NoSuchDirectoryError: if dir_path does not exist
+        @raise NoSuchDirectoryError: if dir_path does not exist
         """
-        
-        #check if dir_path exists / create it if it doesn't
-        try:
-            fsutil.ensure_dir_exists(self.destination_dir_path)
-        except OSError:
-            print self.destination_dir_path + " does not exist and could not be created."
-            raise
-        except fsutil.NotADirectoryError:
-            print self.destination_dir_path + " is not a directory!"
-            raise
-        
         if not os.path.exists(dir_path):
             raise NoSuchDirectoryError(dir_path)
-        
+                
         # process each file in dir_path (recursively)
         for root,_,files in os.walk(dir_path):
             for name in files:
@@ -72,7 +73,7 @@ class StreamImporter(object):
         
     def import_file(self,file_path):
         """
-        imports file_path to self.destination_dir_path
+        imports file_path to self.root_destination_dir
         
         Files are organized hierarchically in following manner, based on the file's
         date of creation metadata:
@@ -95,9 +96,19 @@ class StreamImporter(object):
         # TODO: actually check creation date, not modified date
         start_date = datetime.datetime.fromtimestamp(os.path.getmtime(file_path))
         
-        dest_path = fsutil.stream_raw_data_path(start_date, self.stream_type)
+        # figure out where to put the file
+        dest_dir = fsutil.stream_raw_data_path(start_date, self.stream_type)
+        dest_dir = os.path.join(self.root_destination_dir,dest_dir)
+        _, extension = os.path.splitext(file_path)
+        filename = fsutil.unique_file_name(self.root_destination_dir,extension)                
+        dest_file = os.path.join(dest_dir,filename)
         
-        print file_path + "\t" + dest_path
+        # make sure dest_dir exists
+        fsutil.ensure_dir_exists(dest_dir)
+        
+        #copy the file
+        print "copying " + file_path
+        shutil.copy2(file_path,dest_file)
         
         
 if __name__ == "__main__":
