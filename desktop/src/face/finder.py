@@ -53,7 +53,7 @@ def draw_faces(img,faces):
     
     
 if __name__ == "__main__":
-    if not len(sys.argv) == 3: raise Exception("Requires 3 command line arguments, input file path and output file path")
+    if not len(sys.argv) == 3: raise Exception("Requires 2 command line arguments, input file path and output file path")
     
     capture = cvCreateFileCapture(sys.argv[1])
     if not capture:
