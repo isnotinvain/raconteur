@@ -91,8 +91,9 @@ public class Raconteur extends Activity {
     }
     
     private void recordBookmark() {
-    	Log.v("raconteur","recording bookmark...");
-    	Bookmark b = new Bookmark(captionBox.getText().toString());    	
+    	Bookmark b = new Bookmark(captionBox.getText().toString());
+    	Log.v("raconteur","recording bookmark: "+b.getCaption());
+    	    	
     	
 		try {
 			Util.writeToExternalStorage(Util.getBookmarksFile(), b.toYaml()+"\n");
