@@ -9,9 +9,13 @@ Copies raw data files to the filesytem and organizes them in a useful manner
 
 import sys
 import os
-from util.filesystem import ensure_dir_exists, NotADirectoryError
+import datetime
+import util.filesystem as fsutil
 
 class NoSuchDirectoryError(Exception):
+    pass
+
+class NoSuchFileError(Exception):
     pass
 
 class StreamImporter(object):
@@ -48,11 +52,11 @@ class StreamImporter(object):
         
         #check if dir_path exists / create it if it doesn't
         try:
-            ensure_dir_exists(self.destination_dir_path)
+            fsutil.ensure_dir_exists(self.destination_dir_path)
         except OSError:
             print self.destination_dir_path + " does not exist and could not be created."
             raise
-        except NotADirectoryError:
+        except fsutil.NotADirectoryError:
             print self.destination_dir_path + " is not a directory!"
             raise
         
@@ -73,15 +77,28 @@ class StreamImporter(object):
         Files are organized hierarchically in following manner, based on the file's
         date of creation metadata:
         
-        year
-            month
-                day
-                    stream_type
+        year (int)
+            month (int)
+                day (int)
+                    stream_type (string)
                         X.<original file extension>
         
-        Where X is an integer, starting at 1 and counting up, in order of time of creation. Ties will be broken arbitrarily
+        Where X is an integer
+        TODO: X should have some meaning, perhaps sort order by date of creation?
         """
-        print file_path
+        
+        # make sure the file exists
+        if not os.path.exists(file_path):
+            raise NoSuchFileError(file_path)
+        
+        # get the file's creation date
+        # TODO: actually check creation date, not modified date
+        start_date = datetime.datetime.fromtimestamp(os.path.getmtime(file_path))
+        
+        dest_path = fsutil.stream_raw_data_path(start_date, self.stream_type)
+        
+        print file_path + "\t" + dest_path
+        
         
 if __name__ == "__main__":
     if not len(sys.argv) == 4: raise Exception("Requires 3 command line arguments: <source file or directory> <destination directory> <stream type>")

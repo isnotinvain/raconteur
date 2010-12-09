@@ -9,6 +9,24 @@ import os
 class NotADirectoryError(Exception):
     pass
 
+def datetime_to_path(d):
+    """
+    convert a datetime to a file path in the form:
+    year/month/day/
+    """
+    return os.path.join(str(d.year),str(d.month),str(d.day))
+
+def stream_raw_data_path(start_date,stream_type):
+    """
+    return the folder that a raw datafile would be found in
+    given datetime start_date
+    
+    @param start_date: a datetime representing the beginning of the raw datafile
+    @param stream_type: a string describing the type of stream, eg "video"
+    """
+    
+    return os.path.join(datetime_to_path(start_date),stream_type)
+
 def ensure_dir_exists(dir_path):
     """    
     Checks that:
