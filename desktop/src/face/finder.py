@@ -9,7 +9,8 @@ from opencv.cv import cvLoadHaarClassifierCascade, cvCreateImage, cvCvtColor, CV
 cvEqualizeHist, cvHaarDetectObjects, cvCreateMemStorage, cvSize, cvPoint, cvRectangle, \
 CV_RGB
 
-from opencv.highgui import cvCreateFileCapture, cvNamedWindow, cvQueryFrame, cvShowImage, cvWaitKey
+from opencv.highgui import cvCreateFileCapture, cvQueryFrame, \
+cvCreateVideoWriter, CV_FOURCC, cvWriteFrame
 
 import util.image
 
@@ -52,14 +53,13 @@ def draw_faces(img,faces):
     
     
 if __name__ == "__main__":
-    if not len(sys.argv) == 2: raise Exception("Requires 1 command line argument")
+    if not len(sys.argv) == 3: raise Exception("Requires 3 command line arguments, input file path and output file path")
     
-    capture = cvCreateFileCapture(sys.argv[1])    
+    capture = cvCreateFileCapture(sys.argv[1])
     if not capture:
-        raise Exception("Couldn't get your camera...")
+        raise Exception("Couldn't load file"+sys.argv[1])
 
-    #writer=cvCreateVideoWriter("out.avi",CV_FOURCC('P','I','M','1'),30,cvSize(888,500),True)
-    cvNamedWindow("Hello Face Detection")
+    writer=cvCreateVideoWriter(sys.argv[2],CV_FOURCC('P','I','M','1'),30,cvSize(888,500),True)    
 
     while True:
         frame = cvQueryFrame(capture)
@@ -68,7 +68,5 @@ if __name__ == "__main__":
         
         faces = find_faces(s,scale_factor=1.1, min_neighbors=3, flags=0, min_size=(100, 100))
         draw_faces(s,faces)
-        #cvWriteFrame(writer,frame)
-        cvShowImage("Hello Face Detection",s)
-        k = cvWaitKey(5)
-        if k == '\x1b': break
+        cvWriteFrame(writer,frame)
+    print "done!"
