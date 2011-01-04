@@ -29,7 +29,7 @@ class StreamImporter(object):
     of streams.
     """
     
-    def __init__(self,stream_type,root_destination_dir):
+    def __init__(self,stream_type,root_destination_dir,move=False):
         """
         @param stream_type: a string representing what kind of stream this is, eg "video" or "image" or "gps"
                             should be a valid folder name in the filesystem
@@ -42,6 +42,7 @@ class StreamImporter(object):
 
         self.stream_type= stream_type
         self.root_destination_dir = root_destination_dir
+        self.move = move
         
         #check if dir_path exists / create it if it doesn't
         try:
@@ -74,10 +75,13 @@ class StreamImporter(object):
                         self.import_file(path)
                 else:
                     self.import_file(path)
+        print "Done!"
                     
     def import_file(self,file_path):
         """
         imports file_path to self.root_destination_dir
+        
+        if move is set to true, files are moved not copied
         
         Files are organized hierarchically in following manner, based on the file's
         date of creation metadata:
@@ -95,34 +99,51 @@ class StreamImporter(object):
         # make sure the file exists
         if not os.path.exists(file_path):
             raise NoSuchFileError(file_path)
+                
+        if self.move:
+            copy_function = shutil.move
+            copy_verb = "moving"
+        else:
+            copy_function = shutil.copy2
+            copy_verb = "copying"    
+            
         
         # get the file's creation date
         # TODO: actually check creation date, not modified date
-        start_date = datetime.datetime.fromtimestamp(os.path.getmtime(file_path))
+        start_stamp = os.path.getmtime(file_path)
+        start_date = datetime.datetime.fromtimestamp(start_stamp)
         
         # figure out where to put the file
         dest_dir = fsutil.stream_raw_data_path(start_date, self.stream_type)
         dest_dir = os.path.join(self.root_destination_dir,dest_dir)
         _, extension = os.path.splitext(file_path)
-        filename = fsutil.unique_file_name(self.root_destination_dir,extension)                
+        filename = fsutil.unique_file_name(self.root_destination_dir,extension,str(int(start_stamp)))                
         dest_file = os.path.join(dest_dir,filename)
         
         # make sure dest_dir exists
         fsutil.ensure_dir_exists(dest_dir)
         
         #copy the file
-        print "copying " + file_path
-        shutil.copy2(file_path,dest_file)
+        print copy_verb + " " + file_path + " to " + dest_file
+        copy_function(file_path,dest_file)
 
 if __name__ == "__main__":
-    if len(sys.argv) < 4: raise Exception("Requires 3 command line arguments: <source file or directory> <destination directory> <stream type> <optional unix wildcards>")
+    if len(sys.argv) < 4: raise Exception("Requires 3 or 5 command line arguments: <source file or directory> <destination directory> <stream type> |optional| <unix wildcards> <move>")    
     
-    importer = StreamImporter(sys.argv[3],sys.argv[2])
-    
-    if len(sys.argv) >= 4:
+    if len(sys.argv) >= 5:
         filter = lambda x : fnmatch.fnmatch(x,sys.argv[4])
     else:
         filter = None    
+    
+    move = False
+    if len(sys.argv) >= 6:
+        if sys.argv[5] == "move":
+            move = True
+                                
+    if not os.path.exists(sys.argv[1]):
+        raise Exception(sys.argv[1]+" is not a valid path")
+
+    importer = StreamImporter(sys.argv[3],sys.argv[2],move)
     
     if os.path.isdir(sys.argv[1]):   
         importer.import_dir(sys.argv[1],filter)

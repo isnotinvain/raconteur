@@ -10,15 +10,19 @@ import random
 class NotADirectoryError(Exception):
     pass
 
-def unique_file_name(dir,extension):
+def unique_file_name(dir,extension,prefix=""):
     """
-    generate a filename that does not exist in dir
-    TODO: let's use something more descriptive about the file?
+    generate a filename that does not exist in dir that begins with prefix
+    if <prefix>.<extension> does not exist, then it is used.
     """
     extension = extension.lower()
-    f = str(random.randint(0,100000000000)) + extension
+    
+    if prefix and not os.path.exists(os.path.join(dir,prefix+extension)):
+        return prefix+extension
+    
+    f = prefix + "_" + str(random.randint(0,100000000000)) + extension
     while os.path.exists(os.path.join(dir,f)):
-        f = str(random.randint(0,100000000000)) + extension
+        f = prefix + "_" + str(random.randint(0,100000000000)) + extension
 
     return f
 
