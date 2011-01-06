@@ -54,22 +54,18 @@ if __name__ == "__main__":
     
     face_finder = HaarFinder("haarcascades/haarcascade_frontalface_alt.xml")
     
-    frame_count = 0
-    total_frames = cv.GetCaptureProperty(capture,cv.CV_CAP_PROP_FRAME_COUNT)    
     while frame is not None:                      
         s_frame,s_frame_size = util.image.scale_to_size(frame, 500,500)
         objects = face_finder.find_in_image(s_frame,scale_factor=1.1, min_neighbors=3, flags=0, min_size=(10,10))
         face_finder.draw_object_boundaries(s_frame, objects)
         
         if writer:
-            cv.WriteFrame(writer,s_frame)            
-            print frame_count / total_frames 
-             
+            cv.WriteFrame(writer,s_frame)
+            print cv.GetCaptureProperty(capture,cv.CV_CAP_PROP_POS_AVI_RATIO)*100          
         else:
             cv.ShowImage("Object Detection",s_frame)
             k = cv.WaitKey(10)
             if k == '\x1b': break
         
         frame = cv.QueryFrame(capture)
-        frame_count += 1
     print "done!"
