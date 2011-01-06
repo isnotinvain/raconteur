@@ -3,7 +3,7 @@
 
 @author: Alex Levenson (alex@isnotinvain.com)
 '''
-from opencv import cvCreateImage,cvResize,CV_INTER_LINEAR
+import cv
 
 def scale_to_size(img,max_width,max_height):
     """
@@ -16,6 +16,6 @@ def scale_to_size(img,max_width,max_height):
 
     factor = min(wfactor,hfactor)
     size = (int(img.width*factor),int(img.height*factor))
-    scaled = cvCreateImage(size,img.depth,img.nChannels)
-    cvResize(img,scaled,CV_INTER_LINEAR)
+    scaled = cv.CreateImage(size,img.depth,img.nChannels)
+    cv.Resize(img,scaled,cv.CV_INTER_LINEAR)
     return scaled,size
