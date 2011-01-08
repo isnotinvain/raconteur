@@ -9,7 +9,7 @@ import cv
 import util.image
 
 class HaarFinder(object):
-    def __init__(self, cascade_path):
+    def __init__(self, cascade_path="haarcascades/haarcascade_frontalface_alt.xml"):
         try:
             self.cascade = cv.Load(cascade_path)
         except:
@@ -61,11 +61,11 @@ if __name__ == "__main__":
         
         if writer:
             cv.WriteFrame(writer,s_frame)
-            print cv.GetCaptureProperty(capture,cv.CV_CAP_PROP_POS_AVI_RATIO)*100          
+            print cv.GetCaptureProperty(capture,cv.CV_CAP_PROP_POS_AVI_RATIO)*100
+            #print cv.GetCaptureProperty(capture,cv.CV_CAP_PROP_POS_FRAMES)
         else:
             cv.ShowImage("Object Detection",s_frame)
             k = cv.WaitKey(10)
             if k == '\x1b': break
-        
         frame = cv.QueryFrame(capture)
     print "done!"
