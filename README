@@ -1,8 +1,19 @@
-Raconteur is my Senior Design project. It takes video, audio, and location
-streams and builds an index of metadata from them using:
-*Face Recognition
-*Voice Recognition
-*Voice to Text
-From this index social networking / lifecasting type things can be done, as 
-well as queries about one's life.
-More detail to follow.
+=======================================Raconteur=======================================
+My Senior Design project.
+
+Raconteur's longterm goal is to be a lifecasting / blogging tool that helps automate
+video blogging / lifecasting. It does this by:
+
+	* Identifying who is in your videos and images
+		- using face tracking and recognition (for videos and images!)
+
+	* Analyzing trends in the location data of your videos / images
+
+	* Splitting your life stream into blog post sized chapters that can be easily
+	  published
+
+For now I'm focusing on the face tracking and recognition in video.
+
+(c) Alex Levenson
+alex@isnotinvain.com
+All Rights Reserved
