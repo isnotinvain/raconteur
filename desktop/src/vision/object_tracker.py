@@ -4,8 +4,8 @@
 @author: Alex Levenson (alex@isnotinvain.com)
 '''
 
-from util.video import Video
-import face.object_finder
+from stream.video import Video
+import vision.object_finder
 
 class ObjectTracker(object):
     def __init__(self,video,finder=face.object_finder.HaarFinder()):
