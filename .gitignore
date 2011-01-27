@@ -12,3 +12,4 @@ android/RaconteurApp/res/
 android/RaconteurApp/lib/
 desktop/.project
 desktop/.pydevproject
+desktop/.settings/
