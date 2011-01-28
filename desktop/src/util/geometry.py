@@ -6,7 +6,7 @@ Created on Jan 13, 2011
 Geometry utility functions
 '''
 
-def rect_is_similar(rect1,rect2,similarity=0.90):
+def rect_is_similar(rect1,rect2,similarity):
     """
     Returns whether rect1 and rect2 are 'similar' by the similarity threshold
     """
