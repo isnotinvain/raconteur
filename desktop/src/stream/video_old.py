@@ -16,13 +16,26 @@ class Video(object):
         self.file_path = file_path
         self.capture = cv.CreateFileCapture(file_path)
         if not self.capture:
-            raise Exception("Couldn't load file" + file_path)
+            raise Exception("Couldn't load file" + file_path)        
+        
+        self.numFrames = cv.GetCaptureProperty(self.capture,cv.CV_CAP_PROP_FRAME_COUNT)        
+        self.frameBegin = 0
+        self.frameEnd = self.numFrames
+        
     
+    def set_interval(self,interval):
+        begin,end = interval
+        if begin < 0: begin = 0
+        if end > self.numFrames: end = self.numFrames 
+        self.frameBegin = begin
+        self.frameEnd = end
+                
     def frames(self):
-        while(True):
+        while(cv.GetCaptureProperty(self.capture, cv.CV_CAP_PROP_POS_FRAMES) <= self.frameEnd):
+            frame_pos = cv.GetCaptureProperty(self.capture, cv.CV_CAP_PROP_POS_FRAMES)
             img = cv.QueryFrame(self.capture)            
             if not img: break
-            yield img
+            yield frame_pos,img
     
     def print_position(self):
         print "Frame num: " + str(cv.GetCaptureProperty(self.capture,cv.CV_CAP_PROP_POS_FRAMES))
