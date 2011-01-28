@@ -2,6 +2,8 @@
 Created on Jan 13, 2011
 
 @author: Alex Levenson (alex@isnotinvain.com)
+
+Geometry utility functions
 '''
 
 def rect_is_similar(rect1,rect2,similarity=0.90):

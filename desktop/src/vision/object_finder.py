@@ -9,6 +9,9 @@ import cv
 import util.image
 
 class HaarFinder(object):
+    """
+    Finds objects in images using openCV's HaarCascasde object detector
+    """
     def __init__(self, cascade_path="haarcascades/haarcascade_frontalface_alt.xml"):
         try:
             self.cascade = cv.Load(cascade_path)

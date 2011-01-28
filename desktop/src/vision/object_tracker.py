@@ -8,7 +8,10 @@ from stream.video import Video
 import vision.object_finder
 
 class ObjectTracker(object):
-    def __init__(self,video,finder=face.object_finder.HaarFinder()):
+    """
+    Tracks objects through a video stream
+    """
+    def __init__(self,video,finder=vision.object_finder.HaarFinder()):
         self.video = video
         self.finder = finder
                 

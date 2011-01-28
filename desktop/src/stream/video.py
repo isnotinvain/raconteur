@@ -6,7 +6,12 @@ Created on Jan 6, 2011
 import sys
 import cv
 
+# TODO: inherit from some Stream object probably
 class Video(object):
+    """
+    A more pythonic wrapper for video streams, currently wraps openCV videos
+    TODO: create a stream interface and conform to it
+    """
     def __init__(self, file_path):
         self.file_path = file_path
         self.capture = cv.CreateFileCapture(file_path)

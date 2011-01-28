@@ -25,7 +25,7 @@ class StreamImporter(object):
     """
     A default generic stream importer, can be used directly to import streams that
     require no pre-processing aside from file copying, renaming, and placement into
-    a structred folder hierarchy. Can be subclassed in order to handle pre-processing
+    a structured folder hierarchy. Can be subclassed in order to handle pre-processing
     of streams.
     """
     
