@@ -18,11 +18,17 @@ class Video(object):
         if not self.capture:
             raise Exception("Couldn't load file" + file_path)
     
+    def getNextFrame(self):
+        return cv.QueryFrame(self.capture)
+    
     def frames(self):
-        while(True):
-            img = cv.QueryFrame(self.capture)            
+        while True:
+            img = self.getNextFrame()            
             if not img: break
             yield img
+    
+    def getRatio(self):
+        return cv.GetCaptureProperty(self.capture,cv.CV_CAP_PROP_POS_AVI_RATIO)    
     
     def print_position(self):
         print "Frame num: " + str(cv.GetCaptureProperty(self.capture,cv.CV_CAP_PROP_POS_FRAMES))
