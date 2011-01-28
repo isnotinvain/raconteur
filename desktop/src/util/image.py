@@ -6,6 +6,14 @@
 image utility functions for opencv images
 '''
 import cv
+import Image
+import pygame
+
+def cv_to_pygame(img):
+    cv.CvtColor(img, img, cv.CV_BGR2RGB)
+    pil = Image.fromstring("RGB", cv.GetSize(img), img.tostring())            
+    py_img = pygame.image.frombuffer(pil.tostring(), pil.size, pil.mode)
+    return py_img
 
 def scale_to_size(img,max_width,max_height):
     """

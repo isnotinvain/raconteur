@@ -4,13 +4,13 @@
 @author: Alex Levenson (alex@isnotinvain.com)
 '''
 
+import cPickle
 import pygame
+
 from stream.video import Video
 import vision.object_finder
-import cPickle
 from gui.progress_window import ProgressWindow
-import Image
-import cv
+import util.image
 
 class ObjectTracker(object):
     """
@@ -36,16 +36,14 @@ class ObjectTracker(object):
         running = True
         
         for bound in bounds:
-            frame = video.getNextFrame()
-            cv.CvtColor(frame, frame, cv.CV_BGR2RGB)
-            pil = Image.fromstring("RGB", cv.GetSize(frame), frame.tostring())            
-            py_img = pygame.image.frombuffer(pil.tostring(), pil.size, pil.mode)
+            #frame = video.getNextFrame()
+            #frame = util.image.cv_to_pygame(frame)
             
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: running = False
             
-            screen.blit(py_img,(0,0))
-            
+            #screen.blit(frame,(0,0))
+            screen.fill((0,0,0))
             for b,_ in bound:
                 rect = pygame.Rect(*b)
                 pygame.draw.rect(screen,(0,255,0),rect,2)
