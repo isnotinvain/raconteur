@@ -18,16 +18,19 @@ class VideoPanel(wx.Panel):
         self.Bind(wx.EVT_PAINT, self.onPaint)
         self.Bind(wx.EVT_SIZE, self.onPaint)
         self.video = None
+        self.cv_frame = None
         self.current_frame = None
         self.current_frame_bmp = None
         self.old_size = None        
         self.timer = wx.Timer(self, self.TIMER_ID)
         self.timer_tick = None        
         self.Bind(wx.EVT_TIMER,self.onNextFrame)
+        self.overlays = []
     
     def loadVideo(self,path):
         self.video = Video(path)
-        self.current_frame = util.image.cvToWx(self.video.getNextFrame())
+        self.cv_frame = self.video.getNextFrame()
+        self.current_frame = util.image.cvToWx(self.cv_frame)
         self.timer_tick = 1000/self.video.getFps()
         if self.timer_tick == 0: self.timer_tick = 1000/30
         self.onNextFrame(None)
@@ -41,7 +44,12 @@ class VideoPanel(wx.Panel):
         self.timer.Stop()
     
     def onNextFrame(self,event):
-        self.current_frame = util.image.cvToWx((self.video.getNextFrame()))
+        self.cv_frame = self.video.getNextFrame()
+        if not self.cv_frame:
+            self.video.reset()
+            self.pause()
+            self.cv_frame = self.video.getNextFrame()            
+        self.current_frame = util.image.cvToWx(self.cv_frame)
         self.Refresh()
     
     def onPaint(self,event):
@@ -52,6 +60,8 @@ class VideoPanel(wx.Panel):
         dc.Clear()
         if self.video:
             self.drawCurrentFrame(dc)
+            for overlay in self.overlays:
+                overlay(dc)
 
     def drawCurrentFrame(self,dc):
         if not self.old_size:

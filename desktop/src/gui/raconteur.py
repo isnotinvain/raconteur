@@ -4,6 +4,7 @@ Created on Feb 2, 2011
 @author: Alex Levenson (alex@isnotinvain.com)
 '''
 import os
+import sys
 import cPickle
 import wx
 from videoPanel import VideoPanel
@@ -11,7 +12,9 @@ from stream.video import Video
 from stream.importer import StreamImporter 
 import util.filesystem
 import widgets
- 
+from vision.tracker import ObjectTracker
+from progressTracker import ProgressTracker
+
 class RaconteurMainWindow(wx.Frame):
     '''
     The main GUI class for Raconteur
@@ -24,9 +27,8 @@ class RaconteurMainWindow(wx.Frame):
     in video files. Raconteur hopes to become a blogging 
     utility that helps you write your video blog.
     """    
-    def __init__(self):
+    def __init__(self,script_path):
         wx.Frame.__init__(self, None,title="Raconteur\t|\tYour Life is a Story",size=(800,500))
-        
         self.story = None
         
         self.CreateStatusBar()
@@ -38,10 +40,15 @@ class RaconteurMainWindow(wx.Frame):
         self.Show(True)
         
         self.loadStory("/home/alex/Desktop/test")
+        
+        self.currentVideo = None
+        
+        self.resourcesPath = os.path.join(script_path,"..","resources")
     
     def __setupLayout(self):
         sizer = wx.BoxSizer(wx.VERTICAL)
         split = wx.SplitterWindow(self,wx.ID_ANY,style=wx.SP_LIVE_UPDATE)
+        self.split = split
         
         sizer.Add(split,1,wx.EXPAND)
         
@@ -73,7 +80,12 @@ class RaconteurMainWindow(wx.Frame):
                                         ("Pla&y","Play the current video"),
                                         ("Pau&se","Pause the current video"),
                                     )
-                    ),                            
+                    ),
+                    ("Analy&ze",   (
+                                        ("Show &Faces","Show faces in this video"),
+                                        ("Show Face &Tracks","Show face tracks in this video"),
+                                    )
+                    ),
                     ("&Import",  (
                                     ("Fi&le","Import a single file"),
                                     ("&Directory","Import a directory"),
@@ -144,8 +156,8 @@ class RaconteurMainWindow(wx.Frame):
         self.videoPanel.pause()
         
     def _menuOn_playback_play(self,event):
-        self.videoPanel.play()        
-
+        self.videoPanel.play()
+        
     def _menuOn_file_newstory(self,event):
         d = widgets.NewStoryDialog(self,wx.ID_ANY)
         if d.ShowModal()==wx.ID_OK:
@@ -173,8 +185,40 @@ class RaconteurMainWindow(wx.Frame):
         file = self.streamTree.GetFilePath() 
         if file:
             self.videoPanel.loadVideo(file)
+            self.currentVideo = self.videoPanel.video
+            
+    def _menuOn_analyze_showfaces(self,event):
+        if os.path.exists(self.currentVideo.file_path+".raw_face_bounds.pickle"):
+            f = open(self.currentVideo.file_path+".raw_face_bounds.pickle","r")
+            raw_bounds = cPickle.load(f)
+            f.close()
+        else:
+            self.videoPanel.video.reset()
+            tracker = ObjectTracker(self.videoPanel.video)
+            progDialog = wx.ProgressDialog("Working...","Working...",maximum=1000,parent=self,style=wx.PD_CAN_ABORT)            
+            tracker.progDialog = progDialog
+            tracker.extractRawObjectBounds()
+            progDialog.Destroy()
+            f = open(self.currentVideo.file_path+".raw_face_bounds.pickle","w")
+            cPickle.dump(tracker.raw_bounds,f)
+            raw_bounds = tracker.raw_bounds
+            self.videoPanel.video.reset()
+        
+        class BoundDrawer:
+            def __init__(self,bounds):
+                self.i=0
+                self.bounds = bounds            
+            def draw(self,dc):
+                if self.i < len(self.bounds):
+                    util.image.wxDrawObjecBoundaries(dc, self.bounds[self.i])
+                    self.i+=1
+        bd = BoundDrawer(raw_bounds)        
+        self.videoPanel.overlays = [bd.draw]
+    
+    def _menuOn_analyze_showfacetracks(self,event):
+        pass
 
 if __name__ == "__main__":
     app = wx.App(False)
-    frame = RaconteurMainWindow()
+    frame = RaconteurMainWindow(sys.argv[0])
     app.MainLoop()

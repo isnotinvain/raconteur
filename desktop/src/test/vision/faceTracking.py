@@ -27,7 +27,8 @@ if __name__ == "__main__":
         pickle = None
     
     video = stream.video.Video(sys.argv[1])
-    tracker = vision.tracker.ObjectTracker(video)
+    finder = vision.finder.ObjectFinder("/home/alex/Documents/raconteur/desktop/src/gui/haarcascades/haarcascade_frontalface_alt.xml")
+    tracker = vision.tracker.ObjectTracker(video,finder=finder)
         
     if not pickle:
         pw = gui.progress_window.ProgressWindow("Extracting")    

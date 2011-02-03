@@ -39,3 +39,9 @@ def cvScaleToSize(img,max_width,max_height):
 def cvDrawObjectBoundaries(img,objects,color=(255,0,0)):        
     for (x,y,w,h),_ in objects:
         cv.Rectangle(img, (x,y), (x+w,y+h), color)
+
+def wxDrawObjecBoundaries(dc,bounds,color=(0,255,0)):
+    dc.SetPen(wx.Pen(color, 1))
+    dc.SetBrush(wx.Brush((0,0,0),style=wx.TRANSPARENT))
+    for (x,y,w,h),_ in bounds:
+        dc.DrawRectangle(x,y,w,h)

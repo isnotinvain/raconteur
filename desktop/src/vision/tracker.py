@@ -7,34 +7,37 @@
 import finder
 import util.geometry
 import gui
-   
+
 class ObjectTracker(object):
     """
     Tracks objects through a video stream
     """
-    def __init__(self,video,finder=finder.ObjectFinder(),look_ahead_threshold=30,similarity=0.5):
-        self.finder = finder
+    def __init__(self,video,finder=None,look_ahead_threshold=30,similarity=0.5):
+        if not finder:
+            self.finder = finder.ObjectFinder()
+        else:
+            self.finder = finder
         self.raw_bounds = None
         self.tracks = None
         self.tracked = set()
         self.look_ahead_threshold = look_ahead_threshold
         self.similarity = similarity
         self.video = video        
-        self.progressTracker = None
+        self.progDialog = None
                                 
-    def __extractRawObjectBounds(self):
+    def extractRawObjectBounds(self):
         """
         Runs object detection on each frame of the video,
         this can be quite slow.
         """
         self.raw_bounds = []
-        if self.progressTracker: self.progressTracker.currentProcess = "Extracting raw object bounds"
         for frame in self.video.frames():
             raw = self.finder.findInImage(frame)            
             self.raw_bounds.append(raw)
-            if self.progressTracker:                
-                self.progressTracker.tick(self.video.getRatio())            
-                if self.progressTracker.abort: break
+            if self.progDialog:                
+                cont,skip = self.progDialog.Update(int(self.video.getRatio()*1000),"Extracting Raw Face Boundaries...")
+                print cont,skip
+                if not cont: break
                             
     def __trackBound(self,bound,f):
         """
@@ -61,7 +64,7 @@ class ObjectTracker(object):
             frame_count += 1
         return track
     
-    def __extractTracksFromRawObjectBounds(self):
+    def extractTracksFromRawObjectBounds(self):
         """
         The main algorithm of the ObjectTracker,
         Crawls through the raw object bounds and tries
@@ -81,6 +84,6 @@ class ObjectTracker(object):
         if not self.tracks:
             if raw: self.raw_bounds = raw
             if not self.raw_bounds:
-                self.__extractRawObjectBounds()
-            self.__extractTracksFromRawObjectBounds()            
+                self.extractRawObjectBounds()
+            self.extractTracksFromRawObjectBounds()            
         return self.tracks
