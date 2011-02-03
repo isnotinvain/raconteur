@@ -16,8 +16,7 @@ class RaconteurMainWindow(wx.Frame):
     Raconteur performs face tracking and face recognition 
     in video files. Raconteur hopes to become a blogging 
     utility that helps you write your video blog.
-    """
-            
+    """            
     def __init__(self):
         wx.Frame.__init__(self, None,title="Raconteur\t|\tYour Life is a Story", size=(700,500))
         
@@ -31,21 +30,50 @@ class RaconteurMainWindow(wx.Frame):
         '''
         Sets up the menu bar at the top of the windo
         '''
-        # setup the file menu
-        file_menu = wx.Menu()
-        about = file_menu.Append(wx.ID_ABOUT, "&About","About Raconteur")
-        file_menu.AppendSeparator()
-        exit = file_menu.Append(wx.ID_EXIT,"E&xit","Close Raconteur")
-        
-        self.Bind(wx.EVT_MENU, self.on_about, about)
-        self.Bind(wx.EVT_MENU, self.on_exit, exit)
+        MENU =  (
+                    ("&File",    (
+                                    ("E&xit","Close Raconteur",wx.ID_EXIT),
+                                )
+                    ),
+                            
+                    ("&Import",  (
+                                    ("Fi&le","Import a single file"),
+                                    ("&Directory","Import a directory"),
+                                )
+                    ),                    
+                    ("&Help",    (
+                                    ("&About","About Raconteur",wx.ID_ABOUT),
+                                )
+                    ),
+                )
 
-        # setup the menu bar
         menu_bar = wx.MenuBar()
-        menu_bar.Append(file_menu,"&File")
+        for menu,items in MENU:            
+            wxmenu = wx.Menu()            
+            for i in items:
+                if len(i) == 2:
+                    item,caption = i
+                    id = wx.ID_ANY
+                else:
+                    item,caption,id = i
+                wxItem = wxmenu.Append(id,item,caption)
+                callback = "menu_on_"+menu.lower().replace("&","")+"_"+item.lower().replace("&","")
+                #if hasattr(self,callback):
+                callback = getattr(self,callback)
+                self.Bind(wx.EVT_MENU,callback,wxItem)
+            menu_bar.Append(wxmenu,menu)
         self.SetMenuBar(menu_bar)
     
-    def on_about(self,event):
+    def menu_on_file_exit(self,event):
+        self.Close(True)
+    
+    def menu_on_import_file(self,event):
+        pass
+    
+    def menu_on_import_directory(self,event):
+        pass   
+    
+    def menu_on_help_about(self,event):
         dlg = wx.MessageDialog(self, self.ABOUT, "About Raconteur", wx.OK)
         dlg.ShowModal()
         dlg.Destroy()
