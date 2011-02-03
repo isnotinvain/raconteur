@@ -8,38 +8,34 @@ image utility functions for opencv images
 import cv
 import Image
 import pygame
+import geometry
+import wx
 
-def cv_to_pygame(img):
+def cvToWx(img):
+    img = cv.CloneImage(img)
+    cv.CvtColor(img, img, cv.CV_BGR2RGB)        
+    return wx.ImageFromBuffer(img.width,img.height,img.tostring())
+
+def cvToPygame(img):
+    """
+    @return an image that can be used in pygame
+    """
     cv.CvtColor(img, img, cv.CV_BGR2RGB)
     pil = Image.fromstring("RGB", cv.GetSize(img), img.tostring())            
     py_img = pygame.image.frombuffer(pil.tostring(), pil.size, pil.mode)
     return py_img
 
-def get_scale_dimensions(size,max_size):
-    width,height = size
-    max_width,max_height = max_size
-    if (max_width,max_height) == (0,0) or (width,height) == (0,0): return (0,0)
-    wfactor,hfactor = 1.0,1.0
-    
-    if width > max_width: wfactor = float(max_width)/width
-    if height > max_height: hfactor = float(max_height)/height
-
-    factor = min(wfactor,hfactor)
-    
-    size = (width*factor,height*factor)
-    return size
-
-def scale_to_size(img,max_width,max_height):
+def cvScaleToSize(img,max_width,max_height):
     """
-    @return a scaled copy of img that fits inside the box created by max_width and max_height, size it was scaled to    
+    @return a scaled copy of img that fits inside max_width,max_height    
     """
-    wfactor,hfactor = 1,1
     
-    if img.width > max_width: wfactor = float(max_width)/img.width
-    if img.height > max_height: hfactor = float(max_height)/img.height
+    size = map(int, geometry.getScaledDimensions((img.width,img.height),(max_width,max_height)))
 
-    factor = min(wfactor,hfactor)
-    size = (int(img.width*factor),int(img.height*factor))
     scaled = cv.CreateImage(size,img.depth,img.nChannels)
     cv.Resize(img,scaled,cv.CV_INTER_LINEAR)
     return scaled
+
+def cvDrawObjectBoundaries(img,objects,color=(255,0,0)):        
+    for (x,y,w,h),_ in objects:
+        cv.Rectangle(img, (x,y), (x+w,y+h), color)

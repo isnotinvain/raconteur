@@ -6,12 +6,9 @@
 Utilities for importing raw data from the device(s) to the file system.
 Copies raw data files to the filesytem and organizes them in a useful manner
 '''
-
-import sys
 import os
 import shutil
 import datetime
-import fnmatch
 
 import util.filesystem as fsutil
 
@@ -46,7 +43,7 @@ class StreamImporter(object):
         
         #check if dir_path exists / create it if it doesn't
         try:
-            fsutil.ensure_dir_exists(self.root_destination_dir)
+            fsutil.ensureDirectoryExists(self.root_destination_dir)
         except OSError:
             print self.root_destination_dir + " does not exist and could not be created."
             raise
@@ -54,7 +51,7 @@ class StreamImporter(object):
             print self.root_destination_dir + " is not a directory!"
             raise
         
-    def import_dir(self,dir_path,filter_function=None):
+    def importDirectory(self,dir_path,filter_function=None):
         """
         imports the contents of a directory to self.root_destination_dir
                         
@@ -72,12 +69,12 @@ class StreamImporter(object):
                 path = os.path.join(root,name)
                 if filter_function:
                     if filter_function(path):                        
-                        self.import_file(path)
+                        self.importFile(path)
                 else:
-                    self.import_file(path)
+                    self.importFile(path)
         print "Done!"
                     
-    def import_file(self,file_path):
+    def importFile(self,file_path):
         """
         imports file_path to self.root_destination_dir
         
@@ -114,39 +111,15 @@ class StreamImporter(object):
         start_date = datetime.datetime.fromtimestamp(start_stamp)
         
         # figure out where to put the file
-        dest_dir = fsutil.stream_raw_data_path(start_date, self.stream_type)
+        dest_dir = fsutil.getStreamRawDataPath(start_date, self.stream_type)
         dest_dir = os.path.join(self.root_destination_dir,dest_dir)
         _, extension = os.path.splitext(file_path)
-        filename = fsutil.unique_file_name(self.root_destination_dir,extension,str(int(start_stamp)))                
+        filename = fsutil.generateUniqueFileName(self.root_destination_dir,extension,str(int(start_stamp)))                
         dest_file = os.path.join(dest_dir,filename)
         
         # make sure dest_dir exists
-        fsutil.ensure_dir_exists(dest_dir)
+        fsutil.ensureDirectoryExists(dest_dir)
         
         #copy the file
         print copy_verb + " " + file_path + " to " + dest_file
         copy_function(file_path,dest_file)
-
-if __name__ == "__main__":
-    if len(sys.argv) < 4: raise Exception("Requires 3 or 5 command line arguments: <source file or directory> <destination directory> <stream type> |optional| <unix wildcards> <move>")    
-    
-    if len(sys.argv) >= 5:
-        filter = lambda x : fnmatch.fnmatch(x,sys.argv[4])
-    else:
-        filter = None    
-    
-    move = False
-    if len(sys.argv) >= 6:
-        if sys.argv[5] == "move":
-            move = True
-                                
-    if not os.path.exists(sys.argv[1]):
-        raise Exception(sys.argv[1]+" is not a valid path")
-
-    importer = StreamImporter(sys.argv[3],sys.argv[2],move)
-    
-    if os.path.isdir(sys.argv[1]):   
-        importer.import_dir(sys.argv[1],filter)
-    else:
-        importer.import_file(sys.argv[1],filter)
-        

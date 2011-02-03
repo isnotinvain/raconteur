@@ -4,7 +4,7 @@ Created on Feb 2, 2011
 @author: Alex Levenson (alex@isnotinvain.com)
 '''
 import wx
-from cv_video_panel import CvVideoPanel
+from videoPanel import VideoPanel
 from stream.video import Video 
 
 class RaconteurMainWindow(wx.Frame):
@@ -24,22 +24,24 @@ class RaconteurMainWindow(wx.Frame):
         
         self.CreateStatusBar()
         
-        self._setup_menu()
+        self.__setupMenu()
         
-        self._setup_layout()
+        self.__setupLayout()
         
         self.Show(True)
         
+        self.video_panel.loadVideo("/home/alex/Desktop/test.mpg")
+        
         self.video_panel.play()
     
-    def _setup_layout(self):
+    def __setupLayout(self):
         sizer = wx.BoxSizer(wx.VERTICAL)
         split = wx.SplitterWindow(self,wx.ID_ANY,style=wx.SP_LIVE_UPDATE)
         
         sizer.Add(split,1,wx.EXPAND)
         
         tree = wx.TreeCtrl(split,wx.ID_ANY)
-        panel = CvVideoPanel(split,wx.ID_ANY)
+        panel = VideoPanel(split,wx.ID_ANY)
         split.SplitVertically(tree,panel)
         
         self.SetSizer(sizer)
@@ -48,7 +50,7 @@ class RaconteurMainWindow(wx.Frame):
         split.SetSashPosition(100,True)
         self.video_panel = panel        
         
-    def _setup_menu(self):
+    def __setupMenu(self):
         '''
         Sets up the menu bar at the top of the windo
         '''
@@ -84,31 +86,31 @@ class RaconteurMainWindow(wx.Frame):
                 else:
                     item,caption,id = i
                 wxItem = wxmenu.Append(id,item,caption)
-                callback = "menu_on_"+menu.lower().replace("&","")+"_"+item.lower().replace("&","")
+                callback = "_menuOn_"+menu.lower().replace("&","")+"_"+item.lower().replace("&","")
                 #if hasattr(self,callback):
                 callback = getattr(self,callback)
                 self.Bind(wx.EVT_MENU,callback,wxItem)
             menu_bar.Append(wxmenu,menu)
         self.SetMenuBar(menu_bar)
     
-    def menu_on_file_exit(self,event):
+    def _menuOn_file_exit(self,event):
         self.Close(True)
     
-    def menu_on_import_file(self,event):
+    def _menuOn_import_file(self,event):
         pass
     
-    def menu_on_import_directory(self,event):
+    def _menuOn_import_directory(self,event):
         pass   
     
-    def menu_on_help_about(self,event):
+    def _menuOn_help_about(self,event):
         dlg = wx.MessageDialog(self, self.ABOUT, "About Raconteur", wx.OK)
         dlg.ShowModal()
         dlg.Destroy()
 
-    def menu_on_playback_pause(self,event):
+    def _menuOn_playback_pause(self,event):
         self.video_panel.pause()
         
-    def menu_on_playback_play(self,event):
+    def _menuOn_playback_play(self,event):
         self.video_panel.play()        
 
 if __name__ == "__main__":

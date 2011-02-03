@@ -3,7 +3,6 @@ Created on Jan 6, 2011
 
 @author: Alex Levenson (alex@isnotinvain.com)
 '''
-import sys
 import cv
 import os
 
@@ -17,10 +16,12 @@ class Video(object):
         self.file_path = file_path
         if not os.path.exists(file_path):
             raise Exception("Couldn't load file: " + file_path) 
-        self.capture = cv.CreateFileCapture(file_path)    
-        if not self.capture:
-            raise Exception("Couldn't load file: " + file_path)
-        
+        self.reset()
+     
+    def reset(self):
+        self.capture = cv.CreateFileCapture(self.file_path)
+        if not self.capture or str(self.capture) == "<Capture (nil)>":
+            raise Exception("Couldn't load file: " + self.file_path)   
     
     def getNextFrame(self):
         return cv.QueryFrame(self.capture)
@@ -33,31 +34,18 @@ class Video(object):
     
     def getRatio(self):
         return cv.GetCaptureProperty(self.capture,cv.CV_CAP_PROP_POS_AVI_RATIO)    
-    
-    def print_position(self):
+        
+    def getSize(self):
+        return (cv.GetCaptureProperty(self.capture,cv.CV_CAP_PROP_FRAME_WIDTH),cv.GetCaptureProperty(self.capture,cv.CV_CAP_PROP_FRAME_HEIGHT))
+        
+    def getFps(self):
+         return cv.GetCaptureProperty(self.capture,cv.CV_CAP_PROP_FPS)
+     
+    def printPositionData(self):
         print "Frame num: " + str(cv.GetCaptureProperty(self.capture,cv.CV_CAP_PROP_POS_FRAMES))
         print "Ratio: " + str(cv.GetCaptureProperty(self.capture,cv.CV_CAP_PROP_POS_AVI_RATIO))    
         print "Millis: " + str(cv.GetCaptureProperty(self.capture,cv.CV_CAP_PROP_POS_MSEC))
         print "FPS: " + str(cv.GetCaptureProperty(self.capture,cv.CV_CAP_PROP_FPS))
     
-    def get_size(self):
-        return (cv.GetCaptureProperty(self.capture,cv.CV_CAP_PROP_FRAME_WIDTH),cv.GetCaptureProperty(self.capture,cv.CV_CAP_PROP_FRAME_HEIGHT))
-        
-    def get_fps(self):
-         return cv.GetCaptureProperty(self.capture,cv.CV_CAP_PROP_FPS)
-    
-if __name__ == "__main__":
-    if len(sys.argv) < 2: raise Exception("Must specify a video file")
-    video = Video(sys.argv[1])    
-    for _,frame in video.frames():
-        video.print_position()
-        cv.ShowImage("Video Test", frame)
-        k = cv.WaitKey(10)
-        if k != -1: break
-    
-    while True:
-        k = cv.WaitKey(10)
-        if k != -1: break
-
 # proper encoding:        
 # mencoder <in> -ovc lavc -lavcopts vcodec=mpeg1video:vqscale=1 -oac lavc -o <out>
