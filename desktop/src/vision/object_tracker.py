@@ -18,7 +18,7 @@ class ObjectTracker(object):
     """
     Tracks objects through a video stream
     """
-    def __init__(self,video,finder=vision.object_finder.HaarFinder(),look_ahead_threshold=10,similarity=0.8):
+    def __init__(self,video,finder=vision.object_finder.HaarFinder(),look_ahead_threshold=30,similarity=0.5):
         self.finder = finder
         self.raw_bounds = []
         self.tracks = []
@@ -37,7 +37,7 @@ class ObjectTracker(object):
             pw.set_progress(self.video.getRatio())
             pw.draw()
             if pw.get_quit(): break
-    
+                
     def _track_bound(self,bound,f):
         track = {}
         track[f] = bound
@@ -49,7 +49,7 @@ class ObjectTracker(object):
                 if (f+frame_count,b) in self.tracked: continue
                 if rect_is_similar(b,bound,self.similarity):
                     track[f+frame_count] = b
-                    self.tracked.add((f+frame_count,b))
+                    #self.tracked.add((f+frame_count,b))
                     bound = b
                     miss_count = 0
                     miss = False
@@ -61,13 +61,13 @@ class ObjectTracker(object):
     
     def _extract_tracks_from_raw_object_bounds(self):        
         for f,frame_bounds in enumerate(self.raw_bounds):
-            for bound,_ in frame_bounds:
-                track = self._track_bound(bound,f)                
-                self.tracks.append(track)
-            
-        
-        
-    
+            for bound,_ in frame_bounds:                
+                track = self._track_bound(bound,f)
+                if len(track) > 5:
+                    self.tracks.append(track)
+                    for t in track.iteritems():
+                        self.tracked.add(t)
+   
     def get_tracks(self):
         if not self.get_tracks:
             self._extract_raw_object_bounds()
