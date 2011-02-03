@@ -5,6 +5,7 @@ Created on Jan 6, 2011
 '''
 import sys
 import cv
+import os
 
 # TODO: inherit from some Stream object probably
 class Video(object):
@@ -14,9 +15,12 @@ class Video(object):
     """
     def __init__(self, file_path):
         self.file_path = file_path
-        self.capture = cv.CreateFileCapture(file_path)
+        if not os.path.exists(file_path):
+            raise Exception("Couldn't load file: " + file_path) 
+        self.capture = cv.CreateFileCapture(file_path)    
         if not self.capture:
-            raise Exception("Couldn't load file" + file_path)
+            raise Exception("Couldn't load file: " + file_path)
+        
     
     def getNextFrame(self):
         return cv.QueryFrame(self.capture)

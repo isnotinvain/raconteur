@@ -4,6 +4,8 @@ Created on Feb 2, 2011
 @author: Alex Levenson (alex@isnotinvain.com)
 '''
 import wx
+from cv_image_panel import CvImagePanel
+from stream.video import Video 
 
 class RaconteurMainWindow(wx.Frame):
     '''
@@ -24,21 +26,27 @@ class RaconteurMainWindow(wx.Frame):
         
         self._setup_menu()
         
+        self._setup_layout()
+        
+        self.Show(True)
+
+    def _setup_layout(self):
         sizer = wx.BoxSizer(wx.VERTICAL)
         split = wx.SplitterWindow(self,wx.ID_ANY,style=wx.SP_LIVE_UPDATE)
         
         sizer.Add(split,1,wx.EXPAND)
         
         tree = wx.TreeCtrl(split,wx.ID_ANY)
-        panel = wx.Panel(split,wx.ID_ANY) 
+        panel = CvImagePanel(split,wx.ID_ANY)
         split.SplitVertically(tree,panel)
         
         self.SetSizer(sizer)
         self.SetAutoLayout(True)
         sizer.FitInside(self)
+        split.SetSashPosition(100,True)
         
-        
-        self.Show(True)
+        v = Video("/home/alex/Desktop/blarg.avi")
+        panel.set_cv_image(v.getNextFrame())
         
     def _setup_menu(self):
         '''
