@@ -18,6 +18,7 @@ def cv_to_pygame(img):
 def get_scale_dimensions(size,max_size):
     width,height = size
     max_width,max_height = max_size
+    if (max_width,max_height) == (0,0) or (width,height) == (0,0): return (0,0)
     wfactor,hfactor = 1.0,1.0
     
     if width > max_width: wfactor = float(max_width)/width

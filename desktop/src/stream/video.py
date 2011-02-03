@@ -42,7 +42,10 @@ class Video(object):
     
     def get_size(self):
         return (cv.GetCaptureProperty(self.capture,cv.CV_CAP_PROP_FRAME_WIDTH),cv.GetCaptureProperty(self.capture,cv.CV_CAP_PROP_FRAME_HEIGHT))
-            
+        
+    def get_fps(self):
+         return cv.GetCaptureProperty(self.capture,cv.CV_CAP_PROP_FPS)
+    
 if __name__ == "__main__":
     if len(sys.argv) < 2: raise Exception("Must specify a video file")
     video = Video(sys.argv[1])    

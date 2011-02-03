@@ -4,7 +4,7 @@ Created on Feb 2, 2011
 @author: Alex Levenson (alex@isnotinvain.com)
 '''
 import wx
-from cv_image_panel import CvImagePanel
+from cv_video_panel import CvVideoPanel
 from stream.video import Video 
 
 class RaconteurMainWindow(wx.Frame):
@@ -18,7 +18,7 @@ class RaconteurMainWindow(wx.Frame):
     Raconteur performs face tracking and face recognition 
     in video files. Raconteur hopes to become a blogging 
     utility that helps you write your video blog.
-    """            
+    """    
     def __init__(self):
         wx.Frame.__init__(self, None,title="Raconteur\t|\tYour Life is a Story",size=(800,500))
         
@@ -29,7 +29,9 @@ class RaconteurMainWindow(wx.Frame):
         self._setup_layout()
         
         self.Show(True)
-
+        
+        self.video_panel.play()
+    
     def _setup_layout(self):
         sizer = wx.BoxSizer(wx.VERTICAL)
         split = wx.SplitterWindow(self,wx.ID_ANY,style=wx.SP_LIVE_UPDATE)
@@ -37,16 +39,14 @@ class RaconteurMainWindow(wx.Frame):
         sizer.Add(split,1,wx.EXPAND)
         
         tree = wx.TreeCtrl(split,wx.ID_ANY)
-        panel = CvImagePanel(split,wx.ID_ANY)
+        panel = CvVideoPanel(split,wx.ID_ANY)
         split.SplitVertically(tree,panel)
         
         self.SetSizer(sizer)
         self.SetAutoLayout(True)
         sizer.FitInside(self)
         split.SetSashPosition(100,True)
-        
-        v = Video("/home/alex/Desktop/blarg.avi")
-        panel.set_cv_image(v.getNextFrame())
+        self.video_panel = panel        
         
     def _setup_menu(self):
         '''
@@ -57,7 +57,12 @@ class RaconteurMainWindow(wx.Frame):
                                     ("E&xit","Close Raconteur",wx.ID_EXIT),
                                 )
                     ),
-                            
+                    
+                    ("&Playback",   (
+                                        ("Pla&y","Play the current video"),
+                                        ("Pau&se","Pause the current video"),
+                                    )
+                    ),                            
                     ("&Import",  (
                                     ("Fi&le","Import a single file"),
                                     ("&Directory","Import a directory"),
@@ -99,10 +104,12 @@ class RaconteurMainWindow(wx.Frame):
         dlg = wx.MessageDialog(self, self.ABOUT, "About Raconteur", wx.OK)
         dlg.ShowModal()
         dlg.Destroy()
+
+    def menu_on_playback_pause(self,event):
+        self.video_panel.pause()
         
-    def on_exit(self,event):
-        self.Close(True)
-        
+    def menu_on_playback_play(self,event):
+        self.video_panel.play()        
 
 if __name__ == "__main__":
     app = wx.App(False)
