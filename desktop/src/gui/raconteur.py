@@ -3,9 +3,12 @@ Created on Feb 2, 2011
 
 @author: Alex Levenson (alex@isnotinvain.com)
 '''
+import os
+import cPickle
 import wx
 from videoPanel import VideoPanel
-from stream.video import Video 
+from stream.video import Video
+from stream.importer import StreamImporter 
 import util.filesystem
 import widgets
  
@@ -33,6 +36,8 @@ class RaconteurMainWindow(wx.Frame):
         self.__setupLayout()
         
         self.Show(True)
+        
+        self.loadStory("/home/alex/Desktop/test")
     
     def __setupLayout(self):
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -40,15 +45,17 @@ class RaconteurMainWindow(wx.Frame):
         
         sizer.Add(split,1,wx.EXPAND)
         
-        tree = wx.TreeCtrl(split,wx.ID_ANY)
+        self.streamTree = wx.GenericDirCtrl(split,wx.ID_ANY) 
+        self.streamTree.Bind(wx.EVT_TREE_SEL_CHANGED, self.loadFile)       
         panel = VideoPanel(split,wx.ID_ANY)
-        split.SplitVertically(tree,panel)
+        split.SplitVertically(self.streamTree,panel)        
         
         self.SetSizer(sizer)
         self.SetAutoLayout(True)
         sizer.FitInside(self)
-        split.SetSashPosition(100,True)
-        self.video_panel = panel        
+        split.SetSashPosition(300,True)
+        self.videoPanel = panel
+        self.streamTree.Hide()
         
     def __setupMenu(self):
         '''
@@ -99,21 +106,45 @@ class RaconteurMainWindow(wx.Frame):
         self.Close(True)
     
     def _menuOn_import_file(self,event):
-        pass
+        if not self.story:
+            d = wx.MessageDialog(self,"You need to open a story first!","Wooops!",wx.OK)
+            d.ShowModal()
+            d.Destroy()
+        else:
+            d = widgets.ImportDialog(self,wx.ID_ANY)
+            if d.ShowModal()==wx.ID_OK:
+                imp = StreamImporter(d.streamTypeCtrl.GetValue(),self.story,d.moveCheck.GetValue())
+                imp.importFile(d.directoryCtrl.GetValue())
+                s = wx.MessageDialog(self,"File Imported","Done!",wx.OK)
+                s.ShowModal()
+                s.Destroy()
+            d.Destroy()
     
     def _menuOn_import_directory(self,event):
-        pass   
+        if not self.story:
+            d = wx.MessageDialog(self,"You need to open a story first!","Wooops!",wx.OK)
+            d.ShowModal()
+            d.Destroy()
+        else:
+            d = widgets.ImportDialog(self,wx.ID_ANY)
+            if d.ShowModal()==wx.ID_OK:
+                imp = StreamImporter(d.streamTypeCtrl.GetValue(),self.story,d.moveCheck.GetValue())
+                imp.importDirectory(d.directoryCtrl.GetValue())
+                s = wx.MessageDialog(self,"File Imported","Done!",wx.OK)
+                s.ShowModal()
+                s.Destroy()
+            d.Destroy()
     
     def _menuOn_help_about(self,event):
-        dlg = wx.MessageDialog(self, self.ABOUT, "About Raconteur", wx.OK)
-        dlg.ShowModal()
-        dlg.Destroy()
+        d = wx.MessageDialog(self, self.ABOUT, "About Raconteur", wx.OK)
+        d.ShowModal()
+        d.Destroy()
 
     def _menuOn_playback_pause(self,event):
-        self.video_panel.pause()
+        self.videoPanel.pause()
         
     def _menuOn_playback_play(self,event):
-        self.video_panel.play()        
+        self.videoPanel.play()        
 
     def _menuOn_file_newstory(self,event):
         d = widgets.NewStoryDialog(self,wx.ID_ANY)
@@ -126,9 +157,22 @@ class RaconteurMainWindow(wx.Frame):
     def _menuOn_file_openstory(self,event):
         d = widgets.OpenStoryDialog(self,wx.ID_ANY)
         if d.ShowModal()==wx.ID_OK:
-            self.story = d.directoryCtrl.GetValue()
-            print self.story
+            self.loadStory(d.directoryCtrl.GetValue())
         d.Destroy()
+    
+    def loadStory(self,story):
+        self.story = story
+        f = open(os.path.join(self.story,".raconteur"),"r")
+        self.storyData = cPickle.load(f)
+        f.close()
+        #self.streamTree.SetDefaultPath(self.story)
+        self.streamTree.SetPath(self.story)
+        self.streamTree.Show()        
+
+    def loadFile(self,event):
+        file = self.streamTree.GetFilePath() 
+        if file:
+            self.videoPanel.loadVideo(file)
 
 if __name__ == "__main__":
     app = wx.App(False)

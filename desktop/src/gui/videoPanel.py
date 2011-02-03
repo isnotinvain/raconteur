@@ -30,6 +30,7 @@ class VideoPanel(wx.Panel):
         self.current_frame = util.image.cvToWx(self.video.getNextFrame())
         self.timer_tick = 1000/self.video.getFps()
         if self.timer_tick == 0: self.timer_tick = 1000/30
+        self.onNextFrame(None)
         
     def play(self):
         if not self.video:

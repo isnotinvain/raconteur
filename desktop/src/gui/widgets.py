@@ -59,3 +59,34 @@ class OpenStoryDialog(wx.Dialog):
         vbox.Add(hbox, 1, wx.ALIGN_CENTER | wx.TOP | wx.BOTTOM, 10)
         self.SetSizer(vbox)
         vbox.Fit(self)
+        
+class ImportDialog(wx.Dialog):
+    def __init__(self, parent, id,**kwargs):
+        kwargs['title'] = "Import to this Story"
+        wx.Dialog.__init__(self, parent, id,**kwargs)
+        
+        pvbox = wx.BoxSizer(wx.VERTICAL)
+        panel = wx.Panel(self, wx.ID_ANY)
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        
+        dirLabel = wx.StaticText(panel,wx.ID_ANY,label="Enter the path to the file / root of \nthe files you want to import")        
+        self.directoryCtrl = wx.TextCtrl(panel, wx.ID_ANY)
+        streamTypeLabel = wx.StaticText(panel,wx.ID_ANY,label="Enter the stream type \nex:(video, image, location, etc)")        
+        self.streamTypeCtrl = wx.TextCtrl(panel, wx.ID_ANY)
+        self.moveCheck = wx.CheckBox(panel,wx.ID_ANY,label="Move files instead of copy?")
+        
+        pvbox.Add(dirLabel,0,wx.EXPAND)
+        pvbox.Add(self.directoryCtrl,0,wx.EXPAND)
+        pvbox.Add(streamTypeLabel,0,wx.EXPAND)
+        pvbox.Add(self.streamTypeCtrl,0,wx.EXPAND)
+        pvbox.Add(self.moveCheck,0,wx.EXPAND)
+        panel.SetSizer(pvbox)
+
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        okButton = wx.Button(self, wx.ID_OK, "Import") 
+        hbox.Add(okButton, 1)        
+
+        vbox.Add(panel)
+        vbox.Add(hbox, 1, wx.ALIGN_CENTER | wx.TOP | wx.BOTTOM, 10)
+        self.SetSizer(vbox)
+        vbox.Fit(self)
