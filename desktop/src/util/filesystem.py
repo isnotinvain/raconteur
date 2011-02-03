@@ -7,6 +7,7 @@ Filesystem utility functions
 '''
 
 import os
+import cPickle
 import random
 
 class NotADirectoryError(Exception):
@@ -67,3 +68,10 @@ def ensureDirectoryExists(dir_path):
     
     if not os.path.isdir(dir_path):
         raise NotADirectoryError(dir_path)
+    
+def setupNewStoryDirectory(path,name):
+    ensureDirectoryExists(path)
+    f = open(os.path.join(path,".raconteur"),"w")
+    storyData = {"name":name}
+    cPickle.dump(storyData,f)
+    f.close()

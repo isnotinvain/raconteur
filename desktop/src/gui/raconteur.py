@@ -6,7 +6,9 @@ Created on Feb 2, 2011
 import wx
 from videoPanel import VideoPanel
 from stream.video import Video 
-
+import util.filesystem
+import widgets
+ 
 class RaconteurMainWindow(wx.Frame):
     '''
     The main GUI class for Raconteur
@@ -22,6 +24,8 @@ class RaconteurMainWindow(wx.Frame):
     def __init__(self):
         wx.Frame.__init__(self, None,title="Raconteur\t|\tYour Life is a Story",size=(800,500))
         
+        self.story = None
+        
         self.CreateStatusBar()
         
         self.__setupMenu()
@@ -29,10 +33,6 @@ class RaconteurMainWindow(wx.Frame):
         self.__setupLayout()
         
         self.Show(True)
-        
-        self.video_panel.loadVideo("/home/alex/Desktop/test.mpg")
-        
-        self.video_panel.play()
     
     def __setupLayout(self):
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -56,6 +56,8 @@ class RaconteurMainWindow(wx.Frame):
         '''
         MENU =  (
                     ("&File",    (
+                                    ("&New Story","Create a new story"),
+                                    ("&Open Story","Open a new story"),
                                     ("E&xit","Close Raconteur",wx.ID_EXIT),
                                 )
                     ),
@@ -86,7 +88,7 @@ class RaconteurMainWindow(wx.Frame):
                 else:
                     item,caption,id = i
                 wxItem = wxmenu.Append(id,item,caption)
-                callback = "_menuOn_"+menu.lower().replace("&","")+"_"+item.lower().replace("&","")
+                callback = "_menuOn_"+menu.lower().replace("&","").replace(" ","")+"_"+item.lower().replace("&","").replace(" ","")
                 #if hasattr(self,callback):
                 callback = getattr(self,callback)
                 self.Bind(wx.EVT_MENU,callback,wxItem)
@@ -112,6 +114,21 @@ class RaconteurMainWindow(wx.Frame):
         
     def _menuOn_playback_play(self,event):
         self.video_panel.play()        
+
+    def _menuOn_file_newstory(self,event):
+        d = widgets.NewStoryDialog(self,wx.ID_ANY)
+        if d.ShowModal()==wx.ID_OK:
+            path = d.directoryCtrl.GetValue()
+            name = d.nameCtrl.GetValue()
+            util.filesystem.setupNewStoryDirectory(path,name)            
+        d.Destroy()
+    
+    def _menuOn_file_openstory(self,event):
+        d = widgets.OpenStoryDialog(self,wx.ID_ANY)
+        if d.ShowModal()==wx.ID_OK:
+            self.story = d.directoryCtrl.GetValue()
+            print self.story
+        d.Destroy()
 
 if __name__ == "__main__":
     app = wx.App(False)
