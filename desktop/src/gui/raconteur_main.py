@@ -18,11 +18,25 @@ class RaconteurMainWindow(wx.Frame):
     utility that helps you write your video blog.
     """            
     def __init__(self):
-        wx.Frame.__init__(self, None,title="Raconteur\t|\tYour Life is a Story", size=(700,500))
+        wx.Frame.__init__(self, None,title="Raconteur\t|\tYour Life is a Story",size=(800,500))
         
         self.CreateStatusBar()
         
         self._setup_menu()
+        
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        split = wx.SplitterWindow(self,wx.ID_ANY,style=wx.SP_LIVE_UPDATE)
+        
+        sizer.Add(split,1,wx.EXPAND)
+        
+        tree = wx.TreeCtrl(split,wx.ID_ANY)
+        panel = wx.Panel(split,wx.ID_ANY) 
+        split.SplitVertically(tree,panel)
+        
+        self.SetSizer(sizer)
+        self.SetAutoLayout(True)
+        sizer.FitInside(self)
+        
         
         self.Show(True)
         
