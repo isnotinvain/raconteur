@@ -67,7 +67,8 @@ class VideoPanel(wx.Panel):
         if not self.old_size:
             self.old_size = dc.GetSize()
         if not self.current_frame_bmp or self.old_size != dc.GetSize():            
-            desired_width,desired_height = util.geometry.getScaledDimensions(self.current_frame.GetSize(), dc.GetSize())            
+            (desired_width,desired_height),factor = util.geometry.getScaledDimensions(self.current_frame.GetSize(), dc.GetSize(),True)
+            dc.raconteurScaleFactor = factor
             img = self.current_frame.Scale(desired_width,desired_height,wx.IMAGE_QUALITY_NORMAL)
             self.current_frame_bmp = wx.BitmapFromImage(img)
         dc.DrawBitmap(self.current_frame_bmp,0,0)

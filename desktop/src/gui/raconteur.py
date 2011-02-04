@@ -115,6 +115,7 @@ class RaconteurMainWindow(wx.Frame):
         self.SetMenuBar(menu_bar)
     
     def _menuOn_file_exit(self,event):
+        self.videoPanel.pause()
         self.Close(True)
     
     def _menuOn_import_file(self,event):
@@ -209,8 +210,21 @@ class RaconteurMainWindow(wx.Frame):
                 self.i=0
                 self.bounds = bounds            
             def draw(self,dc):
+                factor = None
+                if hasattr(dc,"raconteurOriginalSize"):
+                    factor = dc.raconteurScaleFactor
+                    
+                bound = self.bounds[self.i]
                 if self.i < len(self.bounds):
-                    util.image.wxDrawObjecBoundaries(dc, self.bounds[self.i])
+                    if factor:                        
+                        x = bound[0][0] * factor
+                        y = bound[0][1] * factor
+                        w = bound[0][2] * factor
+                        h = bound[0][3] * factor
+                        n = bound[1]
+                        bound = ((x,y,w,h),n)
+                                            
+                    util.image.wxDrawObjecBoundaries(dc, bound)
                     self.i+=1
         bd = BoundDrawer(raw_bounds)        
         self.videoPanel.overlays = [bd.draw]

@@ -6,7 +6,7 @@ Created on Jan 13, 2011
 Geometry utility functions
 '''
 
-def getScaledDimensions(size,max_size):
+def getScaledDimensions(size,max_size,returnFactor=False):
     """
     @return a rectangle scaled to fit inside max_size while preserving aspect ratio
     """
@@ -22,7 +22,11 @@ def getScaledDimensions(size,max_size):
     factor = min(wfactor,hfactor)
     
     size = (width*factor,height*factor)
-    return size
+
+    if not returnFactor:
+        return size
+    else:
+        return size,factor
 
 def rectContains(rect1,rect2):
     """

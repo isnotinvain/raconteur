@@ -21,14 +21,17 @@ def pwCallback(pw,pt,p):
 
 if __name__ == "__main__":
     if len(sys.argv) < 1: raise Exception("Must specify an input file")
-    if len(sys.argv) >= 2: 
+    if len(sys.argv) > 2: 
         pickle = sys.argv[2]
     else:
         pickle = None
+    notrack = False
+    if len(sys.argv) > 3:
+        if sys.argv[3] == "notrack": notrack = True
     
     video = stream.video.Video(sys.argv[1])
     finder = vision.finder.ObjectFinder("/home/alex/Documents/raconteur/desktop/src/gui/haarcascades/haarcascade_frontalface_alt.xml")
-    tracker = vision.tracker.ObjectTracker(video,finder=finder)
+    tracker = vision.tracker.ObjectTracker(video,objFinder=finder)
         
     if not pickle:
         pw = gui.progress_window.ProgressWindow("Extracting")    
@@ -38,7 +41,7 @@ if __name__ == "__main__":
     else:
         f = open(pickle,"r")
         bounds = cPickle.load(f)
-        f.close()    
+        f.close()
         tracks = tracker.getObjectTracks(bounds)
     
     video.reset()
@@ -59,12 +62,17 @@ if __name__ == "__main__":
         
         screen.blit(frame,(0,0))
         
-        for i,track in enumerate(tracks):
-            if len(track) < 5: continue
-            if f in track:
-                rect = pygame.Rect(*track[f])
-                pygame.draw.rect(screen,colors[i],rect,2)
-                    
+        if not notrack:
+            for i,track in enumerate(tracks):
+                if len(track) < 20: continue
+                if f in track:
+                    rect = pygame.Rect(*track[f])
+                    pygame.draw.rect(screen,colors[i],rect,2)
+        else:
+            for bound in bounds[f]:
+                rect = pygame.Rect(bound[0][0],bound[0][1],bound[0][2],bound[0][3])
+                pygame.draw.rect(screen,(0,255,0),rect,2)
+            
         pygame.display.flip()
         clock.tick(30)
         if not running: break

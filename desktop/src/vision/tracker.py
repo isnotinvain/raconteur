@@ -12,11 +12,11 @@ class ObjectTracker(object):
     """
     Tracks objects through a video stream
     """
-    def __init__(self,video,finder=None,look_ahead_threshold=30,similarity=0.5):
-        if not finder:
-            self.finder = finder.ObjectFinder()
+    def __init__(self,video,objFinder=None,look_ahead_threshold=30,similarity=0.5):
+        if not objFinder:
+            self.objFinder = finder.ObjectFinder()
         else:
-            self.finder = finder
+            self.objFinder = objFinder
         self.raw_bounds = None
         self.tracks = None
         self.tracked = set()
@@ -32,11 +32,10 @@ class ObjectTracker(object):
         """
         self.raw_bounds = []
         for frame in self.video.frames():
-            raw = self.finder.findInImage(frame)            
+            raw = self.objFinder.findInImage(frame)            
             self.raw_bounds.append(raw)
             if self.progDialog:                
                 cont,skip = self.progDialog.Update(int(self.video.getRatio()*1000),"Extracting Raw Face Boundaries...")
-                print cont,skip
                 if not cont: break
                             
     def __trackBound(self,bound,f):
