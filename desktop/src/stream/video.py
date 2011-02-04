@@ -32,6 +32,9 @@ class Video(object):
             if not img: break
             yield img
     
+    def getFrameNum(self):
+        return cv.GetCaptureProperty(self.capture,cv.CV_CAP_PROP_POS_FRAMES)
+    
     def getRatio(self):
         return cv.GetCaptureProperty(self.capture,cv.CV_CAP_PROP_POS_AVI_RATIO)    
         

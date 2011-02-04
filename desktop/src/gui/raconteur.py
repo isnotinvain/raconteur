@@ -207,25 +207,23 @@ class RaconteurMainWindow(wx.Frame):
         
         class BoundDrawer:
             def __init__(self,bounds):
-                self.i=0
                 self.bounds = bounds            
-            def draw(self,dc):
+            def draw(self,dc,frameNum):
+                frameNum = int(frameNum)
                 factor = None
-                if hasattr(dc,"raconteurOriginalSize"):
+                if hasattr(dc,"ZraconteurScaleFactor"):
                     factor = dc.raconteurScaleFactor
-                    
-                bound = self.bounds[self.i]
-                if self.i < len(self.bounds):
-                    if factor:                        
-                        x = bound[0][0] * factor
-                        y = bound[0][1] * factor
-                        w = bound[0][2] * factor
-                        h = bound[0][3] * factor
-                        n = bound[1]
-                        bound = ((x,y,w,h),n)
-                                            
+                                    
+                if frameNum < len(self.bounds):
+                    bound = self.bounds[frameNum]
+                    if factor:
+                        x = b[0][0] * factor
+                        y = b[0][1] * factor
+                        w = b[0][2] * factor
+                        h = b[0][3] * factor
+                        n = b[1]
+                        b = ((x,y,w,h),n)
                     util.image.wxDrawObjecBoundaries(dc, bound)
-                    self.i+=1
         bd = BoundDrawer(raw_bounds)        
         self.videoPanel.overlays = [bd.draw]
     

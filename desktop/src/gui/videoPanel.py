@@ -60,8 +60,8 @@ class VideoPanel(wx.Panel):
         dc.Clear()
         if self.video:
             self.drawCurrentFrame(dc)
-            for overlay in self.overlays:
-                overlay(dc)
+            for overlay in self.overlays:                
+                overlay(dc,self.video.getFrameNum())
 
     def drawCurrentFrame(self,dc):
         if not self.old_size:
