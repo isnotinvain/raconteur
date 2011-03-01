@@ -6,6 +6,7 @@ Created on Feb 2, 2011
 import os
 import sys
 import cPickle
+import random
 import wx
 from videoPanel import VideoPanel
 from stream.video import Video
@@ -15,6 +16,7 @@ import widgets
 from vision.tracker import ObjectTracker
 from progressTracker import ProgressTracker
 import videoOverlays
+import vision
 
 class RaconteurMainWindow(wx.Frame):
     '''
@@ -217,7 +219,32 @@ class RaconteurMainWindow(wx.Frame):
         self.videoPanel.overlays = [drawer]
     
     def _menuOn_analyze_showfacetracks(self,event):
-        pass
+        if not os.path.exists(self.currentVideo.file_path+".raw_face_bounds.pickle"):
+            d = wx.MessageDialog(self,"You need to open a story first!","Wooops!",wx.OK)
+            d.ShowModal()
+            d.Destroy()
+            return                    
+
+        f = open(self.currentVideo.file_path+".raw_face_bounds.pickle","r")
+        raw_bounds = cPickle.load(f)
+        f.close()
+        tracker = vision.tracker.ObjectTracker(self.currentVideo)
+        tracks = tracker.getObjectTracks(raw_bounds)
+        
+        colors = {}
+        for track in tracks:
+            colors[id(track)] = (random.randint(0,255),random.randint(0,255),random.randint(0,255))
+                            
+        rectSprites = {}
+        for frameNo in xrange(len(raw_bounds)):
+            rectSprites[frameNo] = []
+            for track in tracks:
+                if len(track) < 20: continue
+                if frameNo in track:                    
+                    rectSprites[frameNo].append(videoOverlays.Rect(*track[frameNo],color=colors[id(track)]))
+                    
+        drawer = videoOverlays.VideoOverlay(rectSprites)               
+        self.videoPanel.overlays = [drawer]
 
 if __name__ == "__main__":
     app = wx.App(False)
