@@ -14,7 +14,7 @@ import util.filesystem
 import widgets
 from vision.tracker import ObjectTracker
 from progressTracker import ProgressTracker
-from videoOverlays import VideoOverlay
+import videoOverlays
 
 class RaconteurMainWindow(wx.Frame):
     '''
@@ -208,32 +208,13 @@ class RaconteurMainWindow(wx.Frame):
         
         
         rectSprites = {}
-        for frame,n in enumerate(raw_bounds):
-            bounds = []
-            for 
-            
-        drawer = VideoOverlay(rectSprites)       
-        class BoundDrawer:
-            def __init__(self,bounds):
-                self.bounds = bounds            
-            def draw(self,dc,frameNum):
-                frameNum = int(frameNum)
-                factor = None
-                if hasattr(dc,"ZraconteurScaleFactor"):
-                    factor = dc.raconteurScaleFactor
-                                    
-                if frameNum < len(self.bounds):
-                    bound = self.bounds[frameNum]
-                    if factor:
-                        x = b[0][0] * factor
-                        y = b[0][1] * factor
-                        w = b[0][2] * factor
-                        h = b[0][3] * factor
-                        n = b[1]
-                        b = ((x,y,w,h),n)
-                    util.image.wxDrawObjecBoundaries(dc, bound)
-        bd = BoundDrawer(raw_bounds)        
-        self.videoPanel.overlays = [bd.draw]
+        for frameNo,listOfBounds in enumerate(raw_bounds):            
+            rectSprites[frameNo] = []
+            for (x,y,w,h),_ in listOfBounds:
+                rectSprites[frameNo].append(videoOverlays.Rect(x,y,w,h))
+                
+        drawer = videoOverlays.VideoOverlay(rectSprites)               
+        self.videoPanel.overlays = [drawer]
     
     def _menuOn_analyze_showfacetracks(self,event):
         pass

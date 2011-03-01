@@ -23,6 +23,7 @@ class VideoOverlay(object):
     """
     def __init__(self,sprites = {}):
         self.sprites = sprites
+        self.scale = 1.0
     
     def drawFrame(self,dc,scaleFactor,frameNo):
         """
@@ -72,5 +73,5 @@ class Rect(VideoOverlaySprite):
             self.scale(scaleFactor)
         
         dc.SetPen(self.pen)
-        dc.SetPen(self.brush)
+        dc.SetBrush(self.brush)
         dc.DrawRectangle(self.sx,self.sy,self.sw,self.sh)
