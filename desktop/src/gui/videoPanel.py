@@ -21,7 +21,8 @@ class VideoPanel(wx.Panel):
         self.cv_frame = None
         self.current_frame = None
         self.current_frame_bmp = None
-        self.old_size = None        
+        self.old_size = None
+        self.frameScaleFactor = 1.0        
         self.timer = wx.Timer(self, self.TIMER_ID)
         self.timer_tick = None        
         self.Bind(wx.EVT_TIMER,self.onNextFrame)
@@ -61,14 +62,14 @@ class VideoPanel(wx.Panel):
         if self.video:
             self.drawCurrentFrame(dc)
             for overlay in self.overlays:                
-                overlay(dc,self.video.getFrameNum())
+                overlay(dc,self.frameScaleFactor,self.video.getFrameNum())
 
     def drawCurrentFrame(self,dc):
         if not self.old_size:
             self.old_size = dc.GetSize()
         if not self.current_frame_bmp or self.old_size != dc.GetSize():            
             (desired_width,desired_height),factor = util.geometry.getScaledDimensions(self.current_frame.GetSize(), dc.GetSize(),True)
-            dc.raconteurScaleFactor = factor
+            self.frameScaleFactor = factor
             img = self.current_frame.Scale(desired_width,desired_height,wx.IMAGE_QUALITY_NORMAL)
             self.current_frame_bmp = wx.BitmapFromImage(img)
         dc.DrawBitmap(self.current_frame_bmp,0,0)

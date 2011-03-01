@@ -42,7 +42,7 @@ class Video(object):
         return (cv.GetCaptureProperty(self.capture,cv.CV_CAP_PROP_FRAME_WIDTH),cv.GetCaptureProperty(self.capture,cv.CV_CAP_PROP_FRAME_HEIGHT))
         
     def getFps(self):
-         return cv.GetCaptureProperty(self.capture,cv.CV_CAP_PROP_FPS)
+        return cv.GetCaptureProperty(self.capture,cv.CV_CAP_PROP_FPS)
      
     def printPositionData(self):
         print "Frame num: " + str(cv.GetCaptureProperty(self.capture,cv.CV_CAP_PROP_POS_FRAMES))

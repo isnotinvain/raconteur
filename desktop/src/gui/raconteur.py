@@ -14,6 +14,7 @@ import util.filesystem
 import widgets
 from vision.tracker import ObjectTracker
 from progressTracker import ProgressTracker
+from videoOverlays import VideoOverlay
 
 class RaconteurMainWindow(wx.Frame):
     '''
@@ -205,6 +206,13 @@ class RaconteurMainWindow(wx.Frame):
             raw_bounds = tracker.raw_bounds
             self.videoPanel.video.reset()
         
+        
+        rectSprites = {}
+        for frame,n in enumerate(raw_bounds):
+            bounds = []
+            for 
+            
+        drawer = VideoOverlay(rectSprites)       
         class BoundDrawer:
             def __init__(self,bounds):
                 self.bounds = bounds            
