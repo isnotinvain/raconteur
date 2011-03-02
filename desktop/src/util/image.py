@@ -10,6 +10,10 @@ import Image
 import geometry
 import wx
 
+def saveCvSubRect(path,img,rect):
+    imgView = cv.GetSubRect(img, rect)
+    cv.SaveImage(path, imgView)    
+
 def cvToWx(img):
     img = cv.CloneImage(img)
     cv.CvtColor(img, img, cv.CV_BGR2RGB)        

@@ -9,11 +9,9 @@ import cPickle
 import random
 import wx
 from videoPanel import VideoPanel
-from stream.video import Video
 from stream.importer import StreamImporter 
 import util.filesystem
 import widgets
-from progressTracker import ProgressTracker
 import videoOverlays
 import vision.finder
 import vision.tracker
@@ -87,6 +85,7 @@ class RaconteurMainWindow(wx.Frame):
                     ("Analy&ze",   (
                                         ("Show &Faces","Show faces in this video"),
                                         ("Show Face &Tracks","Show face tracks in this video"),
+                                        ("&Save Face Tracks","Save the face tracks in this video")
                                     )
                     ),
                     ("&Import",  (
@@ -226,13 +225,22 @@ class RaconteurMainWindow(wx.Frame):
         f = open(self.currentVideo.file_path+".raw_face_bounds.pickle","r")
         raw_bounds = cPickle.load(f)
         f.close()
-        tracker = vision.tracker.ObjectTracker()
-        #if len(raw_bounds) > 1000:
-        #    progDialog = wx.ProgressDialog("Tracking Faces...","Working...",maximum=len(raw_bounds),parent=self,style=wx.PD_CAN_ABORT)
-        #    tracks = tracker.extractTracks(raw_bounds,progDialog)
-        #    progDialog.Destroy()
-        tracks = tracker.extractTracks(raw_bounds)
         
+        if os.path.exists(self.currentVideo.file_path+".face_tracks.pickle"):
+            f = open(self.currentVideo.file_path+".face_tracks.pickle","r")
+            tracks = cPickle.load(f)
+            f.close()
+        else:
+            tracker = vision.tracker.ObjectTracker()
+            #if len(raw_bounds) > 1000:
+            #    progDialog = wx.ProgressDialog("Tracking Faces...","Working...",maximum=len(raw_bounds),parent=self,style=wx.PD_CAN_ABORT)
+            #    tracks = tracker.extractTracks(raw_bounds,progDialog)
+            #    progDialog.Destroy()
+            tracks = tracker.extractTracks(raw_bounds)
+            f = open(self.currentVideo.file_path+".face_tracks.pickle","w")
+            cPickle.dump(tracks, f)
+            f.close()
+                
         colors = {}
         for track in tracks:
             colors[id(track)] = (random.randint(0,255),random.randint(0,255),random.randint(0,255))
@@ -240,7 +248,7 @@ class RaconteurMainWindow(wx.Frame):
         rectSprites = {}
         for frameNo in xrange(len(raw_bounds)):
             rectSprites[frameNo] = []
-            for track in tracks:
+            for track in tracks:                
                 if len(track) < 20: continue
                 if frameNo in track:                    
                     rectSprites[frameNo].append(videoOverlays.Rect(*track[frameNo],color=colors[id(track)]))
@@ -248,6 +256,38 @@ class RaconteurMainWindow(wx.Frame):
         drawer = videoOverlays.VideoOverlay(rectSprites)               
         self.videoPanel.overlays = [drawer]
         self.videoPanel.play()
+
+    def _menuOn_analyze_savefacetracks(self,event):
+        if not os.path.exists(self.currentVideo.file_path+".raw_face_bounds.pickle"):
+            d = wx.MessageDialog(self,"You need to run show faces first!","Wooops!",wx.OK)
+            d.ShowModal()
+            d.Destroy()
+            return
+
+        if not os.path.exists(self.currentVideo.file_path+".face_tracks.pickle"):
+            d = wx.MessageDialog(self,"You need to run show face tracks first!","Wooops!",wx.OK)
+            d.ShowModal()
+            d.Destroy()
+            return        
+
+        f = open(self.currentVideo.file_path+".face_tracks.pickle","r")
+        tracks = cPickle.load(f)
+        f.close()
+        
+        self.currentVideo.reset()
+        progDialog = wx.ProgressDialog("Working","Working...",maximum=self.currentVideo.getFrameCount(),parent=self,style=wx.PD_CAN_ABORT)
+        for frameNo,frame in enumerate(self.currentVideo.frames()):
+            for track in tracks:
+                if frameNo in track:
+                    path = os.path.join(self.story,str(id(track))+"_"+str(frameNo)+".jpg")
+                    
+                    util.image.saveCvSubRect(path,frame, track[frameNo])
+                    
+                    cont,_ = progDialog.Update(frameNo,"Working...")
+                    if not cont:
+                        progDialog.Destroy()
+                        return
+        progDialog.Destroy()        
 
 if __name__ == "__main__":
     app = wx.App(False)

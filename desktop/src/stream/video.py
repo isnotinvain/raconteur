@@ -35,6 +35,9 @@ class Video(object):
     def getFrameNum(self):
         return cv.GetCaptureProperty(self.capture,cv.CV_CAP_PROP_POS_FRAMES)
     
+    def getFrameCount(self):
+        return cv.GetCaptureProperty(self.capture,cv.CV_CAP_PROP_FRAME_COUNT)
+    
     def getRatio(self):
         return cv.GetCaptureProperty(self.capture,cv.CV_CAP_PROP_POS_AVI_RATIO)    
         
