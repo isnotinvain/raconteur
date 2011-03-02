@@ -40,7 +40,7 @@ class ObjectTracker(object):
             frame_count += 1
         return track
     
-    def extractTracks(self,raw_bounds):
+    def extractTracks(self,raw_bounds,progDialog=None):
         """
         The main algorithm of the ObjectTracker,
         Crawls through the raw object bounds and tries
@@ -49,11 +49,14 @@ class ObjectTracker(object):
         """
         tracks = []
         tracked = set()
-        for f,frame_bounds in enumerate(raw_bounds):
+        for f,frame_bounds in enumerate(raw_bounds):            
             for bound,_ in frame_bounds:
                 track = self._trackBound(raw_bounds,tracked,bound,f)
                 if len(track) > self.min_track_size:
                     tracks.append(track)
                     for t in track.iteritems():
                         tracked.add(t)
+            if progDialog:                
+                cont,_ = progDialog.Update(f,"Extracting Face Boundaries...")
+                if not cont: return tracks
         return tracks

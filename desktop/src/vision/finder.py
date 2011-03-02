@@ -36,6 +36,6 @@ class ObjectFinder(object):
             raw = self.findInImage(frame, scale_factor, min_neighbors, flags, min_size)            
             raw_bounds.append(raw)
             if progDialog:                
-                cont,_ = progDialog.Update(int(video.getRatio()*1000),"Extracting Raw Face Boundaries...")
+                cont,_ = progDialog.Update(int(video.getRatio()*1000),"Extracting Face Boundaries...")
                 if not cont: return raw_bounds
         return raw_bounds

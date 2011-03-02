@@ -199,7 +199,7 @@ class RaconteurMainWindow(wx.Frame):
         else:
             self.videoPanel.video.reset()
             finder = vision.finder.ObjectFinder()
-            progDialog = wx.ProgressDialog("Extracting Face Boundaries...","Extracting Face Boundaries...",maximum=1000,parent=self,style=wx.PD_CAN_ABORT)                        
+            progDialog = wx.ProgressDialog("Extracting Face Boundaries","Working...",maximum=1000,parent=self,style=wx.PD_CAN_ABORT)                        
             raw_bounds = finder.findInVideo(self.videoPanel.video,progDialog=progDialog)
             progDialog.Destroy()
             f = open(self.currentVideo.file_path+".raw_face_bounds.pickle","w")
@@ -226,7 +226,10 @@ class RaconteurMainWindow(wx.Frame):
         raw_bounds = cPickle.load(f)
         f.close()
         tracker = vision.tracker.ObjectTracker()
-        tracks = tracker.extractTracks(raw_bounds)
+        
+        progDialog = wx.ProgressDialog("Tracking Faces...","Working...",maximum=len(raw_bounds),parent=self,style=wx.PD_CAN_ABORT)
+        tracks = tracker.extractTracks(raw_bounds,progDialog)
+        progDialog.Destroy()
         
         colors = {}
         for track in tracks:
