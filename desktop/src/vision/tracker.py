@@ -10,7 +10,7 @@ class ObjectTracker(object):
     """
     Tracks objects through a video stream
     """
-    def __init__(self,look_ahead_threshold=30,similarity=0.5,min_track_size=5):
+    def __init__(self,look_ahead_threshold=10,similarity=0.75,min_track_size=10):
         self.look_ahead_threshold = look_ahead_threshold
         self.similarity = similarity
         self.min_track_size = min_track_size
@@ -30,7 +30,6 @@ class ObjectTracker(object):
                 if (f+frame_count,b) in tracked: continue
                 if util.geometry.rectIsSimilar(b,bound,self.similarity):
                     track[f+frame_count] = b
-                    #self.tracked.add((f+frame_count,b))
                     bound = b
                     miss_count = 0
                     miss = False
@@ -51,6 +50,7 @@ class ObjectTracker(object):
         tracked = set()
         for f,frame_bounds in enumerate(raw_bounds):            
             for bound,_ in frame_bounds:
+                if (f,bound) in tracked: continue
                 track = self._trackBound(raw_bounds,tracked,bound,f)
                 if len(track) > self.min_track_size:
                     tracks.append(track)
