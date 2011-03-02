@@ -12,7 +12,7 @@ import wx
 
 def saveCvSubRect(path,img,rect):
     imgView = cv.GetSubRect(img, rect)
-    cv.SaveImage(path, imgView)    
+    cv.SaveImage(path, imgView)
 
 def cvToWx(img):
     img = cv.CloneImage(img)

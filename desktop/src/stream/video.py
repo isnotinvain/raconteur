@@ -61,7 +61,7 @@ class Video(object):
     def writeFaceBounds(self):
         p = util.filesystem.dotPrefixFilePath(self.file_path+".face_bounds.pickle")
         f = open(p,"w")
-        cPickle.dump(self.face_bounds)
+        cPickle.dump(self.face_bounds,f)
         f.close()
         
     def loadFaceTracks(self):
@@ -73,7 +73,7 @@ class Video(object):
     def writeFaceTracks(self):
         p = util.filesystem.dotPrefixFilePath(self.file_path+".face_tracks.pickle")
         f = open(p,"w")
-        cPickle.dump(self.face_tracks)
+        cPickle.dump(self.face_tracks,f)
         f.close()
 
     def printPositionData(self):

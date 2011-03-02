@@ -269,8 +269,9 @@ class RaconteurMainWindow(wx.Frame):
         for frameNo,frame in enumerate(self.currentVideo.frames()):
             for track in self.currentVideo.face_tracks:
                 if frameNo in track:
-                    path = os.path.join(self.story,str(id(track))+"_"+str(frameNo)+".jpg")
-                    
+                    path = os.path.join(self.story,"tmp tracks",str(id(track)))
+                    util.filesystem.ensureDirectoryExists(path)
+                    path = os.path.join(path,str(frameNo)+".jpg")
                     util.image.saveCvSubRect(path,frame, track[frameNo])
                     
                     cont,_ = progDialog.Update(frameNo,"Working...")
