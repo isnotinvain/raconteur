@@ -29,6 +29,7 @@ class VideoOverlay(object):
         """
         Draw this video overlay for a specific frame
         """
+                
         for sprite in self.sprites[frameNo]:
             sprite.draw(dc,scaleFactor)
 

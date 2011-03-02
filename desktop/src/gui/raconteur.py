@@ -214,6 +214,7 @@ class RaconteurMainWindow(wx.Frame):
                 
         drawer = videoOverlays.VideoOverlay(rectSprites)               
         self.videoPanel.overlays = [drawer]
+        self.videoPanel.play()
     
     def _menuOn_analyze_showfacetracks(self,event):
         if not os.path.exists(self.currentVideo.file_path+".raw_face_bounds.pickle"):
@@ -226,10 +227,11 @@ class RaconteurMainWindow(wx.Frame):
         raw_bounds = cPickle.load(f)
         f.close()
         tracker = vision.tracker.ObjectTracker()
-        
-        progDialog = wx.ProgressDialog("Tracking Faces...","Working...",maximum=len(raw_bounds),parent=self,style=wx.PD_CAN_ABORT)
-        tracks = tracker.extractTracks(raw_bounds,progDialog)
-        progDialog.Destroy()
+        #if len(raw_bounds) > 1000:
+        #    progDialog = wx.ProgressDialog("Tracking Faces...","Working...",maximum=len(raw_bounds),parent=self,style=wx.PD_CAN_ABORT)
+        #    tracks = tracker.extractTracks(raw_bounds,progDialog)
+        #    progDialog.Destroy()
+        tracks = tracker.extractTracks(raw_bounds)
         
         colors = {}
         for track in tracks:
@@ -245,6 +247,7 @@ class RaconteurMainWindow(wx.Frame):
                     
         drawer = videoOverlays.VideoOverlay(rectSprites)               
         self.videoPanel.overlays = [drawer]
+        self.videoPanel.play()
 
 if __name__ == "__main__":
     app = wx.App(False)
