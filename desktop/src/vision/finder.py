@@ -25,3 +25,17 @@ class ObjectFinder(object):
         objects = cv.HaarDetectObjects(img,self.cascade,cv.CreateMemStorage(),scale_factor, min_neighbors, flags,min_size)
         
         return objects
+
+    def findInVideo(self, video, scale_factor=1.1, min_neighbors=3, flags=0, min_size=(10,10), progDialog=None):
+        """
+        Runs object detection on each frame of the video,
+        this can be quite slow.
+        """
+        raw_bounds = []
+        for frame in video.frames():
+            raw = self.findInImage(frame, scale_factor, min_neighbors, flags, min_size)            
+            raw_bounds.append(raw)
+            if progDialog:                
+                cont,_ = progDialog.Update(int(video.getRatio()*1000),"Extracting Raw Face Boundaries...")
+                if not cont: return raw_bounds
+        return raw_bounds

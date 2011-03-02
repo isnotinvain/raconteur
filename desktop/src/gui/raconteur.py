@@ -13,10 +13,10 @@ from stream.video import Video
 from stream.importer import StreamImporter 
 import util.filesystem
 import widgets
-from vision.tracker import ObjectTracker
 from progressTracker import ProgressTracker
 import videoOverlays
-import vision
+import vision.finder
+import vision.tracker
 
 class RaconteurMainWindow(wx.Frame):
     '''
@@ -198,17 +198,14 @@ class RaconteurMainWindow(wx.Frame):
             f.close()
         else:
             self.videoPanel.video.reset()
-            tracker = ObjectTracker(self.videoPanel.video)
-            progDialog = wx.ProgressDialog("Working...","Working...",maximum=1000,parent=self,style=wx.PD_CAN_ABORT)            
-            tracker.progDialog = progDialog
-            tracker.extractRawObjectBounds()
+            finder = vision.finder.ObjectFinder()
+            progDialog = wx.ProgressDialog("Extracting Face Boundaries...","Extracting Face Boundaries...",maximum=1000,parent=self,style=wx.PD_CAN_ABORT)                        
+            raw_bounds = finder.findInVideo(self.videoPanel.video,progDialog=progDialog)
             progDialog.Destroy()
             f = open(self.currentVideo.file_path+".raw_face_bounds.pickle","w")
-            cPickle.dump(tracker.raw_bounds,f)
-            raw_bounds = tracker.raw_bounds
+            cPickle.dump(raw_bounds,f)
             self.videoPanel.video.reset()
-        
-        
+
         rectSprites = {}
         for frameNo,listOfBounds in enumerate(raw_bounds):            
             rectSprites[frameNo] = []
@@ -220,16 +217,16 @@ class RaconteurMainWindow(wx.Frame):
     
     def _menuOn_analyze_showfacetracks(self,event):
         if not os.path.exists(self.currentVideo.file_path+".raw_face_bounds.pickle"):
-            d = wx.MessageDialog(self,"You need to open a story first!","Wooops!",wx.OK)
+            d = wx.MessageDialog(self,"You need to run show faces first!","Wooops!",wx.OK)
             d.ShowModal()
             d.Destroy()
-            return                    
+            return
 
         f = open(self.currentVideo.file_path+".raw_face_bounds.pickle","r")
         raw_bounds = cPickle.load(f)
         f.close()
-        tracker = vision.tracker.ObjectTracker(self.currentVideo)
-        tracks = tracker.getObjectTracks(raw_bounds)
+        tracker = vision.tracker.ObjectTracker()
+        tracks = tracker.extractTracks(raw_bounds)
         
         colors = {}
         for track in tracks:

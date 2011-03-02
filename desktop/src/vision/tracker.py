@@ -4,41 +4,18 @@
 @author: Alex Levenson (alex@isnotinvain.com)
 '''
 
-import finder
 import util.geometry
-import gui
 
 class ObjectTracker(object):
     """
     Tracks objects through a video stream
     """
-    def __init__(self,video,objFinder=None,look_ahead_threshold=30,similarity=0.5):
-        if not objFinder:
-            self.objFinder = finder.ObjectFinder()
-        else:
-            self.objFinder = objFinder
-        self.raw_bounds = None
-        self.tracks = None
-        self.tracked = set()
+    def __init__(self,look_ahead_threshold=30,similarity=0.5,min_track_size=5):
         self.look_ahead_threshold = look_ahead_threshold
         self.similarity = similarity
-        self.video = video        
-        self.progDialog = None
-                                
-    def extractRawObjectBounds(self):
-        """
-        Runs object detection on each frame of the video,
-        this can be quite slow.
-        """
-        self.raw_bounds = []
-        for frame in self.video.frames():
-            raw = self.objFinder.findInImage(frame)            
-            self.raw_bounds.append(raw)
-            if self.progDialog:                
-                cont,skip = self.progDialog.Update(int(self.video.getRatio()*1000),"Extracting Raw Face Boundaries...")
-                if not cont: break
-                            
-    def __trackBound(self,bound,f):
+        self.min_track_size = min_track_size
+        
+    def _trackBound(self,raw_bounds,tracked,bound,f):
         """
         Track a single bound through the video
         """
@@ -48,9 +25,9 @@ class ObjectTracker(object):
         frame_count = 0
         while miss_count<=self.look_ahead_threshold:
             miss = True
-            if f+frame_count >= len(self.raw_bounds): break
-            for b,_ in self.raw_bounds[f+frame_count]:
-                if (f+frame_count,b) in self.tracked: continue
+            if f+frame_count >= len(raw_bounds): break
+            for b,_ in raw_bounds[f+frame_count]:
+                if (f+frame_count,b) in tracked: continue
                 if util.geometry.rectIsSimilar(b,bound,self.similarity):
                     track[f+frame_count] = b
                     #self.tracked.add((f+frame_count,b))
@@ -63,26 +40,20 @@ class ObjectTracker(object):
             frame_count += 1
         return track
     
-    def extractTracksFromRawObjectBounds(self):
+    def extractTracks(self,raw_bounds):
         """
         The main algorithm of the ObjectTracker,
         Crawls through the raw object bounds and tries
         to guess which bounds correspond to the same object
         across frames, using locality
-        """        
-        self.tracks = []
-        for f,frame_bounds in enumerate(self.raw_bounds):
-            for bound,_ in frame_bounds:                
-                track = self.__trackBound(bound,f)
-                if len(track) > 5:
-                    self.tracks.append(track)
+        """
+        tracks = []
+        tracked = set()
+        for f,frame_bounds in enumerate(raw_bounds):
+            for bound,_ in frame_bounds:
+                track = self._trackBound(raw_bounds,tracked,bound,f)
+                if len(track) > self.min_track_size:
+                    tracks.append(track)
                     for t in track.iteritems():
-                        self.tracked.add(t)
-   
-    def getObjectTracks(self,raw=None):
-        if not self.tracks:
-            if raw: self.raw_bounds = raw
-            if not self.raw_bounds:
-                self.extractRawObjectBounds()
-            self.extractTracksFromRawObjectBounds()            
-        return self.tracks
+                        tracked.add(t)
+        return tracks
