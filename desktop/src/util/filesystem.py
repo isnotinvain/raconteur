@@ -13,6 +13,19 @@ import random
 class NotADirectoryError(Exception):
     pass
 
+def dotPrefixFilePath(path):
+    """
+    takes a path like 
+        a/b/c.txt 
+    and makes it:
+        a/b/.c.txt
+    """
+    lastSlash = path.rfind("/")
+    d = path[:lastSlash+1]
+    f = path[lastSlash+1:]
+    f = "."+f
+    return os.path.join(d,f)    
+
 def generateUniqueFileName(dir,extension,prefix=""):
     """
     generate a filename that does not exist in dir that begins with prefix

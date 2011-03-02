@@ -5,6 +5,8 @@ Created on Jan 6, 2011
 '''
 import cv
 import os
+import cPickle
+import util.filesystem
 
 # TODO: inherit from some Stream object probably
 class Video(object):
@@ -17,6 +19,9 @@ class Video(object):
         if not os.path.exists(file_path):
             raise Exception("Couldn't load file: " + file_path) 
         self.reset()
+        
+        self.face_bounds = None
+        self.face_tracks = None
      
     def reset(self):
         self.capture = cv.CreateFileCapture(self.file_path)
@@ -46,7 +51,31 @@ class Video(object):
         
     def getFps(self):
         return cv.GetCaptureProperty(self.capture,cv.CV_CAP_PROP_FPS)
-     
+    
+    def loadFaceBounds(self):
+        p = util.filesystem.dotPrefixFilePath(self.file_path+".face_bounds.pickle")
+        f = open(p,"r")
+        self.face_bounds = cPickle.load(f)
+        f.close()        
+
+    def writeFaceBounds(self):
+        p = util.filesystem.dotPrefixFilePath(self.file_path+".face_bounds.pickle")
+        f = open(p,"w")
+        cPickle.dump(self.face_bounds)
+        f.close()
+        
+    def loadFaceTracks(self):
+        p = util.filesystem.dotPrefixFilePath(self.file_path+".face_tracks.pickle")
+        f = open(p,"r")
+        self.face_tracks = cPickle.load(f)
+        f.close()
+
+    def writeFaceTracks(self):
+        p = util.filesystem.dotPrefixFilePath(self.file_path+".face_tracks.pickle")
+        f = open(p,"w")
+        cPickle.dump(self.face_tracks)
+        f.close()
+
     def printPositionData(self):
         print "Frame num: " + str(cv.GetCaptureProperty(self.capture,cv.CV_CAP_PROP_POS_FRAMES))
         print "Ratio: " + str(cv.GetCaptureProperty(self.capture,cv.CV_CAP_PROP_POS_AVI_RATIO))    

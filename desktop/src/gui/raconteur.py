@@ -40,7 +40,7 @@ class RaconteurMainWindow(wx.Frame):
         
         self.Show(True)
         
-        self.loadStory("/home/alex/Desktop/test")
+        self.loadStory("/home/alex/Documents/raconteur/Test Data/test")
         
         self.currentVideo = None
         
@@ -180,7 +180,6 @@ class RaconteurMainWindow(wx.Frame):
         f = open(os.path.join(self.story,".raconteur"),"r")
         self.storyData = cPickle.load(f)
         f.close()
-        #self.streamTree.SetDefaultPath(self.story)
         self.streamTree.SetPath(self.story)
         self.streamTree.Show()        
 
@@ -191,22 +190,19 @@ class RaconteurMainWindow(wx.Frame):
             self.currentVideo = self.videoPanel.video
             
     def _menuOn_analyze_showfaces(self,event):
-        if os.path.exists(self.currentVideo.file_path+".raw_face_bounds.pickle"):
-            f = open(self.currentVideo.file_path+".raw_face_bounds.pickle","r")
-            raw_bounds = cPickle.load(f)
-            f.close()
-        else:
-            self.videoPanel.video.reset()
+        try:
+            self.currentVideo.loadFaceBounds()
+        except:
+            self.currentVideo.reset()
             finder = vision.finder.ObjectFinder()
             progDialog = wx.ProgressDialog("Extracting Face Boundaries","Working...",maximum=1000,parent=self,style=wx.PD_CAN_ABORT)                        
-            raw_bounds = finder.findInVideo(self.videoPanel.video,progDialog=progDialog)
+            self.currentVideo.face_bounds = finder.findInVideo(self.videoPanel.video,progDialog=progDialog)
+            self.currentVideo.writeFaceBounds()
             progDialog.Destroy()
-            f = open(self.currentVideo.file_path+".raw_face_bounds.pickle","w")
-            cPickle.dump(raw_bounds,f)
             self.videoPanel.video.reset()
 
         rectSprites = {}
-        for frameNo,listOfBounds in enumerate(raw_bounds):            
+        for frameNo,listOfBounds in enumerate(self.currentVideo.face_bounds):            
             rectSprites[frameNo] = []
             for (x,y,w,h),_ in listOfBounds:
                 rectSprites[frameNo].append(videoOverlays.Rect(x,y,w,h))
@@ -216,39 +212,33 @@ class RaconteurMainWindow(wx.Frame):
         self.videoPanel.play()
     
     def _menuOn_analyze_showfacetracks(self,event):
-        if not os.path.exists(self.currentVideo.file_path+".raw_face_bounds.pickle"):
+        try:
+            self.currentVideo.loadFaceBounds()
+        except:
             d = wx.MessageDialog(self,"You need to run show faces first!","Wooops!",wx.OK)
             d.ShowModal()
             d.Destroy()
             return
-
-        f = open(self.currentVideo.file_path+".raw_face_bounds.pickle","r")
-        raw_bounds = cPickle.load(f)
-        f.close()
-        
-        if os.path.exists(self.currentVideo.file_path+".face_tracks.pickle"):
-            f = open(self.currentVideo.file_path+".face_tracks.pickle","r")
-            tracks = cPickle.load(f)
-            f.close()
-        else:
+                
+        try:
+            self.currentVideo.loadFaceTracks()
+        except:
             tracker = vision.tracker.ObjectTracker()
             #if len(raw_bounds) > 1000:
             #    progDialog = wx.ProgressDialog("Tracking Faces...","Working...",maximum=len(raw_bounds),parent=self,style=wx.PD_CAN_ABORT)
             #    tracks = tracker.extractTracks(raw_bounds,progDialog)
             #    progDialog.Destroy()
-            tracks = tracker.extractTracks(raw_bounds)
-            f = open(self.currentVideo.file_path+".face_tracks.pickle","w")
-            cPickle.dump(tracks, f)
-            f.close()
-                
+            self.currentVideo.face_tracks = tracker.extractTracks(self.currentVideo.face_bounds)
+            self.currentVideo.writeFaceTracks()
+            
         colors = {}
-        for track in tracks:
+        for track in self.currentVideo.face_tracks:
             colors[id(track)] = (random.randint(0,255),random.randint(0,255),random.randint(0,255))
                             
         rectSprites = {}
-        for frameNo in xrange(len(raw_bounds)):
+        for frameNo in xrange(len(self.currentVideo.face_bounds)):
             rectSprites[frameNo] = []
-            for track in tracks:                
+            for track in self.currentVideo.face_tracks:                
                 if len(track) < 20: continue
                 if frameNo in track:                    
                     rectSprites[frameNo].append(videoOverlays.Rect(*track[frameNo],color=colors[id(track)]))
@@ -258,26 +248,26 @@ class RaconteurMainWindow(wx.Frame):
         self.videoPanel.play()
 
     def _menuOn_analyze_savefacetracks(self,event):
-        if not os.path.exists(self.currentVideo.file_path+".raw_face_bounds.pickle"):
+        try:
+            self.currentVideo.loadFaceBounds()
+        except:
             d = wx.MessageDialog(self,"You need to run show faces first!","Wooops!",wx.OK)
             d.ShowModal()
             d.Destroy()
             return
 
-        if not os.path.exists(self.currentVideo.file_path+".face_tracks.pickle"):
+        try:
+            self.currentVideo.loadFaceTracks()
+        except:
             d = wx.MessageDialog(self,"You need to run show face tracks first!","Wooops!",wx.OK)
             d.ShowModal()
             d.Destroy()
-            return        
-
-        f = open(self.currentVideo.file_path+".face_tracks.pickle","r")
-        tracks = cPickle.load(f)
-        f.close()
-        
+            return
+                
         self.currentVideo.reset()
         progDialog = wx.ProgressDialog("Working","Working...",maximum=self.currentVideo.getFrameCount(),parent=self,style=wx.PD_CAN_ABORT)
         for frameNo,frame in enumerate(self.currentVideo.frames()):
-            for track in tracks:
+            for track in self.currentVideo.face_tracks:
                 if frameNo in track:
                     path = os.path.join(self.story,str(id(track))+"_"+str(frameNo)+".jpg")
                     
