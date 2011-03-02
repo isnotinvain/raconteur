@@ -7,7 +7,6 @@ image utility functions for opencv images
 '''
 import cv
 import Image
-import pygame
 import geometry
 import wx
 
@@ -15,15 +14,6 @@ def cvToWx(img):
     img = cv.CloneImage(img)
     cv.CvtColor(img, img, cv.CV_BGR2RGB)        
     return wx.ImageFromBuffer(img.width,img.height,img.tostring())
-
-def cvToPygame(img):
-    """
-    @return an image that can be used in pygame
-    """
-    cv.CvtColor(img, img, cv.CV_BGR2RGB)
-    pil = Image.fromstring("RGB", cv.GetSize(img), img.tostring())            
-    py_img = pygame.image.frombuffer(pil.tostring(), pil.size, pil.mode)
-    return py_img
 
 def cvScaleToSize(img,max_width,max_height):
     """
