@@ -17,7 +17,7 @@ if __name__ == "__main__":
     video = Video(sys.argv[1]) 
     cv.NamedWindow("Face Tracking")
     
-    finder = ObjectFinder("/home/alex/Documents/raconteur/desktop/src/gui/haarcascades/haarcascade_frontalface_alt.xml")
+    finder = ObjectFinder()
     
     for frame in video.frames():
         frame = util.image.cvScaleToSize(frame, width, height)                              

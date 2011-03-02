@@ -4,13 +4,16 @@
 @author: Alex Levenson (alex@isnotinvain.com)
 '''
 
-import cv
+import cv,os
 
 class ObjectFinder(object):
     """
     Finds objects in images using openCV's HaarCascasde object detector
     """
-    def __init__(self, cascade_path="haarcascades/haarcascade_frontalface_alt.xml"):
+    lastSlash = __file__.rfind("/")
+    DEFAULT_CASCADE = os.path.join(__file__[0:lastSlash],"haarcascades/haarcascade_frontalface_alt.xml")  
+    
+    def __init__(self, cascade_path=DEFAULT_CASCADE):        
         try:
             self.cascade = cv.Load(cascade_path)
         except:
