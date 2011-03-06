@@ -80,6 +80,7 @@ class RaconteurMainWindow(wx.Frame):
                     ("&Playback",   (
                                         ("Pla&y","Play the current video"),
                                         ("Pau&se","Pause the current video"),
+                                        ("&Reset","Reset the current video"),
                                     )
                     ),
                     ("Analy&ze",   (
@@ -160,6 +161,9 @@ class RaconteurMainWindow(wx.Frame):
         
     def _menuOn_playback_play(self,event):
         self.videoPanel.play()
+        
+    def _menuOn_playback_reset(self,event):
+        self.currentVideo.reset()
         
     def _menuOn_file_newstory(self,event):
         d = widgets.NewStoryDialog(self,wx.ID_ANY)
