@@ -61,3 +61,26 @@ class ObjectTracker(object):
                 if not cont: return tracks
                 pass
         return tracks
+    
+    def interpolateTracks(self,tracks):
+        """
+        Scans through each track and makes it continuous by filling in frames that are missing.
+        When a series of missing frames is found, it is filled in with a tween from the frame 
+        before the gap to the frame that ends the gap 
+        """
+        for track in tracks:
+            frames = sorted(track)
+            lastFrame = frames[0]
+            for frameNo in frames[1:]:
+                if frameNo != lastFrame+1:
+                    tween = util.geometry.getTweenedRectTrack(track[lastFrame], track[frameNo], frameNo-lastFrame)
+                    #print "gap: "+str(lastFrame)+": " + str(track[lastFrame]) + " -- " + str(frameNo)+": " + str(track[frameNo])
+                    #print tween                    
+                    for i,rect in enumerate(tween):
+                        track[i+frameNo] = tween[i]
+                lastFrame = frameNo
+    
+    def extractAndInerpolateTracks(self,raw_bounds,progDialog=None,progressUpdateRate=100):
+        tracks = self.extractTracks(raw_bounds,progDialog,progressUpdateRate)
+        self.interpolateTracks(tracks)
+        return tracks

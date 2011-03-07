@@ -20,10 +20,15 @@
 
 
 static int loadTrainingImages(PyObject* dataDict, IplImage*** faces, int* numFaces,CvMat** truth);
+
 static void doTraining(IplImage** faces,int numFaces,IplImage*** eigenVectors, IplImage** avgTrainingImg, CvMat** eigenValues, CvMat** projection);
+
 static void storeTrainingData(char* outFile, int nEigens, int numFaces, CvMat* truth, CvMat* eigenValues, CvMat* projection, IplImage* avgTrainingImg, IplImage** eigenVectors);
+
 static int loadTestImages(PyObject* testFacePaths, IplImage*** faces, int* numFaces);
+
 static int loadTrainingData(char* dataFilePath, int* nEigens,int* nTrainFaces, CvMat** truth, CvMat** eigenValues, CvMat** projection, IplImage** avgTrainingImg, IplImage*** eigenVectors);
+
 int findNearestNeighbor(float* projectedTestFace, int nTrainFaces, int nEigens, CvMat* trainProjection);
 
 

@@ -6,6 +6,25 @@ Created on Jan 13, 2011
 Geometry utility functions
 '''
 
+import math
+
+def distance(self,x1,y1,x2,y2):        
+    return math.sqrt((x1-x2)**2 +(y1-y2)**2)
+
+def getTweenedRectTrack(fromRect,toRect,numFrames):
+    floatFrames = float(numFrames)
+    
+    tweenRect = list(fromRect)
+    
+    deltas = map(lambda x : x[1]-x[0],zip(fromRect,toRect))
+    deltas = map(lambda x : x/floatFrames,deltas)
+    
+    frames = []
+    for _ in xrange(numFrames-1):
+        tweenRect = map(lambda x: x[1]+deltas[x[0]],enumerate(tweenRect))
+        frames.append(tuple(tweenRect))
+    return frames
+    
 def getScaledDimensions(size,max_size,returnFactor=False):
     """
     @return a rectangle scaled to fit inside max_size while preserving aspect ratio

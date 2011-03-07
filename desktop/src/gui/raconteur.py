@@ -232,7 +232,7 @@ class RaconteurMainWindow(wx.Frame):
             #    progDialog = wx.ProgressDialog("Tracking Faces...","Working...",maximum=len(raw_bounds),parent=self,style=wx.PD_CAN_ABORT)
             #    tracks = tracker.extractTracks(raw_bounds,progDialog)
             #    progDialog.Destroy()
-            self.currentVideo.face_tracks = tracker.extractTracks(self.currentVideo.face_bounds)
+            self.currentVideo.face_tracks = tracker.extractAndInerpolateTracks(self.currentVideo.face_bounds)
             self.currentVideo.writeFaceTracks()
             
         colors = {}
@@ -244,7 +244,7 @@ class RaconteurMainWindow(wx.Frame):
             rectSprites[frameNo] = []
             for track in self.currentVideo.face_tracks:                
                 if len(track) < 20: continue
-                if frameNo in track:                    
+                if frameNo in track:
                     rectSprites[frameNo].append(videoOverlays.Rect(*track[frameNo],color=colors[id(track)]))
                     
         drawer = videoOverlays.VideoOverlay(rectSprites)               
