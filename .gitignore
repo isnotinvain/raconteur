@@ -14,3 +14,5 @@ desktop/.project
 desktop/.pydevproject
 desktop/.settings/
 Test Data/*
+desktop/src/vision/build/
+desktop/src/vision/inst.txt
