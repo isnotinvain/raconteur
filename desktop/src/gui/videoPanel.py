@@ -62,7 +62,7 @@ class VideoPanel(wx.Panel):
         if self.video:
             self.drawCurrentFrame(dc)
             for overlay in self.overlays:                
-                overlay.drawFrame(dc,self.frameScaleFactor,self.video.getFrameNum())                
+                overlay.drawFrame(dc,self.frameScaleFactor,self.video.getNormalizedFrameNum())                
 
     def drawCurrentFrame(self,dc):
         if not self.old_size:

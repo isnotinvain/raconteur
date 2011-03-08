@@ -21,14 +21,16 @@ class Video(object):
         self.reset()
         
         self.face_bounds = None
-        self.face_tracks = None
+        self.face_tracks = None        
      
     def reset(self):
         self.capture = cv.CreateFileCapture(self.file_path)
         if not self.capture or str(self.capture) == "<Capture (nil)>":
-            raise Exception("Couldn't load file: " + self.file_path)   
+            raise Exception("Couldn't load file: " + self.file_path)  
+        self.normalizedFrameNum = 0
     
     def getNextFrame(self):
+        self.normalizedFrameNum += 1        
         return cv.QueryFrame(self.capture)
     
     def frames(self):
@@ -39,6 +41,9 @@ class Video(object):
     
     def getFrameNum(self):
         return cv.GetCaptureProperty(self.capture,cv.CV_CAP_PROP_POS_FRAMES)
+
+    def getNormalizedFrameNum(self):
+        return self.normalizedFrameNum
     
     def getFrameCount(self):
         return cv.GetCaptureProperty(self.capture,cv.CV_CAP_PROP_FRAME_COUNT)
