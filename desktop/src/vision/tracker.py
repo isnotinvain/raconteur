@@ -73,7 +73,7 @@ class ObjectTracker(object):
             lastFrame = frames[0]
             for frameNo in frames[1:]:
                 if frameNo != lastFrame+1:
-                    tween = util.geometry.getTweenedRectTrack(track[lastFrame], track[frameNo], frameNo-lastFrame)
+                    tween = util.geometry.getTweenedVector(track[lastFrame], track[frameNo], frameNo-lastFrame)
                     #print "gap: "+str(lastFrame)+": " + str(track[lastFrame]) + " -- " + str(frameNo)+": " + str(track[frameNo])
                     #print tween                    
                     for i,rect in enumerate(tween):
