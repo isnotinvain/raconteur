@@ -12,9 +12,10 @@ class TimelinePanel(wx.Panel):
     '''
     def __init__(self,parent,id,**kwargs):
         wx.Panel.__init__(self,parent,id,**kwargs)
+        self.parent = parent
         self.Bind(wx.EVT_PAINT, self.onPaint)
         self.Bind(wx.EVT_SIZE, self.onPaint)
-        self.bgBrush = wx.Brush((100,100,100)) 
+        self.bgBrush = wx.Brush((100,100,100))
             
     def onPaint(self,event):
         dc = wx.PaintDC(self)

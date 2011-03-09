@@ -1,7 +1,10 @@
 import sys
+import os
+import cPickle
 import wx
 import widgets
 import uistructure
+import stream.story
 
 class RaconteurMainWindow(wx.Frame):
     """
@@ -18,11 +21,21 @@ class RaconteurMainWindow(wx.Frame):
             utility that helps you write your video blog.
             """
     
-    def __init__(self,script_path):
-        wx.Frame.__init__(self, None,title="Raconteur\t|\tYour Life is a Story",size=(1500,800))
-        self.__setupLayoutAndWidgets()        
+    def __init__(self,storyPath):        
+        wx.Frame.__init__(self, None,title="Raconteur\t|\tYour Life is a Story",size=(1500,800))        
+        self.__setupLayoutAndWidgets()
         self.Show(True)
-        
+        self.loadStory(storyPath)
+
+    def loadStory(self,path):
+        if not path: return
+        try:
+            self.story = stream.story.Story.load(path)
+            self.SetTitle(self.story.name)
+        except:
+            self.story = None
+            widgets.messageBox(self,"Couldn't load story from: "+path,"Error loading story")
+            
     def __setupLayoutAndWidgets(self):
         self.CreateStatusBar()
         
@@ -73,5 +86,8 @@ class RaconteurMainWindow(wx.Frame):
                         
 if __name__ == "__main__":
     app = wx.App(False)
-    frame = RaconteurMainWindow(sys.argv[0])
+    if len(sys.argv) == 2:
+        frame = RaconteurMainWindow(sys.argv[1])
+    else:
+        frame = RaconteurMainWindow(None)
     app.MainLoop()

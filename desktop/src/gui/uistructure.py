@@ -1,4 +1,6 @@
 import wx
+import widgets
+import stream.story
 
 def onImport(self,event):
     print "import"
@@ -7,7 +9,14 @@ def onAnalyze(self,event):
     print "analyze"
 
 def onNewStory(self,event):
-    pass
+    d = widgets.NewStoryDialog(self,wx.ID_ANY)
+    if d.ShowModal()==wx.ID_OK:
+        path = d.directoryCtrl.GetValue()
+        name = d.nameCtrl.GetValue()        
+        story = stream.story.Story(name,path)
+        story.save()
+        self.loadStory(path)            
+    d.Destroy()
 
 def onOpenStory(self,event):
     pass
