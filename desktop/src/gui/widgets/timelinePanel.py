@@ -24,7 +24,8 @@ class TimelinePanel(wx.Panel):
         self.begin = None
         self.end = None
         self.totalWidth = None
-        self.zoom = 1.0
+        self.totalHeight = None
+        self.zoom = 0.0
         self.pos = 0.0
 
     def loadThumbs(self,thumbSize=(300,300)):
@@ -34,18 +35,21 @@ class TimelinePanel(wx.Panel):
         self.begin = creations[0]
         self.end = creations[-1]
         self.totalWidth = 0
+        self.totalHeight = 0
         for creation in creations:
             video = Video(files[creation])
             frame = video.getNextFrame()
             util.image.cvScaleToSize(frame, *thumbSize)
             self.thumbs[creation] = util.image.cvToWx(frame)
-            self.totalWidth += self.thumbs[creation].GetSize()[0]
+            w,h = self.thumbs[creation].GetSize()
+            self.totalWidth += w            
+            if h > self.totalHeight: self.totalHeight = h 
 
     def setZoom(self,zoom):
         self.zoom = zoom
         
     def setPos(self,pos):
-        self.pos = pos*self.totalWidth
+        self.pos = pos
 
     def onPaint(self,event):
         dc = wx.PaintDC(self)
@@ -60,15 +64,21 @@ class TimelinePanel(wx.Panel):
         if not self.parent.story: return
                 
         dc.SetPen(wx.Pen((0,0,175),2))        
-        dc.SetBrush(wx.TRANSPARENT_BRUSH)
+        dc.SetBrush(wx.TRANSPARENT_BRUSH)        
+        
         files = self.parent.story.getStreamsInRange(self.begin,self.end,"video")
         
-        xFactor = (dcW/float(self.totalWidth)) * self.zoom
+        minScaleFactor = dcW/float(self.totalWidth)
+        maxScaleFactor = dcH/float(self.totalHeight)        
+        deltaScale = maxScaleFactor - minScaleFactor        
+        scaleFactor = minScaleFactor + self.zoom*deltaScale 
         
-        x=self.pos*-1
+        timelineWidth = self.totalWidth*scaleFactor
+        deltaOffset = timelineWidth - dcW
+        x = -1 * deltaOffset * self.pos
         for creation,_ in files:
             thumb = self.thumbs[creation]
-            fitSize = xFactor*thumb.GetSize()[0], dcH
+            fitSize = scaleFactor*thumb.GetSize()[0], dcH
             scaledWidth,scaledHeight = util.geometry.getScaledDimensions(thumb.GetSize(),fitSize)
             thumb = thumb.Scale(scaledWidth,scaledHeight,wx.IMAGE_QUALITY_NORMAL)
             thumb = wx.BitmapFromImage(thumb)

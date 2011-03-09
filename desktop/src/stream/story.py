@@ -41,10 +41,10 @@ class Story(object):
                 
     def getStreamsInRange(self,start,end,streamType):
         creations = self.stream_creations[streamType]
-        s = bisect.bisect_right(creations,start)
+        s = bisect.bisect_left(creations,start)
         if s == len(creations): return []
         
-        e = bisect.bisect_left(creations,end)
+        e = bisect.bisect_right(creations,end)
         if not e: return []
                 
         return map(lambda x : (x,self.stream_files[streamType][x]),creations[s:e])

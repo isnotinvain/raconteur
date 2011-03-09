@@ -73,9 +73,9 @@ class RaconteurMainWindow(wx.Frame):
         self.videoPanel = widgets.VideoPanel(self,wx.ID_ANY)
         self.peoplePanel = widgets.PeoplePanel(self,wx.ID_ANY)        
         self.timelinePanel = widgets.TimelinePanel(self,wx.ID_ANY)
-        self.timelineZoomer = wx.Slider(self,wx.ID_ANY,100,100,1000,style=wx.SL_VERTICAL|wx.SL_INVERSE)
+        self.timelineZoomer = wx.Slider(self,wx.ID_ANY,0,0,1000,style=wx.SL_VERTICAL|wx.SL_INVERSE)
         def onZoom(event):
-            self.timelinePanel.setZoom(self.timelineZoomer.GetValue()/100.0)
+            self.timelinePanel.setZoom(self.timelineZoomer.GetValue()/1000.0)
             self.timelinePanel.Refresh()
         self.timelineZoomer.Bind(wx.EVT_SCROLL,onZoom)
         
