@@ -55,12 +55,20 @@ class RaconteurMainWindow(wx.Frame):
         self.toolbar.Realize()
                 
         self.videoPanel = widgets.VideoPanel(self,wx.ID_ANY)
-        self.peoplePanel = widgets.PeoplePanel(self,wx.ID_ANY)
-        sizer = wx.BoxSizer(wx.HORIZONTAL)
-        sizer.Add(self.toolbar,5,wx.EXPAND)
-        sizer.Add(self.videoPanel,90,wx.EXPAND)
-        sizer.Add(self.peoplePanel,5,wx.EXPAND)
-        self.SetSizer(sizer)
+        self.peoplePanel = widgets.PeoplePanel(self,wx.ID_ANY)        
+        self.timelinePanel = widgets.TimelinePanel(self,wx.ID_ANY)
+        
+        hsizer = wx.BoxSizer(wx.HORIZONTAL)
+        hsizer.Add(self.toolbar,0,wx.EXPAND)
+        hsizer.SetItemMinSize(0,self.toolbar.GetMinSize())
+        hsizer.Add(self.videoPanel,90,wx.EXPAND)
+        hsizer.Add(self.peoplePanel,10,wx.EXPAND)
+        
+        vsizer = wx.BoxSizer(wx.VERTICAL)
+        vsizer.Add(hsizer,90,wx.EXPAND)
+        vsizer.Add(self.timelinePanel,10,wx.EXPAND)
+        
+        self.SetSizer(vsizer)
         self.SetAutoLayout(True)
                         
 if __name__ == "__main__":
