@@ -62,7 +62,7 @@ class TimelinePanel(wx.Panel):
         self.parent.loadVideo(path)
         
     def onPaint(self,event):
-        dc = wx.PaintDC(self)
+        dc = wx.AutoBufferedPaintDC(self)
         dcW,dcH = dc.GetSize()
         if dcW < 0 or dcH < 0: return
 

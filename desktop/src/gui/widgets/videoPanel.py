@@ -14,6 +14,7 @@ class VideoPanel(wx.Panel):
     TIMER_ID = 0
     def __init__(self,parent,id,**kwargs):
         wx.Panel.__init__(self,parent,id,**kwargs)
+        self.SetBackgroundStyle(wx.BG_STYLE_CUSTOM)
         self.Bind(wx.EVT_PAINT, self.onPaint)
         self.Bind(wx.EVT_SIZE, self.onPaint)
         self.video = None
@@ -53,12 +54,11 @@ class VideoPanel(wx.Panel):
         
     
     def onPaint(self,event):
-        print "go!"
-        dc = wx.PaintDC(self)
+        dc = wx.AutoBufferedPaintDC(self)
         dcW,dcH = dc.GetSize()
         if dcW < 0 or dcH < 0: return
         
-        #dc.Clear()
+        dc.Clear()
         if self.video:
             self.drawCurrentFrame(dc)
             for overlay in self.overlays:                
