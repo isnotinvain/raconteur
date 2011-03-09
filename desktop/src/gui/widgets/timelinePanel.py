@@ -67,9 +67,10 @@ class TimelinePanel(wx.Panel):
             if creation >= self.begin and creation < self.end:                
                 thumb = self.thumbs[creation]
                 maxwidth = bounds[i+1] - bounds[i]
-                (desired_width,desired_height) = util.geometry.getScaledDimensions(thumb.GetSize(),(maxwidth,dcH))
+                desired_width,desired_height = util.geometry.getScaledDimensions(thumb.GetSize(),(maxwidth,dcH))
                 thumb = thumb.Scale(desired_width,desired_height,wx.IMAGE_QUALITY_NORMAL)            
                 thumb = wx.BitmapFromImage(thumb)
-                dc.DrawBitmap(thumb,bounds[i],0)
+                y = dcH/2.0 - (desired_height/2.0)
+                dc.DrawBitmap(thumb,bounds[i],y)
                 dc.DrawLine(bounds[i],0,bounds[i],dcH)
                 i+=1
