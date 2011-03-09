@@ -3,7 +3,9 @@ Created on Feb 3, 2011
 
 @author: Alex Levenson (alex@isnotinvain.com)
 '''
+
 import wx
+
 class NewStoryDialog(wx.Dialog):
     def __init__(self, parent, id,**kwargs):
         kwargs['title'] = "Create a New Story"

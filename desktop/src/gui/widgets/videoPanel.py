@@ -6,7 +6,7 @@ Created on Feb 3, 2011
 import wx
 import util.geometry
 import util.image
-from stream.video import Video
+import stream.video
 
 class VideoPanel(wx.Panel):
     '''
@@ -29,7 +29,7 @@ class VideoPanel(wx.Panel):
         self.overlays = []
     
     def loadVideo(self,path):
-        self.video = Video(path)
+        self.video = stream.video.Video(path)
         self.cv_frame = self.video.getNextFrame()
         self.current_frame = util.image.cvToWx(self.cv_frame)
         self.timer_tick = 1000/self.video.getFps()
@@ -58,7 +58,7 @@ class VideoPanel(wx.Panel):
         dcW,dcH = dc.GetSize()
         if dcW < 0 or dcH < 0: return
         
-        dc.Clear()
+        #dc.Clear()
         if self.video:
             self.drawCurrentFrame(dc)
             for overlay in self.overlays:                
