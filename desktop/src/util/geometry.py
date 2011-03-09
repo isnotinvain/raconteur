@@ -86,3 +86,13 @@ def rectIsSimilar(rect1,rect2,similarity):
     if hratio > 1-similarity: return False
     
     return True
+
+def pointInRect(pt,rect):
+    px,py = pt
+    rx,ry,w,h = rect
+    return px >= rx and px <=rx+w and py >= ry and py <= ry+h    
+
+def pointInWhichRect(pt,rects):
+    for rect in rects:
+        if pointInRect(pt,rect): return rect
+    return None

@@ -18,6 +18,7 @@ class TimelinePanel(wx.Panel):
         self.parent = parent
         self.Bind(wx.EVT_PAINT, self.onPaint)
         self.Bind(wx.EVT_SIZE, self.onPaint)
+        self.Bind(wx.EVT_LEFT_UP,self.onClick)
         self.bgBrush = wx.Brush((0,0,0))
         self.thumbs = {}
         self.thumbSize = None
@@ -27,6 +28,7 @@ class TimelinePanel(wx.Panel):
         self.totalHeight = None
         self.zoom = 0.0
         self.pos = 0.0
+        self.videoRects = None
 
     def loadThumbs(self,thumbSize=(300,300)):
         self.thumbSize = thumbSize
@@ -51,6 +53,13 @@ class TimelinePanel(wx.Panel):
     def setPos(self,pos):
         self.pos = pos
 
+    def onClick(self,event):
+        if not self.videoRects: return
+        pt = event.m_x,event.m_y
+        rect = util.geometry.pointInWhichRect(pt, self.videoRects.iterkeys())
+        if rect == None: return
+        print self.videoRects[rect]
+        
     def onPaint(self,event):
         dc = wx.PaintDC(self)
         dcW,dcH = dc.GetSize()
@@ -76,7 +85,9 @@ class TimelinePanel(wx.Panel):
         timelineWidth = self.totalWidth*scaleFactor
         deltaOffset = timelineWidth - dcW
         x = -1 * deltaOffset * self.pos
-        for creation,_ in files:
+        
+        self.videoRects = {}
+        for creation,file in files:
             thumb = self.thumbs[creation]
             fitSize = scaleFactor*thumb.GetSize()[0], dcH
             scaledWidth,scaledHeight = util.geometry.getScaledDimensions(thumb.GetSize(),fitSize)
@@ -84,5 +95,7 @@ class TimelinePanel(wx.Panel):
             thumb = wx.BitmapFromImage(thumb)
             y = dcH/2.0 - (scaledHeight/2.0)
             dc.DrawBitmap(thumb,x,y)
-            dc.DrawRectangle(x,y,scaledWidth,scaledHeight)
+            rect = (x,y,scaledWidth,scaledHeight)
+            self.videoRects[rect] = (creation,file)
+            dc.DrawRectangle(*rect)
             x+=scaledWidth
