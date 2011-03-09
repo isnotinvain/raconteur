@@ -18,7 +18,7 @@ class TimelinePanel(wx.Panel):
         self.parent = parent
         self.Bind(wx.EVT_PAINT, self.onPaint)
         self.Bind(wx.EVT_SIZE, self.onPaint)
-        self.bgBrush = wx.Brush((150,150,150))
+        self.bgBrush = wx.Brush((0,0,0))
         self.thumbs = {}
         self.thumbSize = None
         self.begin = None
