@@ -19,8 +19,8 @@ class RaconteurMainWindow(wx.Frame):
             utility that helps you write your video blog.
             """
     
-    def __init__(self,storyPath):        
-        wx.Frame.__init__(self, None,title="Raconteur\t|\tYour Life is a Story",size=(1500,800))        
+    def __init__(self,storyPath):
+        wx.Frame.__init__(self, None,title="Raconteur\t|\tYour Life is a Story",size=(1500,800))
         self.story = None
         self.__setupLayoutAndWidgets()
         
@@ -45,6 +45,7 @@ class RaconteurMainWindow(wx.Frame):
         self.story.crawl("video")
         self.SetTitle(self.story.name)
         self.timelinePanel.loadThumbs()
+        self.timelinePanel.Refresh()
             
     def __setupLayoutAndWidgets(self):
         self.CreateStatusBar()

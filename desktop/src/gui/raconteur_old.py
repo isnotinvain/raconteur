@@ -8,7 +8,7 @@ import sys
 import cPickle
 import random
 import wx
-from videoPanel import VideoPanel
+from widgets import VideoPanel
 from stream.importer import StreamImporter 
 import util.filesystem
 import widgets

@@ -42,6 +42,7 @@ class ObjectFinder(object):
         Runs object detection on each frame of the video,
         this can be quite slow.
         """
+        print scale_factor,min_neighbors,flags,min_size
         raw_bounds = []
         for frame in video.frames():
             raw = self.findInImage(frame, scale_factor, min_neighbors, flags, min_size)            
