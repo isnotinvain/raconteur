@@ -73,7 +73,18 @@ class RaconteurMainWindow(wx.Frame):
         self.videoPanel = widgets.VideoPanel(self,wx.ID_ANY)
         self.peoplePanel = widgets.PeoplePanel(self,wx.ID_ANY)        
         self.timelinePanel = widgets.TimelinePanel(self,wx.ID_ANY)
+        self.timelineZoomer = wx.Slider(self,wx.ID_ANY,100,100,1000,style=wx.SL_VERTICAL|wx.SL_INVERSE)
+        def onZoom(event):
+            self.timelinePanel.setZoom(self.timelineZoomer.GetValue()/100.0)
+            self.timelinePanel.Refresh()
+        self.timelineZoomer.Bind(wx.EVT_SCROLL,onZoom)
         
+        self.timelineScroller = wx.Slider(self,wx.ID_ANY,0,0,1000)
+        def onScroll(event):
+            self.timelinePanel.setPos(self.timelineScroller.GetValue()/1000.0)
+            self.timelinePanel.Refresh()
+        self.timelineScroller.Bind(wx.EVT_SCROLL,onScroll)
+                    
         hsizer = wx.BoxSizer(wx.HORIZONTAL)
         hsizer.Add(self.toolbar,0,wx.EXPAND)
         hsizer.SetItemMinSize(0,self.toolbar.GetMinSize())
@@ -82,7 +93,15 @@ class RaconteurMainWindow(wx.Frame):
         
         vsizer = wx.BoxSizer(wx.VERTICAL)
         vsizer.Add(hsizer,80,wx.EXPAND)
-        vsizer.Add(self.timelinePanel,20,wx.EXPAND)
+        
+        hhsizer = wx.BoxSizer(wx.HORIZONTAL)
+        hhsizer.Add(self.timelineZoomer,0,wx.EXPAND)
+        hhsizer.SetItemMinSize(0,self.timelineZoomer.GetMinSize())               
+        hhsizer.Add(self.timelinePanel,100,wx.EXPAND)        
+        
+        vsizer.Add(hhsizer,20,wx.EXPAND)
+        vsizer.Add(self.timelineScroller,0,wx.EXPAND)
+        vsizer.SetItemMinSize(2,self.timelineScroller.GetMinSize())
         
         self.SetSizer(vsizer)
         self.SetAutoLayout(True)

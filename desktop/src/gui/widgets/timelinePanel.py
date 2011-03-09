@@ -23,6 +23,9 @@ class TimelinePanel(wx.Panel):
         self.thumbSize = None
         self.begin = None
         self.end = None
+        self.totalWidth = None
+        self.zoom = 1.0
+        self.pos = 0.0
 
     def loadThumbs(self,thumbSize=(300,300)):
         self.thumbSize = thumbSize
@@ -30,16 +33,19 @@ class TimelinePanel(wx.Panel):
         files = self.parent.story.stream_files["video"]
         self.begin = creations[0]
         self.end = creations[-1]
-        
-        self.begin = 1293858686
-        self.end = 1293862542
-        
+        self.totalWidth = 0
         for creation in creations:
             video = Video(files[creation])
             frame = video.getNextFrame()
             util.image.cvScaleToSize(frame, *thumbSize)
             self.thumbs[creation] = util.image.cvToWx(frame)
+            self.totalWidth += self.thumbs[creation].GetSize()[0]
 
+    def setZoom(self,zoom):
+        self.zoom = zoom
+        
+    def setPos(self,pos):
+        self.pos = pos*self.totalWidth
 
     def onPaint(self,event):
         dc = wx.PaintDC(self)
@@ -54,16 +60,12 @@ class TimelinePanel(wx.Panel):
         if not self.parent.story: return
                 
         dc.SetPen(wx.Pen((0,0,175),2))        
-        
+        dc.SetBrush(wx.TRANSPARENT_BRUSH)
         files = self.parent.story.getStreamsInRange(self.begin,self.end,"video")
         
-        totalWidth = 0        
-        for creation,_ in files:
-            totalWidth += self.thumbs[creation].GetSize()[0]
+        xFactor = (dcW/float(self.totalWidth)) * self.zoom
         
-        xFactor = dcW/float(totalWidth)
-        
-        x=0
+        x=self.pos*-1
         for creation,_ in files:
             thumb = self.thumbs[creation]
             fitSize = xFactor*thumb.GetSize()[0], dcH
@@ -72,4 +74,5 @@ class TimelinePanel(wx.Panel):
             thumb = wx.BitmapFromImage(thumb)
             y = dcH/2.0 - (scaledHeight/2.0)
             dc.DrawBitmap(thumb,x,y)
+            dc.DrawRectangle(x,y,scaledWidth,scaledHeight)
             x+=scaledWidth
