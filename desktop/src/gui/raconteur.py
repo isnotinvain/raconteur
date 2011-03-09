@@ -29,7 +29,7 @@ class RaconteurMainWindow(wx.Frame):
     def loadStory(self,path):
         if not path: return
         try:
-            self.story = stream.story.Story.load(path)
+            self.story = stream.story.Story.load(path)            
         except:
             self.story = None
             widgets.messageBox(self,"Couldn't load story from: "+path,"Error loading story")

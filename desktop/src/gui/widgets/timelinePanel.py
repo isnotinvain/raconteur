@@ -26,8 +26,8 @@ class TimelinePanel(wx.Panel):
 
     def loadThumbs(self,thumbSize=(300,300)):
         self.thumbSize = thumbSize
-        creations = self.parent.story.file_creations["video"]
-        files = self.parent.story.raw_files["video"]
+        creations = self.parent.story.stream_creations["video"]
+        files = self.parent.story.stream_files["video"]
         self.begin = creations[0]
         self.end = creations[-1]
         
@@ -52,25 +52,24 @@ class TimelinePanel(wx.Panel):
         dc.DrawRectangle(0,0,dcW,dcH)
         
         if not self.parent.story: return
+                
+        dc.SetPen(wx.Pen((0,0,175),2))        
         
-        dc.SetPen(wx.Pen((0,0,255),1))        
-        timeDelta = float(self.end-self.begin)
-        bounds = []
-        for creation in self.parent.story.file_creations["video"]:
-            if creation >= self.begin and creation <= self.end:
-                pct = (creation-self.begin) / timeDelta
-                left = pct*dcW
-                bounds.append(left)
-
-        i = 0
-        for creation in self.parent.story.file_creations["video"]:
-            if creation >= self.begin and creation < self.end:                
-                thumb = self.thumbs[creation]
-                maxwidth = bounds[i+1] - bounds[i]
-                desired_width,desired_height = util.geometry.getScaledDimensions(thumb.GetSize(),(maxwidth,dcH))
-                thumb = thumb.Scale(desired_width,desired_height,wx.IMAGE_QUALITY_NORMAL)            
-                thumb = wx.BitmapFromImage(thumb)
-                y = dcH/2.0 - (desired_height/2.0)
-                dc.DrawBitmap(thumb,bounds[i],y)
-                dc.DrawLine(bounds[i],0,bounds[i],dcH)
-                i+=1
+        files = self.parent.story.getStreamsInRange(self.begin,self.end,"video")
+        
+        totalWidth = 0        
+        for creation,_ in files:
+            totalWidth += self.thumbs[creation].GetSize()[0]
+        
+        xFactor = dcW/float(totalWidth)
+        
+        x=0
+        for creation,_ in files:
+            thumb = self.thumbs[creation]
+            fitSize = xFactor*thumb.GetSize()[0], dcH
+            scaledWidth,scaledHeight = util.geometry.getScaledDimensions(thumb.GetSize(),fitSize)
+            thumb = thumb.Scale(scaledWidth,scaledHeight,wx.IMAGE_QUALITY_NORMAL)
+            thumb = wx.BitmapFromImage(thumb)
+            y = dcH/2.0 - (scaledHeight/2.0)
+            dc.DrawBitmap(thumb,x,y)
+            x+=scaledWidth
