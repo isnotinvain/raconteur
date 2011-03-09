@@ -27,6 +27,7 @@ class VideoPanel(wx.Panel):
         self.timer_tick = None        
         self.Bind(wx.EVT_TIMER,self.onNextFrame)
         self.overlays = []
+        self.playing = False
     
     def loadVideo(self,path):
         self.video = stream.video.Video(path)
@@ -35,14 +36,29 @@ class VideoPanel(wx.Panel):
         self.timer_tick = 1000/self.video.getFps()
         if self.timer_tick == 0: self.timer_tick = 1000/30
         self.onNextFrame(None)
+        self.Refresh()
+        self.Update()
         
     def play(self):
         if not self.video:
             raise Exception("You must call loadVideo first!")
+        self.playing = True
         self.timer.Start(self.timer_tick)
         
     def pause(self):
+        self.playing = False
         self.timer.Stop()
+    
+    def playPause(self):        
+        if self.playing:
+            self.pause()
+        else:
+            self.play()
+            
+    def reset(self):
+        self.video.reset()
+        self.overlays = []
+        self.onNextFrame(None)
     
     def onNextFrame(self,event):
         self.cv_frame = self.video.getNextFrame()
@@ -51,10 +67,13 @@ class VideoPanel(wx.Panel):
             self.pause()
             self.cv_frame = self.video.getNextFrame()            
         self.current_frame = util.image.cvToWx(self.cv_frame)
+        self.Refresh()
+        
         
     
     def onPaint(self,event):
         dc = wx.AutoBufferedPaintDC(self)
+        #dc = wx.PaintDC(self)
         dcW,dcH = dc.GetSize()
         if dcW < 0 or dcH < 0: return
         

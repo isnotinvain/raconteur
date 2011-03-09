@@ -28,6 +28,12 @@ def onAbout(self,event):
     d = wx.MessageDialog(self, self.ABOUT, "About Raconteur", wx.OK)
     d.ShowModal()
     d.Destroy()
+
+def onPlayPause(self,event):
+    self.videoPanel.playPause()
+
+def onReset(self,event):
+    self.videoPanel.reset()
     
 tools = (
             ("Import", onImport),
@@ -41,6 +47,11 @@ menu =  (
                             ("E&xit","Close Raconteur",onExit,wx.ID_EXIT),
                         )
             ),
+            ("&Playback",    (
+                            ("&Play / Pause","Play or Pause the current video",onPlayPause),
+                            ("&Reset","Reset the current video",onReset),
+                        )
+            ),            
             ("&Help",    (
                             ("&About","About Raconteur",onAbout,wx.ID_ABOUT),
                         )
