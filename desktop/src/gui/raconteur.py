@@ -1,6 +1,4 @@
 import sys
-import os
-import cPickle
 import wx
 import widgets
 import uistructure
@@ -23,18 +21,23 @@ class RaconteurMainWindow(wx.Frame):
     
     def __init__(self,storyPath):        
         wx.Frame.__init__(self, None,title="Raconteur\t|\tYour Life is a Story",size=(1500,800))        
+        self.story = None
         self.__setupLayoutAndWidgets()
-        self.Show(True)
+        self.Show(True)        
         self.loadStory(storyPath)
 
     def loadStory(self,path):
         if not path: return
         try:
             self.story = stream.story.Story.load(path)
-            self.SetTitle(self.story.name)
         except:
             self.story = None
             widgets.messageBox(self,"Couldn't load story from: "+path,"Error loading story")
+            return
+        
+        self.story.crawl("video")
+        self.SetTitle(self.story.name)
+        self.timelinePanel.loadThumbs()
             
     def __setupLayoutAndWidgets(self):
         self.CreateStatusBar()
@@ -78,8 +81,8 @@ class RaconteurMainWindow(wx.Frame):
         hsizer.Add(self.peoplePanel,10,wx.EXPAND)
         
         vsizer = wx.BoxSizer(wx.VERTICAL)
-        vsizer.Add(hsizer,90,wx.EXPAND)
-        vsizer.Add(self.timelinePanel,10,wx.EXPAND)
+        vsizer.Add(hsizer,80,wx.EXPAND)
+        vsizer.Add(self.timelinePanel,20,wx.EXPAND)
         
         self.SetSizer(vsizer)
         self.SetAutoLayout(True)

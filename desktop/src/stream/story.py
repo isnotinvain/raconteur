@@ -37,4 +37,4 @@ class Story(object):
                     creation_stamp = int(file[:file.rfind('.')])
                     self.raw_files[streamType][creation_stamp] = os.path.join(root,file)
         
-        self.file_creations[streamType] = sorted(self.raw_files)
+        self.file_creations[streamType] = sorted(self.raw_files[streamType])

@@ -4,7 +4,7 @@ Created on Feb 3, 2011
 @author: Alex Levenson (alex@isnotinvain.com)
 '''
 import wx
-import util
+import util.image
 import stream.video
 
 class VideoPanel(wx.Panel):

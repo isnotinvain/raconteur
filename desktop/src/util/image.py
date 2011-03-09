@@ -6,7 +6,6 @@
 image utility functions for opencv images
 '''
 import cv
-import Image
 import geometry
 import wx
 
