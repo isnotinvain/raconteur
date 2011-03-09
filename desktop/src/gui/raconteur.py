@@ -20,11 +20,12 @@ class RaconteurMainWindow(wx.Frame):
             """
     
     def __init__(self,storyPath):        
-        wx.Frame.__init__(self, None,title="Raconteur\t|\tYour Life is a Story",size=(1500,800))        
+        wx.Frame.__init__(self, None,title="Raconteur\t|\tYour Life is a Story",size=(1500,800))     
         self.story = None
         self.__setupLayoutAndWidgets()
         self.Show(True)        
         self.loadStory(storyPath)
+        self.currentVideo = None
 
     def loadStory(self,path):
         if not path: return
@@ -106,7 +107,13 @@ class RaconteurMainWindow(wx.Frame):
         
         self.SetSizer(vsizer)
         self.SetAutoLayout(True)
-                        
+
+    def loadVideo(self,path):
+        self.videoPanel.loadVideo(path)
+        self.Refresh()
+        self.Update()
+        self.currentVideo = self.videoPanel.video
+
 if __name__ == "__main__":
     app = wx.App(False)
     if len(sys.argv) == 2:

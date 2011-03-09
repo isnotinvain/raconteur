@@ -58,7 +58,8 @@ class TimelinePanel(wx.Panel):
         pt = event.m_x,event.m_y
         rect = util.geometry.pointInWhichRect(pt, self.videoRects.iterkeys())
         if rect == None: return
-        print self.videoRects[rect]
+        path = self.videoRects[rect][1]
+        self.parent.loadVideo(path)
         
     def onPaint(self,event):
         dc = wx.PaintDC(self)

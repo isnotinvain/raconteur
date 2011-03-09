@@ -50,9 +50,10 @@ class VideoPanel(wx.Panel):
             self.pause()
             self.cv_frame = self.video.getNextFrame()            
         self.current_frame = util.image.cvToWx(self.cv_frame)
-        self.Refresh()
+        
     
     def onPaint(self,event):
+        print "go!"
         dc = wx.PaintDC(self)
         dcW,dcH = dc.GetSize()
         if dcW < 0 or dcH < 0: return
