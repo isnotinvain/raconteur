@@ -25,7 +25,6 @@ def overlayFromTracks(tracks,face_bounds):
     for frameNo in xrange(len(face_bounds)):
         rectSprites[frameNo] = []
         for track in tracks:                
-            if len(track) < 20: continue
             if frameNo in track:
                 rectSprites[frameNo].append(Rect(*track[frameNo],color=colors[id(track)]))
                 

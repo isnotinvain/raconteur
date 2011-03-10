@@ -30,23 +30,35 @@ class PeoplePanel(wx.Panel):
         self.pos = 0.0
         self.videoRects = None
         self.timer = wx.Timer(self, wx.ID_ANY)
-        self.timer_tick = 1000/5
+        self.timer_tick = 1000/10
         self.Bind(wx.EVT_TIMER,self.onNextFrame)
         self.totalHeight = None
+        self.playing = False
 
-    def loadPeople(self):        
-        self.timer.Start(self.timer_tick)
+    def loadPeople(self):
         peopleDir = os.path.join(self.parent.story.getUnrecognizedPeopleDir(),self.parent.currentVideo.creation)
         if os.path.exists(peopleDir):
+            self.faceVideos = []
             for v in os.listdir(peopleDir):
                 self.faceVideos.append(stream.video.Video(os.path.join(peopleDir,v)))
-        w = self.faceVideos[0].getNextFrame().width
-        self.faceVideos[0].reset()
-        self.thumbSize = w
-        self.totalHeight = len(self.faceVideos)*self.thumbSize
-    
-    def pause(self):
+            w = self.faceVideos[0].getNextFrame().width
+            self.faceVideos[0].reset()
+            self.thumbSize = w
+            self.totalHeight = len(self.faceVideos)*self.thumbSize
+            self.onNextFrame(None)
+            self.Refresh()
+        
+    def pause(self,event=None):
         self.timer.Stop()
+        self.playing = False
+    
+    def play(self,event=None):
+        self.timer.Start(self.timer_tick)
+        self.playing = True
+    
+    def playPause(self,event=None):
+        if self.playing: self.pause()        
+        else: self.play()
     
     def onClick(self,event):
         pass

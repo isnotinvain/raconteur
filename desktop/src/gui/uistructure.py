@@ -76,6 +76,7 @@ def onAnalyze(self,event):
             self.currentVideo.writeFaceTracks()
         
         if faceRecognize:
+            self.peoplePanel.pause()
             self.currentVideo.loadFaceBounds()
             self.currentVideo.loadFaceTracks()
 
@@ -87,10 +88,13 @@ def onAnalyze(self,event):
             numFaces = reduce(lambda x,y: x+y,map(len,faceGroups))
                         
             progDialog = wx.ProgressDialog("Saving Faces","Working...",maximum=numFaces,parent=self,style=wx.PD_CAN_ABORT)
-            prog = 0            
+            prog = 0
+            root = os.path.join(self.story.getUnrecognizedPeopleDir(),self.currentVideo.creation)                
+            util.filesystem.ensureDirectoryExists(root)
+            for fl in os.listdir(root):
+                os.remove(os.path.join(root,fl))
+                
             for i,faceGroup in enumerate(faceGroups):
-                root = os.path.join(self.story.getUnrecognizedPeopleDir(),self.currentVideo.creation)
-                util.filesystem.ensureDirectoryExists(root)
                 filename = root+"/"+str(i)+".avi"
                 writer = cv.CreateVideoWriter(filename, cv.CV_FOURCC('P', 'I', 'M', '1'), self.currentVideo.getFps(), recognizeParams['scaleTo'], True)
                 for face in faceGroup:
@@ -102,8 +106,9 @@ def onAnalyze(self,event):
                     scaled = cv.CreateImage(recognizeParams['scaleTo'],face.depth,face.nChannels)
                     cv.Resize(face,scaled,cv.CV_INTER_LINEAR)
                     cv.WriteFrame(writer, scaled)
-                prog+=1
+                    prog+=1
             progDialog.Destroy()
+            self.peoplePanel.loadPeople()
         
         self.currentVideo.reset()
 

@@ -98,6 +98,8 @@ class RaconteurMainWindow(wx.Frame):
         
         self.timelineZoomer.Bind(wx.EVT_SCROLL,onZoomTl)
         self.peopleZoomer.Bind(wx.EVT_SCROLL,onZoomPpl)
+        self.peoplePauser = wx.Button(self,wx.ID_ANY,label="||")
+        self.peoplePauser.Bind(wx.EVT_BUTTON,self.peoplePanel.playPause)
         
         self.timelineScroller = wx.Slider(self,wx.ID_ANY,0,0,1000)
         self.peopleScroller = wx.Slider(self,wx.ID_ANY,0,0,1000,style=wx.SL_VERTICAL)
@@ -119,6 +121,7 @@ class RaconteurMainWindow(wx.Frame):
         pplStack = wx.BoxSizer(wx.VERTICAL)
         pplStack.Add(pplSizer,100,wx.EXPAND)
         pplStack.Add(self.peopleZoomer,0,wx.EXPAND)
+        pplStack.Add(self.peoplePauser,0,wx.EXPAND)
         
         hsizer = wx.BoxSizer(wx.HORIZONTAL)
         hsizer.Add(self.toolbar,0,wx.EXPAND)
