@@ -19,7 +19,7 @@ def onImport(self,event):
     d = widgets.ImportDialog(self,wx.ID_ANY)
     if d.ShowModal()==wx.ID_OK:
         streamType = d.streamTypeCtrl.GetValue()        
-        directory = d.directoryCtrl.GetValue()
+        directory = d.directoryCtrl.GetLabel()
         d.Destroy()
         imp = stream.importer.StreamImporter(streamType,self.story.path,d.moveCheck.GetValue())
         progDialog = wx.ProgressDialog("Importing","Importing...",maximum=1000,parent=self,style=wx.PD_CAN_ABORT)        
@@ -113,8 +113,6 @@ def onShowOverlays(self,event):
                 
     else: d.Destroy()
     
-    
-        
 def onNewStory(self,event):
     d = widgets.NewStoryDialog(self,wx.ID_ANY)
     if d.ShowModal()==wx.ID_OK:
@@ -126,11 +124,11 @@ def onNewStory(self,event):
     d.Destroy()
 
 def onOpenStory(self,event):
-    d = widgets.OpenStoryDialog(self,wx.ID_ANY)
-    if d.ShowModal()==wx.ID_OK:
-        self.loadStory(d.directoryCtrl.GetValue())
-    d.Destroy()    
-
+    d = wx.DirDialog(self, message="Open A Story",style = wx.DD_DEFAULT_STYLE|wx.DD_DIR_MUST_EXIST)
+    if d.ShowModal() == wx.ID_OK:
+        self.loadStory(d.GetPath())
+    d.Destroy()
+    
 def onExit(self,event):
     self.Close()
 

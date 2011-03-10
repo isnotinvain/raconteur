@@ -73,7 +73,8 @@ class TimelinePanel(wx.Panel):
         dc.DrawRectangle(0,0,dcW,dcH)
         
         if not self.parent.story: return
-                
+        if not self.totalWidth: return
+        
         dc.SetPen(wx.Pen((0,0,175),2))        
         dc.SetBrush(wx.TRANSPARENT_BRUSH)        
         
