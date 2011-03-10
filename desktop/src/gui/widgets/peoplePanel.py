@@ -43,13 +43,18 @@ class PeoplePanel(wx.Panel):
         if os.path.exists(peopleDir):
             self.faceVideos = []
             for v in os.listdir(peopleDir):
+                if v[0] == ".": continue
                 self.faceVideos.append(stream.video.Video(os.path.join(peopleDir,v)))
-            w = self.faceVideos[0].getNextFrame().width
-            self.faceVideos[0].reset()
-            self.thumbSize = w
-            self.totalHeight = len(self.faceVideos)*self.thumbSize
-            self.onNextFrame(None)
-            self.Refresh()
+            
+            if len(self.faceVideos) > 0:
+                w = self.faceVideos[0].getNextFrame().width
+                self.faceVideos[0].reset()
+                self.thumbSize = w
+                self.totalHeight = len(self.faceVideos)*self.thumbSize
+                self.onNextFrame(None)
+                self.Refresh()
+        else:
+            self.faceVideos = []
         
     def pause(self,event=None):
         self.timer.Stop()
@@ -80,7 +85,8 @@ class PeoplePanel(wx.Panel):
             dest = os.path.join(dest,util.filesystem.generateUniqueFileName(dest,".avi"))
             shutil.move(video.file_path,dest)            
         elif action == ManageAFaceDialog.DEL_FACE:
-            print "delete"
+            self.faceVideos.remove(video)
+            os.remove(video.file_path)
         d.Destroy()
         self.loadPeople()
         if wasPlaying: self.play()
