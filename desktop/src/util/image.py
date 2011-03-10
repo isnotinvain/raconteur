@@ -20,6 +20,7 @@ def saveImage(img,path,scaleTo=None):
     if scaleTo:
         scaled = cv.CreateImage(scaleTo,img.depth,img.nChannels)
         cv.Resize(img,scaled,cv.CV_INTER_LINEAR)
+        img = scaled
     cv.SaveImage(path, img)
 
 def cvToWx(img):

@@ -83,12 +83,23 @@ def onAnalyze(self,event):
             faceGroups = vision.recognizer.getFacesFromTracks(self.currentVideo,progDialog)
             progDialog.Destroy()
             
+            numFaces = reduce(lambda x,y: x+y,map(len,faceGroups))
+                        
+            progDialog = wx.ProgressDialog("Saving Faces","Working...",maximum=numFaces,parent=self,style=wx.PD_CAN_ABORT)
+            prog = 0
             for i,faceGroup in enumerate(faceGroups):
                 root = os.path.join(self.story.getUnrecognizedPeopleDir(),self.currentVideo.creation,str(i))
                 for f,face in enumerate(faceGroup):
+                    cont,_ = progDialog.Update(prog,"Saving Faces")
+                    if not cont: 
+                        progDialog.Destroy()
+                        self.currentVideo.reset()
+                        return
                     path = os.path.join(root,str(f)+".bmp") 
                     util.filesystem.ensureDirectoryExists(root)
                     util.image.saveImage(face, path, scaleTo=recognizeParams['scaleTo'])
+                    prog+=1
+            progDialog.Destroy()
         
         self.currentVideo.reset()
 
