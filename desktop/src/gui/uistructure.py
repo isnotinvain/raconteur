@@ -85,9 +85,11 @@ def onShowOverlays(self,event):
         if bounds:
             overlay = videoOverlays.overlayFromFaceBounds(self.currentVideo.face_bounds)
             self.videoPanel.overlays.append(overlay)
+            self.videoPanel.play()
         if tracks:
             overlay = videoOverlays.overlayFromTracks(self.currentVideo.face_tracks,self.currentVideo.face_bounds)
             self.videoPanel.overlays.append(overlay)
+            self.videoPanel.play()
                 
     else: d.Destroy()
     
@@ -121,7 +123,8 @@ def onPlayPause(self,event):
     self.videoPanel.playPause()
 
 def onReset(self,event):
-    self.videoPanel.reset()
+    self.videoPanel.pause()
+    self.videoPanel.reset()    
     
 tools = (
             ("Import", onImport),

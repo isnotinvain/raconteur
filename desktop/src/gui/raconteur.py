@@ -105,7 +105,7 @@ class RaconteurMainWindow(wx.Frame):
         
         hhsizer = wx.BoxSizer(wx.HORIZONTAL)
         hhsizer.Add(self.timelineZoomer,0,wx.EXPAND)
-        hhsizer.SetItemMinSize(0,self.timelineZoomer.GetMinSize())               
+        hhsizer.SetItemMinSize(0,self.timelineZoomer.GetMinSize())
         hhsizer.Add(self.timelinePanel,100,wx.EXPAND)
         
         vsizer.Add(hhsizer,20,wx.EXPAND)
