@@ -64,6 +64,7 @@ class TimelinePanel(wx.Panel):
         if rect == None: return
         path = self.videoRects[rect][1]
         self.parent.loadVideo(path)
+        self.parent.peoplePanel.loadPeople()
         
     def onPaint(self,event):
         dc = wx.AutoBufferedPaintDC(self)

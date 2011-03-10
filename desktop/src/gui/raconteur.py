@@ -27,6 +27,7 @@ class RaconteurMainWindow(wx.Frame):
         
         def quit(evt):
             self.videoPanel.pause()
+            self.peoplePanel.pause()
             evt.Skip()        
         self.Bind(wx.EVT_CLOSE,quit)
         
