@@ -25,13 +25,14 @@ class PeoplePanel(wx.Panel):
         self.parent = parent
         self.faceVideos = []
         self.thumbs = []
+        self.thumbSize = None
         self.zoom = 0.0
         self.pos = 0.0
         self.videoRects = None
         self.timer = wx.Timer(self, wx.ID_ANY)
-        self.timer_tick = 1000/10
+        self.timer_tick = 1000/5
         self.Bind(wx.EVT_TIMER,self.onNextFrame)
-
+        self.totalHeight = None
 
     def loadPeople(self):        
         self.timer.Start(self.timer_tick)
@@ -39,6 +40,10 @@ class PeoplePanel(wx.Panel):
         if os.path.exists(peopleDir):
             for v in os.listdir(peopleDir):
                 self.faceVideos.append(stream.video.Video(os.path.join(peopleDir,v)))
+        w = self.faceVideos[0].getNextFrame().width
+        self.faceVideos[0].reset()
+        self.thumbSize = w
+        self.totalHeight = len(self.faceVideos)*self.thumbSize
     
     def pause(self):
         self.timer.Stop()
@@ -73,17 +78,24 @@ class PeoplePanel(wx.Panel):
         dc.DrawRectangle(0,0,dcW,dcH)
         dc = wx.AutoBufferedPaintDC(self)
 
-        if not self.parent.story: return
+        if not self.faceVideos: return
         
         dc.SetPen(self.videoPen)        
         dc.SetBrush(self.videoBrush)
         
-        y = 0
-        self.videoRects = {}
+        minScaleFactor = dcH / float(self.totalHeight)
+        maxScaleFactor = dcW / float(self.thumbSize)
+        deltaScale = maxScaleFactor - minScaleFactor        
+        scaleFactor = minScaleFactor + self.zoom*deltaScale
+         
+        pplHeight = self.totalHeight*scaleFactor
+        deltaOffset = pplHeight - dcH
+        y = -1 * deltaOffset * self.pos
         
+        self.videoRects = {}
         for thumb,video in self.thumbs:            
             img = util.image.cvToWx(thumb)
-            fitsize = (min(dcW,dcH),min(dcW,dcH))
+            fitsize = dcW,scaleFactor*self.thumbSize
             scaledWidth,scaledHeight = util.geometry.getScaledDimensions(img.GetSize(),fitsize)            
             img = img.Scale(scaledWidth,scaledHeight,wx.IMAGE_QUALITY_NORMAL)
             img = wx.BitmapFromImage(img)

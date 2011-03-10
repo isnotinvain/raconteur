@@ -86,23 +86,45 @@ class RaconteurMainWindow(wx.Frame):
         self.peoplePanel = widgets.PeoplePanel(self,wx.ID_ANY)        
         self.timelinePanel = widgets.TimelinePanel(self,wx.ID_ANY)
         self.timelineZoomer = wx.Slider(self,wx.ID_ANY,0,0,1000,style=wx.SL_VERTICAL|wx.SL_INVERSE)
-        def onZoom(event):
+        self.peopleZoomer = wx.Slider(self,wx.ID_ANY,0,0,1000)
+        
+        def onZoomTl(event):
             self.timelinePanel.setZoom(self.timelineZoomer.GetValue()/1000.0)
             self.timelinePanel.Refresh()
-        self.timelineZoomer.Bind(wx.EVT_SCROLL,onZoom)
+        
+        def onZoomPpl(event):
+            self.peoplePanel.setZoom(self.peopleZoomer.GetValue()/1000.0)
+            self.peoplePanel.Refresh()
+        
+        self.timelineZoomer.Bind(wx.EVT_SCROLL,onZoomTl)
+        self.peopleZoomer.Bind(wx.EVT_SCROLL,onZoomPpl)
         
         self.timelineScroller = wx.Slider(self,wx.ID_ANY,0,0,1000)
-        def onScroll(event):
+        self.peopleScroller = wx.Slider(self,wx.ID_ANY,0,0,1000,style=wx.SL_VERTICAL)
+        
+        def onScrollTl(event):
             self.timelinePanel.setPos(self.timelineScroller.GetValue()/1000.0)
             self.timelinePanel.Refresh()
-        self.timelineScroller.Bind(wx.EVT_SCROLL,onScroll)
+        
+        def onScrollPpl(event):
+            self.peoplePanel.setPos(self.peopleScroller.GetValue()/1000.0)
+            self.peoplePanel.Refresh()
+            
+        self.timelineScroller.Bind(wx.EVT_SCROLL,onScrollTl)
+        self.peopleScroller.Bind(wx.EVT_SCROLL,onScrollPpl)
 
-
+        pplSizer = wx.BoxSizer(wx.HORIZONTAL)
+        pplSizer.Add(self.peopleScroller,0,wx.EXPAND)
+        pplSizer.Add(self.peoplePanel,100,wx.EXPAND)
+        pplStack = wx.BoxSizer(wx.VERTICAL)
+        pplStack.Add(pplSizer,100,wx.EXPAND)
+        pplStack.Add(self.peopleZoomer,0,wx.EXPAND)
+        
         hsizer = wx.BoxSizer(wx.HORIZONTAL)
         hsizer.Add(self.toolbar,0,wx.EXPAND)
         hsizer.SetItemMinSize(0,self.toolbar.GetMinSize())
         hsizer.Add(self.videoPanel,90,wx.EXPAND)
-        hsizer.Add(self.peoplePanel,10,wx.EXPAND)
+        hsizer.Add(pplStack,10,wx.EXPAND)
         
         vsizer = wx.BoxSizer(wx.VERTICAL)
         vsizer.Add(hsizer,80,wx.EXPAND)
