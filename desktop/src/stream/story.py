@@ -48,3 +48,9 @@ class Story(object):
         if not e: return []
                 
         return map(lambda x : (x,self.stream_files[streamType][x]),creations[s:e])
+    
+    def getPeopleDir(self):
+        return os.path.join(self.path,".people")
+    
+    def getUnrecognizedPeopleDir(self):
+        return os.path.join(self.getPeopleDir(),"unrecognized")

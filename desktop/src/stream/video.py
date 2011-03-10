@@ -21,8 +21,9 @@ class Video(object):
         self.reset()
         
         self.face_bounds = None
-        self.face_tracks = None        
-     
+        self.face_tracks = None
+        self.creation = file_path[file_path.rfind("/")+1:file_path.rfind(".")]
+             
     def reset(self):
         self.capture = cv.CreateFileCapture(self.file_path)
         if not self.capture or str(self.capture) == "<Capture (nil)>":

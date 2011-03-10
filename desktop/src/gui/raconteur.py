@@ -3,6 +3,7 @@ import wx
 import widgets
 import uistructure
 import stream.story
+import util.filesystem
 
 class RaconteurMainWindow(wx.Frame):
     """
@@ -36,12 +37,13 @@ class RaconteurMainWindow(wx.Frame):
     def loadStory(self,path):
         if not path: return
         try:
-            self.story = stream.story.Story.load(path)            
+            self.story = stream.story.Story.load(path)
         except:
             self.story = None
             widgets.messageBox(self,"Couldn't load story from: "+path,"Error loading story")
             return
-        
+        util.filesystem.ensureDirectoryExists(self.story.getPeopleDir())
+        util.filesystem.ensureDirectoryExists(self.story.getUnrecognizedPeopleDir())
         self.story.crawl("video")
         self.SetTitle(self.story.name)
         self.timelinePanel.loadThumbs()

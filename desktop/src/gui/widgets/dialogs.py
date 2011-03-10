@@ -114,7 +114,7 @@ class AnalyzeDialog(wx.Dialog):
         self.trackParams = wx.TextCtrl(panel, wx.ID_ANY,value="{'look_ahead_threshold':10,'similarity':0.75,'min_track_size':10}")
         
         self.recognizeCheck = wx.CheckBox(panel,wx.ID_ANY,label="recognize Faces in Video")
-        self.recognizeParams = wx.TextCtrl(panel, wx.ID_ANY,value="not yet, sorry")
+        self.recognizeParams = wx.TextCtrl(panel, wx.ID_ANY,value="{'scaleTo':(100,100)}")
         
         pvbox.Add(label,0,wx.EXPAND)        
         pvbox.Add(self.faceCheck,0,wx.EXPAND)

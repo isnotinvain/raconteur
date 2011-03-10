@@ -1,10 +1,13 @@
+import os
 import wx
 import widgets
 import stream.story
 import stream.importer
 import vision.finder
 import vision.tracker
+import vision.recognizer
 import videoOverlays
+import util.filesystem
 
 def checkStory(self,evnt=None):
     if not self.story:
@@ -40,13 +43,17 @@ def onAnalyze(self,event):
     d = widgets.AnalyzeDialog(self,wx.ID_ANY)
     if d.ShowModal()==wx.ID_OK:
         faceFind = d.faceCheck.GetValue()
-        faceScale = eval(d.faceScale.GetValue())
-        faceParams = eval(d.faceParams.GetValue())
+        if faceFind:
+            faceScale = eval(d.faceScale.GetValue())
+            faceParams = eval(d.faceParams.GetValue())
+        
         faceTrack = d.trackCheck.GetValue()            
-        trackParams = eval(d.trackParams.GetValue())
+        if faceTrack:
+            trackParams = eval(d.trackParams.GetValue())
         
         faceRecognize = d.recognizeCheck.GetValue()
-        #recognizeParams = eval(d.recognizeParams.GetValue())
+        if faceRecognize:
+            recognizeParams = eval(d.recognizeParams.GetValue())
         d.Destroy()
 
         if faceFind:
@@ -59,18 +66,29 @@ def onAnalyze(self,event):
             self.currentVideo.face_bounds = finder.findInVideo(self.videoPanel.video,progDialog=progDialog,**faceParams)
             self.currentVideo.writeFaceBounds()
             progDialog.Destroy()
-        else: return
+                    
         
         if faceTrack:
-            tracker = vision.tracker.ObjectTracker()
+            self.currentVideo.loadFaceBounds()
+            tracker = vision.tracker.ObjectTracker(**trackParams)
             self.currentVideo.face_tracks = tracker.extractAndInerpolateTracks(self.currentVideo.face_bounds)
             self.currentVideo.writeFaceTracks()
-        else: return
         
         if faceRecognize:
-            pass
-        else: return
-                
+            self.currentVideo.loadFaceBounds()
+            self.currentVideo.loadFaceTracks()
+            self.currentVideo.reset()
+            progDialog = wx.ProgressDialog("Extracting Faces","Working...",maximum=self.currentVideo.getFrameCount(),parent=self,style=wx.PD_CAN_ABORT)
+            faceGroups = vision.recognizer.getFacesFromTracks(self.currentVideo,progDialog)
+            progDialog.Destroy()
+            
+            for i,faceGroup in enumerate(faceGroups):
+                root = os.path.join(self.story.getUnrecognizedPeopleDir(),self.currentVideo.creation,i)
+                for f,face in enumerate(faceGroup):
+                    path = os.path.join(root,str(f)+".bmp") 
+                    util.image.saveImage(face, path, scaleTo=recognizeParams['scaleTo'])
+        
+        self.currentVideo.reset()
         d.Destroy()
 
 def onShowOverlays(self,event):

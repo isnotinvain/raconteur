@@ -9,9 +9,17 @@ import cv
 import geometry
 import wx
 
-def saveCvSubRect(path,img,rect):
-    imgView = cv.GetSubRect(img, rect)
-    cv.SaveImage(path, imgView)
+def getCvSubRect(img,rect):
+    subView = cv.GetSubRect(img, rect)
+    sub = cv.CreateImage(rect[2:4],img.depth,img.nChannels)
+    cv.Copy(subView, sub)
+    return sub
+
+def saveImage(img,path,scaleTo=None):
+    if scaleTo:
+        scaled = cv.CreateImage(scaleTo,img.depth,img.nChannels)
+        cv.Resize(img,scaled,cv.CV_INTER_LINEAR)
+    cv.SaveImage(path, img)
 
 def cvToWx(img):
     img = cv.CloneImage(img)

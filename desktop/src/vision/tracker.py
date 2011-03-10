@@ -75,9 +75,9 @@ class ObjectTracker(object):
                 if frameNo != lastFrame+1:
                     tween = util.geometry.getTweenedVector(track[lastFrame], track[frameNo], frameNo-lastFrame)
                     #print "gap: "+str(lastFrame)+": " + str(track[lastFrame]) + " -- " + str(frameNo)+": " + str(track[frameNo])
-                    #print tween                    
+                    #print tween
                     for i,rect in enumerate(tween):
-                        track[i+frameNo] = tween[i]
+                        track[lastFrame+i] = tween[i]
                 lastFrame = frameNo
     
     def extractAndInerpolateTracks(self,raw_bounds,progDialog=None,progressUpdateRate=100):
