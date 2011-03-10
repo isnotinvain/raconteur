@@ -77,19 +77,20 @@ def onAnalyze(self,event):
         if faceRecognize:
             self.currentVideo.loadFaceBounds()
             self.currentVideo.loadFaceTracks()
-            self.currentVideo.reset()
-            progDialog = wx.ProgressDialog("Extracting Faces","Working...",maximum=self.currentVideo.getFrameCount(),parent=self,style=wx.PD_CAN_ABORT)
+
+            self.currentVideo.calcDuration()
+            progDialog = wx.ProgressDialog("Extracting Faces","Working...",maximum=self.currentVideo.getNormalizedFrameCount(),parent=self,style=wx.PD_CAN_ABORT)
             faceGroups = vision.recognizer.getFacesFromTracks(self.currentVideo,progDialog)
             progDialog.Destroy()
             
             for i,faceGroup in enumerate(faceGroups):
-                root = os.path.join(self.story.getUnrecognizedPeopleDir(),self.currentVideo.creation,i)
+                root = os.path.join(self.story.getUnrecognizedPeopleDir(),self.currentVideo.creation,str(i))
                 for f,face in enumerate(faceGroup):
                     path = os.path.join(root,str(f)+".bmp") 
+                    util.filesystem.ensureDirectoryExists(root)
                     util.image.saveImage(face, path, scaleTo=recognizeParams['scaleTo'])
         
         self.currentVideo.reset()
-        d.Destroy()
 
 def onShowOverlays(self,event):
     bounds = False

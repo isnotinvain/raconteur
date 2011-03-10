@@ -7,6 +7,7 @@ import cv
 import os
 import cPickle
 import util.filesystem
+import gst
 
 # TODO: inherit from some Stream object probably
 class Video(object):
@@ -23,6 +24,8 @@ class Video(object):
         self.face_bounds = None
         self.face_tracks = None
         self.creation = file_path[file_path.rfind("/")+1:file_path.rfind(".")]
+        self.duration = None
+        self.normalizedFrameCount = 0
              
     def reset(self):
         self.capture = cv.CreateFileCapture(self.file_path)
@@ -45,6 +48,21 @@ class Video(object):
 
     def getNormalizedFrameNum(self):
         return self.normalizedFrameNum
+    
+    def calcDuration(self):
+        d = gst.parse_launch("filesrc name=source ! decodebin2 ! fakesink")
+        source = d.get_by_name("source")
+        source.set_property("location", self.file_path)
+        d.set_state(gst.STATE_PLAYING)
+        d.get_state()
+        format = gst.Format(gst.FORMAT_TIME)
+        duration = d.query_duration(format)[0]
+        d.set_state(gst.STATE_NULL)
+        self.duration = duration / gst.SECOND
+        self.normalizedFrameCount = int(self.getFps() * self.duration) 
+    
+    def getNormalizedFrameCount(self):
+        return self.normalizedFrameCount
     
     def getFrameCount(self):
         return cv.GetCaptureProperty(self.capture,cv.CV_CAP_PROP_FRAME_COUNT)

@@ -10,6 +10,7 @@ import geometry
 import wx
 
 def getCvSubRect(img,rect):
+    rect = tuple(map(int,rect))
     subView = cv.GetSubRect(img, rect)
     sub = cv.CreateImage(rect[2:4],img.depth,img.nChannels)
     cv.Copy(subView, sub)
