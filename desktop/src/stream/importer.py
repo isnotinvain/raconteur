@@ -85,7 +85,7 @@ class StreamImporter(object):
                 
                 if not skip:
                     if progDialog:
-                        cont,_ = progDialog.Update(i/float(numFiles)*1000,"Importing "+path)
+                        cont,_ = progDialog.Update(i/float(numFiles)*1000,"Importing "+name)
                         if not cont : return
                     self.importFile(path)
                     i+=1
@@ -127,7 +127,7 @@ class StreamImporter(object):
         dest_dir = fsutil.getStreamRawDataPath(start_date, self.stream_type)
         dest_dir = os.path.join(self.root_destination_dir,dest_dir)
         _, extension = os.path.splitext(file_path)
-        filename = fsutil.generateUniqueFileName(self.root_destination_dir,extension,str(int(start_stamp)))                
+        filename = fsutil.generateUniqueFileName(dest_dir,extension,str(int(start_stamp)))                
         dest_file = os.path.join(dest_dir,filename)
         
         # make sure dest_dir exists

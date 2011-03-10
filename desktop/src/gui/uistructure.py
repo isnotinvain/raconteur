@@ -22,7 +22,7 @@ def onImport(self,event):
         directory = d.directoryCtrl.GetValue()
         d.Destroy()
         imp = stream.importer.StreamImporter(streamType,self.story.path,d.moveCheck.GetValue())
-        progDialog = wx.ProgressDialog("Importing","Importing...",maximum=1000,parent=self,style=wx.PD_CAN_ABORT)
+        progDialog = wx.ProgressDialog("Importing","Importing...",maximum=1000,parent=self,style=wx.PD_CAN_ABORT)        
         try:            
             imp.importDirectory(directory,progDialog=progDialog)
         except stream.importer.NoSuchDirectoryError:
