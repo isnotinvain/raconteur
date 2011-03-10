@@ -11,8 +11,7 @@ class VideoPanel(wx.Panel):
     '''
     A panel that can draw a video inside itself
     '''
-    TIMER_ID = 0
-    def __init__(self,parent,id,**kwargs):
+    def __init__(self,parent,id,video=None,**kwargs):
         wx.Panel.__init__(self,parent,id,**kwargs)
         self.SetBackgroundStyle(wx.BG_STYLE_CUSTOM)
         self.Bind(wx.EVT_PAINT, self.onPaint)
@@ -23,13 +22,17 @@ class VideoPanel(wx.Panel):
         self.current_frame_bmp = None
         self.old_size = None
         self.frameScaleFactor = 1.0        
-        self.timer = wx.Timer(self, self.TIMER_ID)
+        self.timer = wx.Timer(self, wx.ID_ANY)
         self.timer_tick = None        
         self.Bind(wx.EVT_TIMER,self.onNextFrame)
         self.overlays = []
         self.playing = False
         self.bgBrush = wx.Brush((0,0,0))
         self.bgPen = wx.TRANSPARENT_PEN
+        self.should_loop = False
+        
+        if video:
+            self.loadVideo(video.file_path)
     
     def loadVideo(self,path):
         self.video = stream.video.Video(path)
@@ -46,6 +49,13 @@ class VideoPanel(wx.Panel):
             raise Exception("You must call loadVideo first!")
         self.playing = True
         self.timer.Start(self.timer_tick)
+    
+    def loop(self):
+        self.should_loop = True
+        self.play()
+        
+    def dontLoop(self):
+        self.should_loop = False
         
     def pause(self):
         self.playing = False
@@ -66,7 +76,8 @@ class VideoPanel(wx.Panel):
         self.cv_frame = self.video.getNextFrame()
         if not self.cv_frame:
             self.video.reset()
-            self.pause()
+            if not self.should_loop:
+                self.pause()
             self.cv_frame = self.video.getNextFrame()            
         self.current_frame = util.image.cvToWx(self.cv_frame)
         self.Refresh()

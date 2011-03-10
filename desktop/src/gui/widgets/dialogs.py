@@ -5,6 +5,7 @@ Created on Feb 3, 2011
 '''
 
 import wx
+import videoPanel
 
 class NewStoryDialog(wx.Dialog):
     def __init__(self, parent, id,**kwargs):
@@ -172,3 +173,50 @@ class ShowOverlaysDialog(wx.Dialog):
         vbox.Add(hbox, 1, wx.ALIGN_CENTER | wx.TOP | wx.BOTTOM, 10)
         self.SetSizer(vbox)
         vbox.Fit(self)
+        
+class ManageAFaceDialog(wx.Dialog):
+    DEL_FACE = wx.NewId()
+    RECOG_FACE = wx.NewId()
+    def __init__(self, parent, id,video,**kwargs):
+        kwargs['title'] = "Manage this Face"
+        wx.Dialog.__init__(self, parent, id, **kwargs)
+        
+        self.vidPanel = videoPanel.VideoPanel(self,wx.ID_ANY,video)
+        self.vidPanel.SetMinSize((200,200))
+        
+        def quit(evt):
+            self.vidPanel.pause()
+            evt.Skip()
+            
+        self.Bind(wx.EVT_CLOSE,quit)
+        
+        
+        self.vidPanel.loop()
+        
+        label = wx.StaticText(self,wx.ID_ANY,label="Enter this person's name:")        
+        self.nameCtrl = wx.TextCtrl(self,wx.ID_ANY)
+        
+        def recognize(event):
+            self.vidPanel.pause()
+            self.EndModal(self.RECOG_FACE)
+        
+        recognizeButton = wx.Button(self,self.RECOG_FACE,label="Add to database")
+        recognizeButton.Bind(wx.EVT_BUTTON,recognize)
+
+        def discard(event):
+            self.vidPanel.pause()
+            self.EndModal(self.DEL_FACE)
+        
+        discardButton = wx.Button(self,self.DEL_FACE,label="Discard this face")        
+        discardButton.Bind(wx.EVT_BUTTON,discard)
+        
+        vStack = wx.BoxSizer(wx.VERTICAL)
+        vStack.Add(self.vidPanel,0,wx.EXPAND)
+        vStack.Add(label,0,wx.EXPAND)
+        vStack.Add(self.nameCtrl,0,wx.EXPAND)                
+        buttonsBox = wx.BoxSizer(wx.HORIZONTAL)
+        buttonsBox.Add(discardButton,1,wx.EXPAND)
+        buttonsBox.Add(recognizeButton,1,wx.EXPAND)
+        vStack.Add(buttonsBox,0,wx.EXPAND|wx.ALIGN_CENTER | wx.TOP | wx.BOTTOM)
+        self.SetSizer(vStack)
+        self.Fit()

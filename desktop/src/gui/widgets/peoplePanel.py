@@ -7,6 +7,7 @@ import os
 import wx
 import stream.video
 import util.image
+from gui.widgets.dialogs import ManageAFaceDialog
 
 class PeoplePanel(wx.Panel):
     '''
@@ -61,7 +62,23 @@ class PeoplePanel(wx.Panel):
         else: self.play()
     
     def onClick(self,event):
-        pass
+        if not self.videoRects: return
+        pt = event.m_x,event.m_y
+        rect = util.geometry.pointInWhichRect(pt, self.videoRects.iterkeys())
+        if rect == None: return
+        video = self.videoRects[rect]
+        wasPlaying = self.playing
+        self.pause()
+        d=ManageAFaceDialog(self,wx.ID_ANY,video)
+        action = d.ShowModal()
+        if action == ManageAFaceDialog.RECOG_FACE:
+            print "recog"
+        elif action == ManageAFaceDialog.DEL_FACE:
+            print "delete"
+        else:
+            print "cancel"
+        d.Destroy()
+        if wasPlaying: self.play()
     
     def setZoom(self,zoom):
         self.zoom = zoom
