@@ -51,7 +51,7 @@ class StreamImporter(object):
             print self.root_destination_dir + " is not a directory!"
             raise
         
-    def importDirectory(self,dir_path,filter_function=None):
+    def importDirectory(self,dir_path,filter_function=None,progDialog=None):
         """
         imports the contents of a directory to self.root_destination_dir
                         
@@ -62,17 +62,33 @@ class StreamImporter(object):
         """
         if not os.path.exists(dir_path):
             raise NoSuchDirectoryError(dir_path)
-                
-        # process each file in dir_path (recursively)
+
+        numFiles = 0
+        # count the files first
         for root,_,files in os.walk(dir_path):
             for name in files:
                 path = os.path.join(root,name)
                 if filter_function:
                     if filter_function(path):                        
-                        self.importFile(path)
+                        numFiles+=1
                 else:
+                    numFiles+=1        
+        # process each file in dir_path (recursively)
+        i=0
+        for root,_,files in os.walk(dir_path):
+            for name in files:
+                path = os.path.join(root,name)
+                skip = False
+                if filter_function:
+                    if not filter_function(path):                        
+                        skip = True
+                
+                if not skip:
+                    if progDialog:
+                        cont,_ = progDialog.Update(i/float(numFiles)*1000,"Importing "+path)
+                        if not cont : return
                     self.importFile(path)
-        print "Done!"
+                    i+=1
                     
     def importFile(self,file_path):
         """
@@ -99,11 +115,8 @@ class StreamImporter(object):
                 
         if self.move:
             copy_function = shutil.move
-            copy_verb = "moving"
         else:
-            copy_function = shutil.copy2
-            copy_verb = "copying"    
-            
+            copy_function = shutil.copy2            
         
         # get the file's creation date
         # TODO: actually check creation date, not modified date
@@ -121,5 +134,4 @@ class StreamImporter(object):
         fsutil.ensureDirectoryExists(dest_dir)
         
         #copy the file
-        print copy_verb + " " + file_path + " to " + dest_file
         copy_function(file_path,dest_file)

@@ -29,7 +29,7 @@ class RaconteurMainWindow(wx.Frame):
             evt.Skip()        
         self.Bind(wx.EVT_CLOSE,quit)
         
-        self.Show(True)        
+        self.Show(True)
         self.loadStory(storyPath)
         self.currentVideo = None
 
@@ -45,7 +45,8 @@ class RaconteurMainWindow(wx.Frame):
         self.story.crawl("video")
         self.SetTitle(self.story.name)
         self.timelinePanel.loadThumbs()
-        self.timelinePanel.Refresh()
+        self.Refresh()
+        self.Update()
             
     def __setupLayoutAndWidgets(self):
         self.CreateStatusBar()

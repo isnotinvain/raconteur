@@ -1,6 +1,7 @@
 import wx
 import widgets
 import stream.story
+import stream.importer
 import vision.finder
 import vision.tracker
 import videoOverlays
@@ -14,7 +15,26 @@ def checkStory(self,evnt=None):
     return True
 
 def onImport(self,event):
-    print "import"
+    if not checkStory(self): return    
+    d = widgets.ImportDialog(self,wx.ID_ANY)
+    if d.ShowModal()==wx.ID_OK:
+        streamType = d.streamTypeCtrl.GetValue()        
+        directory = d.directoryCtrl.GetValue()
+        d.Destroy()
+        imp = stream.importer.StreamImporter(streamType,self.story.path,d.moveCheck.GetValue())
+        progDialog = wx.ProgressDialog("Importing","Importing...",maximum=1000,parent=self,style=wx.PD_CAN_ABORT)
+        try:            
+            imp.importDirectory(directory,progDialog=progDialog)
+        except stream.importer.NoSuchDirectoryError:
+            widgets.misc.messageBox(self, "Directory does not exist:\n"+directory, "Woops!")
+            progDialog.Destroy()
+            return
+        progDialog.Destroy()
+        self.story.crawl(streamType)
+        self.timelinePanel.loadThumbs()
+        self.Refresh()
+        self.Update()
+    else: d.Destroy()
     
 def onAnalyze(self,event):
     d = widgets.AnalyzeDialog(self,wx.ID_ANY)

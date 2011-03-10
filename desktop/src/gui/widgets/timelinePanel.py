@@ -34,6 +34,7 @@ class TimelinePanel(wx.Panel):
         self.thumbSize = thumbSize
         creations = self.parent.story.stream_creations["video"]
         files = self.parent.story.stream_files["video"]
+        if len(creations) == 0: return
         self.begin = creations[0]
         self.end = creations[-1]
         self.totalWidth = 0
