@@ -19,7 +19,10 @@ class TimelinePanel(wx.Panel):
         self.Bind(wx.EVT_PAINT, self.onPaint)
         self.Bind(wx.EVT_SIZE, self.onPaint)
         self.Bind(wx.EVT_LEFT_UP,self.onClick)
-        self.bgBrush = wx.Brush((0,0,0))
+        self.bgBrush = wx.Brush((240,240,240))        
+        self.bgPen = wx.TRANSPARENT_PEN
+        self.videoPen = wx.Pen((100,100,100),2)
+        self.videoBrush = wx.TRANSPARENT_BRUSH
         self.thumbs = {}
         self.thumbSize = None
         self.begin = None
@@ -69,14 +72,14 @@ class TimelinePanel(wx.Panel):
 
         dc.Clear()
         dc.SetBrush(self.bgBrush)
-        dc.SetPen(wx.TRANSPARENT_PEN)        
+        dc.SetPen(self.bgPen)
         dc.DrawRectangle(0,0,dcW,dcH)
         
         if not self.parent.story: return
         if not self.totalWidth: return
         
-        dc.SetPen(wx.Pen((0,0,175),2))        
-        dc.SetBrush(wx.TRANSPARENT_BRUSH)        
+        dc.SetPen(self.videoPen)        
+        dc.SetBrush(self.videoBrush)        
         
         files = self.parent.story.getStreamsInRange(self.begin,self.end,"video")
         

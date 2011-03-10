@@ -82,7 +82,7 @@ class RaconteurMainWindow(wx.Frame):
         self.toolbar.Realize()
                 
         self.videoPanel = widgets.VideoPanel(self,wx.ID_ANY)
-        #self.peoplePanel = widgets.PeoplePanel(self,wx.ID_ANY)        
+        self.peoplePanel = widgets.PeoplePanel(self,wx.ID_ANY)        
         self.timelinePanel = widgets.TimelinePanel(self,wx.ID_ANY)
         self.timelineZoomer = wx.Slider(self,wx.ID_ANY,0,0,1000,style=wx.SL_VERTICAL|wx.SL_INVERSE)
         def onZoom(event):
@@ -101,7 +101,7 @@ class RaconteurMainWindow(wx.Frame):
         hsizer.Add(self.toolbar,0,wx.EXPAND)
         hsizer.SetItemMinSize(0,self.toolbar.GetMinSize())
         hsizer.Add(self.videoPanel,90,wx.EXPAND)
-        #hsizer.Add(self.peoplePanel,10,wx.EXPAND)
+        hsizer.Add(self.peoplePanel,10,wx.EXPAND)
         
         vsizer = wx.BoxSizer(wx.VERTICAL)
         vsizer.Add(hsizer,80,wx.EXPAND)

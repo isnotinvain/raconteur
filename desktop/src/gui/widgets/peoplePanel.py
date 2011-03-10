@@ -14,14 +14,22 @@ class PeoplePanel(wx.Panel):
         wx.Panel.__init__(self,parent,id,**kwargs)
         self.Bind(wx.EVT_PAINT, self.onPaint)
         self.Bind(wx.EVT_SIZE, self.onPaint)
-        self.bgBrush = wx.Brush((100,100,200)) 
+        self.Bind(wx.EVT_LEFT_UP,self.onClick)
+        self.bgBrush = wx.Brush((240,240,240))        
+        self.bgPen = wx.TRANSPARENT_PEN
+
+    def loadPeople(self):
+        pass
+    
+    def onClick(self,event):
+        pass
             
     def onPaint(self,event):
-        dc = wx.PaintDC(self)
+        dc = wx.AutoBufferedPaintDC(self)
         dcW,dcH = dc.GetSize()
         if dcW < 0 or dcH < 0: return
-        
+
         dc.Clear()
         dc.SetBrush(self.bgBrush)
-        dc.SetPen(wx.TRANSPARENT_PEN)        
+        dc.SetPen(self.bgPen)
         dc.DrawRectangle(0,0,dcW,dcH)

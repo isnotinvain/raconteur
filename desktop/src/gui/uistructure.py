@@ -1,5 +1,6 @@
 import os
 import wx
+import cv
 import widgets
 import stream.story
 import stream.importer
@@ -86,19 +87,22 @@ def onAnalyze(self,event):
             numFaces = reduce(lambda x,y: x+y,map(len,faceGroups))
                         
             progDialog = wx.ProgressDialog("Saving Faces","Working...",maximum=numFaces,parent=self,style=wx.PD_CAN_ABORT)
-            prog = 0
+            prog = 0            
             for i,faceGroup in enumerate(faceGroups):
-                root = os.path.join(self.story.getUnrecognizedPeopleDir(),self.currentVideo.creation,str(i))
-                for f,face in enumerate(faceGroup):
+                root = os.path.join(self.story.getUnrecognizedPeopleDir(),self.currentVideo.creation)
+                util.filesystem.ensureDirectoryExists(root)
+                filename = root+"/"+str(i)+".avi"
+                writer = cv.CreateVideoWriter(filename, cv.CV_FOURCC('P', 'I', 'M', '1'), self.currentVideo.getFps(), recognizeParams['scaleTo'], True)
+                for face in faceGroup:
                     cont,_ = progDialog.Update(prog,"Saving Faces")
                     if not cont: 
                         progDialog.Destroy()
                         self.currentVideo.reset()
-                        return
-                    path = os.path.join(root,str(f)+".bmp") 
-                    util.filesystem.ensureDirectoryExists(root)
-                    util.image.saveImage(face, path, scaleTo=recognizeParams['scaleTo'])
-                    prog+=1
+                        return                                         
+                    scaled = cv.CreateImage(recognizeParams['scaleTo'],face.depth,face.nChannels)
+                    cv.Resize(face,scaled,cv.CV_INTER_LINEAR)
+                    cv.WriteFrame(writer, scaled)
+                prog+=1
             progDialog.Destroy()
         
         self.currentVideo.reset()
@@ -173,10 +177,14 @@ def onPlayPause(self,event):
 def onReset(self,event):
     self.videoPanel.pause()
     self.videoPanel.reset()    
+
+def onPeople(event):
+    pass
     
 tools = (
             ("Import", onImport),
             ("Analyze", onAnalyze),
+            ("People", onPeople),
             ("Overlays", onShowOverlays),
             ("Play",onPlayPause)
         )

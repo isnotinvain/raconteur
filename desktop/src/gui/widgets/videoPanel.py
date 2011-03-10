@@ -28,6 +28,8 @@ class VideoPanel(wx.Panel):
         self.Bind(wx.EVT_TIMER,self.onNextFrame)
         self.overlays = []
         self.playing = False
+        self.bgBrush = wx.Brush((0,0,0))
+        self.bgPen = wx.TRANSPARENT_PEN
     
     def loadVideo(self,path):
         self.video = stream.video.Video(path)
@@ -68,16 +70,16 @@ class VideoPanel(wx.Panel):
             self.cv_frame = self.video.getNextFrame()            
         self.current_frame = util.image.cvToWx(self.cv_frame)
         self.Refresh()
-        
-        
-    
+            
     def onPaint(self,event):
         dc = wx.AutoBufferedPaintDC(self)
         #dc = wx.PaintDC(self)
         dcW,dcH = dc.GetSize()
         if dcW < 0 or dcH < 0: return
         
-        dc.Clear()
+        dc.SetBrush(self.bgBrush)
+        dc.SetPen(self.bgPen)
+        dc.DrawRectangle(0,0,dcW,dcH)
         if self.video:
             self.drawCurrentFrame(dc)
             for overlay in self.overlays:                
