@@ -18,6 +18,7 @@ class Story(object):
         self.name = name
         self.stream_files = {}        
         self.stream_creations = {}
+        self.people = []
 
     def save(self):
         util.filesystem.ensureDirectoryExists(self.path)
@@ -49,8 +50,17 @@ class Story(object):
                 
         return map(lambda x : (x,self.stream_files[streamType][x]),creations[s:e])
     
+    def addPerson(self,person):
+        if person not in self.people:
+            self.people.append(person)
+    
     def getPeopleDir(self):
         return os.path.join(self.path,".people")
     
     def getUnrecognizedPeopleDir(self):
         return os.path.join(self.getPeopleDir(),"unrecognized")
+    
+    def getPersonDir(self,person):
+        if not person in self.people:
+            self.addPerson(person)
+        return os.path.join(self.getPeopleDir(),person)

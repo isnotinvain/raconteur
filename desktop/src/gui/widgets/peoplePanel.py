@@ -8,6 +8,8 @@ import wx
 import stream.video
 import util.image
 from gui.widgets.dialogs import ManageAFaceDialog
+import shutil
+import util.filesystem
 
 class PeoplePanel(wx.Panel):
     '''
@@ -72,12 +74,15 @@ class PeoplePanel(wx.Panel):
         d=ManageAFaceDialog(self,wx.ID_ANY,video)
         action = d.ShowModal()
         if action == ManageAFaceDialog.RECOG_FACE:
-            print "recog"
+            name = d.nameCtrl.GetValue()
+            dest = self.parent.story.getPersonDir(name)
+            util.filesystem.ensureDirectoryExists(dest)
+            dest = os.path.join(dest,util.filesystem.generateUniqueFileName(dest,".avi"))
+            shutil.move(video.file_path,dest)            
         elif action == ManageAFaceDialog.DEL_FACE:
             print "delete"
-        else:
-            print "cancel"
         d.Destroy()
+        self.loadPeople()
         if wasPlaying: self.play()
     
     def setZoom(self,zoom):
