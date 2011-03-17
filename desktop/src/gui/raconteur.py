@@ -21,7 +21,7 @@ class RaconteurMainWindow(wx.Frame):
             """
     
     def __init__(self,storyPath):
-        wx.Frame.__init__(self, None,title="Raconteur\t|\tYour Life is a Story",size=(1500,800))
+        wx.Frame.__init__(self, None,title="Raconteur\t|\tYour Life is a Story",size=(800,700))
         self.story = None
         self.__setupLayoutAndWidgets()
         
@@ -126,8 +126,8 @@ class RaconteurMainWindow(wx.Frame):
         hsizer = wx.BoxSizer(wx.HORIZONTAL)
         hsizer.Add(self.toolbar,0,wx.EXPAND)
         hsizer.SetItemMinSize(0,self.toolbar.GetMinSize())
-        hsizer.Add(self.videoPanel,90,wx.EXPAND)
-        hsizer.Add(pplStack,10,wx.EXPAND)
+        hsizer.Add(self.videoPanel,80,wx.EXPAND)
+        hsizer.Add(pplStack,20,wx.EXPAND)
         
         vsizer = wx.BoxSizer(wx.VERTICAL)
         vsizer.Add(hsizer,80,wx.EXPAND)

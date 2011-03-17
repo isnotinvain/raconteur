@@ -23,7 +23,7 @@ def onImport(self,event):
     d = widgets.ImportDialog(self,wx.ID_ANY)
     if d.ShowModal()==wx.ID_OK:
         streamType = d.streamTypeCtrl.GetValue()        
-        directory = d.directoryCtrl.GetLabel()
+        directory = d.directoryCtrl.GetValue()
         d.Destroy()
         imp = stream.importer.StreamImporter(streamType,self.story.path,d.moveCheck.GetValue())
         progDialog = wx.ProgressDialog("Importing","Importing...",maximum=1000,parent=self,style=wx.PD_CAN_ABORT)        

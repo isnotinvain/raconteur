@@ -35,6 +35,7 @@ class VideoPanel(wx.Panel):
             self.loadVideo(video.file_path)
     
     def loadVideo(self,path):
+        self.overlays = []
         self.video = stream.video.Video(path)
         self.cv_frame = self.video.getNextFrame()
         self.current_frame = util.image.cvToWx(self.cv_frame)
