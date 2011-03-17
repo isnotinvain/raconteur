@@ -114,8 +114,11 @@ class AnalyzeDialog(wx.Dialog):
         self.trackCheck = wx.CheckBox(panel,wx.ID_ANY,label="Track Faces in Video")
         self.trackParams = wx.TextCtrl(panel, wx.ID_ANY,value="{'look_ahead_threshold':10,'similarity':0.75,'min_track_size':10}")
         
-        self.recognizeCheck = wx.CheckBox(panel,wx.ID_ANY,label="recognize Faces in Video")
-        self.recognizeParams = wx.TextCtrl(panel, wx.ID_ANY,value="{'scaleTo':(100,100)}")
+        self.extractCheck = wx.CheckBox(panel,wx.ID_ANY,label="Extract Faces from Video")
+        self.extractParams = wx.TextCtrl(panel, wx.ID_ANY,value="{'scaleTo':(100,100)}")
+        
+        self.recognizeCheck = wx.CheckBox(panel,wx.ID_ANY,label="Recognize Faces in Video")
+        self.recognizeParams = wx.TextCtrl(panel, wx.ID_ANY,value="{}")
         
         pvbox.Add(label,0,wx.EXPAND)        
         pvbox.Add(self.faceCheck,0,wx.EXPAND)
@@ -124,6 +127,8 @@ class AnalyzeDialog(wx.Dialog):
         pvbox.Add(self.faceParams,0,wx.EXPAND)
         pvbox.Add(self.trackCheck,0,wx.EXPAND)
         pvbox.Add(self.trackParams,0,wx.EXPAND)
+        pvbox.Add(self.extractCheck,0,wx.EXPAND)
+        pvbox.Add(self.extractParams,0,wx.EXPAND)
         pvbox.Add(self.recognizeCheck,0,wx.EXPAND)
         pvbox.Add(self.recognizeParams,0,wx.EXPAND)
         panel.SetSizer(pvbox)
@@ -157,8 +162,8 @@ class ShowOverlaysDialog(wx.Dialog):
                 self.trackCheck = wx.CheckBox(panel,wx.ID_ANY,label="Show Tracked Faces in Video")
                 comp.append(self.trackCheck)
             if recognize:        
-                self.recognizeCheck = wx.CheckBox(panel,wx.ID_ANY,label="Show Recognized Faces in Video")
-                comp.append(self.recognizeCheck)
+                self.extractCheck = wx.CheckBox(panel,wx.ID_ANY,label="Show Recognized Faces in Video")
+                comp.append(self.extractCheck)
         
         for c in comp:
             pvbox.Add(c,0,wx.EXPAND)
@@ -177,6 +182,7 @@ class ShowOverlaysDialog(wx.Dialog):
 class ManageAFaceDialog(wx.Dialog):
     DEL_FACE = wx.NewId()
     RECOG_FACE = wx.NewId()
+    ADD_FACE = wx.NewId()
     def __init__(self, parent, id,video,**kwargs):
         kwargs['title'] = "Manage this Face"
         wx.Dialog.__init__(self, parent, id, **kwargs)
@@ -196,11 +202,18 @@ class ManageAFaceDialog(wx.Dialog):
         label = wx.StaticText(self,wx.ID_ANY,label="Enter this person's name:")        
         self.nameCtrl = wx.TextCtrl(self,wx.ID_ANY)
         
+        def add(event):
+            self.vidPanel.pause()
+            self.EndModal(self.ADD_FACE)
+        
+        addButton = wx.Button(self,self.RECOG_FACE,label="Add to database")
+        addButton.Bind(wx.EVT_BUTTON,add)
+        
         def recognize(event):
             self.vidPanel.pause()
             self.EndModal(self.RECOG_FACE)
         
-        recognizeButton = wx.Button(self,self.RECOG_FACE,label="Add to database")
+        recognizeButton = wx.Button(self,self.RECOG_FACE,label="Recognize Face")
         recognizeButton.Bind(wx.EVT_BUTTON,recognize)
 
         def discard(event):
@@ -221,6 +234,7 @@ class ManageAFaceDialog(wx.Dialog):
         vStack.Add(self.nameCtrl,0,wx.EXPAND)                
         buttonsBox = wx.BoxSizer(wx.HORIZONTAL)
         buttonsBox.Add(discardButton,1,wx.EXPAND)
+        buttonsBox.Add(addButton,1,wx.EXPAND)
         buttonsBox.Add(recognizeButton,1,wx.EXPAND)
         vStack.Add(buttonsBox,0,wx.EXPAND|wx.ALIGN_CENTER | wx.TOP | wx.BOTTOM)
         self.SetSizer(vStack)

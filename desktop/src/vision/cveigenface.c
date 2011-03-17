@@ -19,26 +19,27 @@
 #include "highgui.h"
 
 
-static int loadTrainingImages(PyObject* dataDict, IplImage*** faces, int* numFaces,CvMat** truth);
+static int loadTrainingImages(PyObject* dataDict, IplImage*** faces, int* numFaces,CvMat** truth, PyObject** peopleIDs);
 
 static void doTraining(IplImage** faces,int numFaces,IplImage*** eigenVectors, IplImage** avgTrainingImg, CvMat** eigenValues, CvMat** projection);
 
 static void storeTrainingData(char* outFile, int nEigens, int numFaces, CvMat* truth, CvMat* eigenValues, CvMat* projection, IplImage* avgTrainingImg, IplImage** eigenVectors);
 
-static int loadTestImages(PyObject* testFacePaths, IplImage*** faces, int* numFaces);
+static int loadTestImages(char* testVideo, IplImage*** faces, int* numFaces);
 
 static int loadTrainingData(char* dataFilePath, int* nEigens,int* nTrainFaces, CvMat** truth, CvMat** eigenValues, CvMat** projection, IplImage** avgTrainingImg, IplImage*** eigenVectors);
 
 int findNearestNeighbor(float* projectedTestFace, int nTrainFaces, int nEigens, CvMat* trainProjection);
 
+int faceGetter(int index, void* buffer, void* user_data);
 
 static PyObject* FileLoadError;
 
 // train(self,data,outFile)
-// data is a list where the ith element is a list containt person I's training image paths
+// data is a dictionary mapping personID to a list of video files, outFile a string
 static PyObject *
 cveigenface_train(PyObject *self, PyObject *args) {
-    PyObject* dataNestedList;
+    PyObject *dataDict,*peopleIDs;
     char* outFile;
     IplImage** faces = 0;
     CvMat* truth;
@@ -49,39 +50,37 @@ cveigenface_train(PyObject *self, PyObject *args) {
     CvMat* projection = 0;
 	int success;
 
-    if(!PyArg_ParseTuple(args, "Os", &dataNestedList, &outFile)) return NULL;
+    if(!PyArg_ParseTuple(args, "Os", &dataDict, &outFile)) return NULL;
 
-    success = loadTrainingImages(dataNestedList,&faces,&numFaces,&truth);
+    success = loadTrainingImages(dataDict,&faces,&numFaces,&truth,&peopleIDs);
     if(!success) {
-    	PyErr_SetString(FileLoadError, "Couldn't load a training image file\n");
+    	PyErr_SetString(FileLoadError, "Couldn't load a training video file\n");
 		return NULL;
     }
     
     doTraining(faces, numFaces, &eigenVectors, &avgTrainingImg, &eigenValues,&projection);
     storeTrainingData(outFile,numFaces-1, numFaces, truth, eigenValues, projection, avgTrainingImg, eigenVectors);
     
-    Py_INCREF(Py_None);
-    return Py_None;
+    return peopleIDs;
 }
 
 static PyObject *
 cveigenface_recognize(PyObject *self, PyObject *args) {    
-    PyObject *testFacePaths;   
     Py_ssize_t numTestFaces;
     int success,nEigens, nTrainFaces;
     CvMat *truth, *eigenValues, *trainProjection;
     IplImage *avgTrainingImg, **eigenVectors, **faces; 
-    char* dataFilePath;
+    char *testVideo,*dataFilePath;
     float* projectedTestFace;
     int i;
     
-    PyObject* recognition;
+    PyObject *recognition;
     
-    if(!PyArg_ParseTuple(args, "Os", &testFacePaths,&dataFilePath)) return NULL;
+    if(!PyArg_ParseTuple(args, "ss", &testVideo,&dataFilePath)) return NULL;
     
-    success = loadTestImages(testFacePaths,&faces,&numTestFaces);
+    success = loadTestImages(testVideo,&faces,&numTestFaces);
     if(!success) {
-    	PyErr_SetString(FileLoadError, "Couldn't load a test image file\n");
+    	PyErr_SetString(FileLoadError, "Couldn't load a test video file\n");
 		return NULL;
     }
     
@@ -137,48 +136,84 @@ int findNearestNeighbor(float* projectedTestFace, int nTrainFaces, int nEigens, 
 	return iNearest;
 }
 
-static int loadTrainingImages(PyObject* dataNestedList, IplImage*** faces, int* numFaces, CvMat** truth) {
-    PyObject *personImagesList;
-    int person,i,numPeople;
+static int loadTrainingImages(PyObject* dataDict, IplImage*** faces, int* numFaces, CvMat** truth, PyObject** peopleIDs) {
+    PyObject *pyPath;
+    char* path;
+    int vid,numPeople=0,numVideos;
     int faceIndex = 0;
+    IplImage* frame;    
+    CvCapture* video;
+    CvSize size;
     
-    *numFaces = 0;
-    numPeople = (int) PyList_Size(dataNestedList);
-    for(person=0;person<numPeople;person++) {
-    	(*numFaces) += (int) PyList_Size(PyList_GetItem(dataNestedList,person));
-    }
+    PyObject *key, *value;
+	Py_ssize_t pos = 0;
 
+	while (PyDict_Next(dataDict, &pos, &key, &value)) {
+		numVideos = PyList_Size(value);
+		for(vid=0;vid<numVideos;vid++) {
+			pyPath = PyList_GetItem(value,vid);
+			path = PyString_AsString(pyPath);
+			video = cvCaptureFromFile(path);			
+			(*numFaces) += cvGetCaptureProperty(video,CV_CAP_PROP_FRAME_COUNT)-1;
+			cvReleaseCapture(&video);
+		}
+	}
+    
 	*faces = (IplImage **)cvAlloc((*numFaces)*sizeof(IplImage *));
     *truth = cvCreateMat(1,*numFaces,CV_32SC1);
-    
-    for(person=0;person<numPeople;person++) {
-        char *filePath;
-        PyObject* personImagesList = PyList_GetItem(dataNestedList,person);
-        Py_ssize_t len = PyList_Size(personImagesList);
-        for(i=0;i<len;i++) {
-            filePath = PyString_AsString(PyList_GetItem(personImagesList,i));
-       		(*faces)[faceIndex] = cvLoadImage(filePath, CV_LOAD_IMAGE_GRAYSCALE);       		
-            if(!(*faces)[faceIndex]) return 0;
-            *((*truth)->data.i+faceIndex) = person;
-            faceIndex++;
-        }
-    }
+
+    pos = 0;
+	(*peopleIDs) = PyDict_New();
+    while (PyDict_Next(dataDict, &pos, &key, &value)) {
+		PyDict_SetItem((*peopleIDs),key,PyInt_FromLong(++numPeople));
+		numVideos = PyList_Size(value);
+		for(vid=0;vid<numVideos;vid++) {
+			pyPath = PyList_GetItem(value,vid);
+			path = PyString_AsString(pyPath);
+			video = cvCaptureFromFile(path);
+			frame = cvQueryFrame(video);
+            if(frame!=NULL) {
+                size.width = frame->width;
+                size.height = frame->height;
+			    while(frame != NULL) {
+                    (*faces)[faceIndex] = cvCreateImage(size,frame->depth,1);
+                    cvCvtColor(frame,(*faces)[faceIndex],CV_RGB2GRAY);
+                    *((*truth)->data.i+faceIndex) = numPeople-1;
+                    faceIndex++;
+				    frame = cvQueryFrame(video);
+			    }
+            }
+			cvReleaseCapture(&video);
+		}
+	}
+
     return 1;
 }
 
-static int loadTestImages(PyObject* testFacePaths, IplImage*** faces, int* numTestFaces) {
-	int i;
-	char* filePath;
-	
-	*numTestFaces = PyList_Size(testFacePaths);
+static int loadTestImages(char* testVideo, IplImage*** faces, int* numTestFaces) {
+    CvCapture *video;	
+    IplImage* frame; 
+    int faceIndex = 0;
+    CvSize size; 
+
+    video = cvCaptureFromFile(testVideo);
+	(*numTestFaces) = cvGetCaptureProperty(video,CV_CAP_PROP_FRAME_COUNT)-1;
 	
 	*faces = (IplImage **)cvAlloc((*numTestFaces)*sizeof(IplImage *));
-		
-	for(i=0;i<*numTestFaces;i++) {
-		filePath = PyString_AsString(PyList_GetItem(testFacePaths,i));
-		(*faces)[i] = cvLoadImage(filePath, CV_LOAD_IMAGE_GRAYSCALE);
-		if(!(*faces)[i]) return 0;
-	}
+
+    frame = cvQueryFrame(video);
+    if(frame!=NULL) {
+        size.width = frame->width;
+        size.height = frame->height;
+        while(frame != NULL) {
+            (*faces)[faceIndex] = cvCreateImage(size,frame->depth,1);
+            cvCvtColor(frame,(*faces)[faceIndex],CV_RGB2GRAY);
+            faceIndex++;
+            frame = cvQueryFrame(video);
+        }
+    }
+
+	cvReleaseCapture(&video);
 	
 	return 1;
 }
@@ -228,10 +263,17 @@ static void storeTrainingData(char* outFile, int nEigens, int numFaces, CvMat* t
 	cvReleaseFileStorage(&fileStorage);
 }
 
+int faceGetter(int index, void* buffer, void* user_data) {
+    memcpy(buffer,((IplImage**)(user_data))[index],((IplImage**)(user_data))[index]->nSize);
+    return CV_NO_ERR;
+}
+
 static void doTraining(IplImage** faces,int numFaces,IplImage*** eigenVectors, IplImage** avgTrainingImg, CvMat** eigenValues, CvMat** projection) {
 	int i,nEigens,offset;
 	CvTermCriteria calcLimit;
 	CvSize faceImgSize;
+    CvInput getter;
+    getter.callback = faceGetter;
 
 	nEigens = numFaces-1;
     
@@ -247,14 +289,15 @@ static void doTraining(IplImage** faces,int numFaces,IplImage*** eigenVectors, I
 
 	calcLimit = cvTermCriteria( CV_TERMCRIT_ITER, nEigens, 1);
 
+
 	// compute average image, eigenvalues, and eigenvectors
 	cvCalcEigenObjects(
 		numFaces,
-		(void*)faces,
+     	(void*)faces,
 		(void*)(*eigenVectors),
 		CV_EIGOBJ_NO_CALLBACK,
 		0,
-		0,
+        0,
 		&calcLimit,
 		*avgTrainingImg,
 		(*eigenValues)->data.fl);

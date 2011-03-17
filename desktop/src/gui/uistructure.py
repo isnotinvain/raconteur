@@ -1,4 +1,5 @@
 import os
+import cPickle
 import wx
 import cv
 import widgets
@@ -52,9 +53,14 @@ def onAnalyze(self,event):
         if faceTrack:
             trackParams = eval(d.trackParams.GetValue())
         
+        faceExtract = d.extractCheck.GetValue()
+        if faceExtract:
+            extractParams = eval(d.extractParams.GetValue())
+            
         faceRecognize = d.recognizeCheck.GetValue()
         if faceRecognize:
             recognizeParams = eval(d.recognizeParams.GetValue())
+                        
         d.Destroy()
 
         if faceFind:
@@ -75,14 +81,14 @@ def onAnalyze(self,event):
             self.currentVideo.face_tracks = tracker.extractAndInerpolateTracks(self.currentVideo.face_bounds)
             self.currentVideo.writeFaceTracks()
         
-        if faceRecognize:
+        if faceExtract:
             self.peoplePanel.pause()
             self.currentVideo.loadFaceBounds()
             self.currentVideo.loadFaceTracks()
 
             self.currentVideo.calcDuration()
             progDialog = wx.ProgressDialog("Extracting Faces","Working...",maximum=self.currentVideo.getNormalizedFrameCount(),parent=self,style=wx.PD_CAN_ABORT)
-            faceGroups = vision.recognizer.getFacesFromTracks(self.currentVideo,progDialog)
+            faceGroups = vision.tracker.ObjectTracker.getFacesFromTracks(self.currentVideo,progDialog)
             progDialog.Destroy()
             
             numFaces = reduce(lambda x,y: x+y,map(len,faceGroups))
@@ -96,14 +102,14 @@ def onAnalyze(self,event):
                 
             for i,faceGroup in enumerate(faceGroups):
                 filename = root+"/"+str(i)+".avi"
-                writer = cv.CreateVideoWriter(filename, cv.CV_FOURCC('P', 'I', 'M', '1'), self.currentVideo.getFps(), recognizeParams['scaleTo'], True)
+                writer = cv.CreateVideoWriter(filename, cv.CV_FOURCC('P', 'I', 'M', '1'), self.currentVideo.getFps(), extractParams['scaleTo'], True)
                 for face in faceGroup:
                     cont,_ = progDialog.Update(prog,"Saving Faces")
                     if not cont: 
                         progDialog.Destroy()
                         self.currentVideo.reset()
                         return                                         
-                    scaled = cv.CreateImage(recognizeParams['scaleTo'],face.depth,face.nChannels)
+                    scaled = cv.CreateImage(extractParams['scaleTo'],face.depth,face.nChannels)
                     cv.Resize(face,scaled,cv.CV_INTER_LINEAR)
                     cv.WriteFrame(writer, scaled)
                     prog+=1
@@ -136,7 +142,7 @@ def onShowOverlays(self,event):
         if tracks:
             tracks = d.trackCheck.GetValue()
         if recognize:
-            recognize = d.recognizeCheck.GetValue()                    
+            recognize = d.extractCheck.GetValue()                    
         d.Destroy()
         
         self.videoPanel.overlays = []
@@ -183,13 +189,16 @@ def onReset(self,event):
     self.videoPanel.pause()
     self.videoPanel.reset()    
 
-def onPeople(event):
-    pass
+def onTrain(self,event):
+    ids = vision.recognizer.train(self.story.getPeopleDir())
+    f = open(os.path.join(self.story.getPeopleDir(),".ids"),"w")
+    cPickle.dump(ids,f)
+    f.close()
     
 tools = (
             ("Import", onImport),
             ("Analyze", onAnalyze),
-            ("People", onPeople),
+            ("Train", onTrain),
             ("Overlays", onShowOverlays),
             ("Play",onPlayPause)
         )

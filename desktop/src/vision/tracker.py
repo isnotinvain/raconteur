@@ -5,6 +5,7 @@
 '''
 
 import util.geometry
+import util.image
 
 class ObjectTracker(object):
     """
@@ -84,3 +85,19 @@ class ObjectTracker(object):
         tracks = self.extractTracks(raw_bounds,progDialog,progressUpdateRate)
         self.interpolateTracks(tracks)
         return tracks
+    
+    @classmethod
+    def getFacesFromTracks(cls,video,progDialog=None):    
+        faces = {}
+        for track in video.face_tracks:
+            faces[id(track)] = []
+            
+        for frameNo,frame in enumerate(video.frames()):
+                for track in video.face_tracks:
+                    if frameNo in track:
+                        face = util.image.getCvSubRect(frame, track[frameNo])                    
+                        faces[id(track)].append(face)                    
+                        if progDialog:
+                            cont,_ = progDialog.Update(frameNo,"Extracting faces...")
+                            if not cont: return
+        return faces.values()

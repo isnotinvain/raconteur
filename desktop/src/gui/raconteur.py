@@ -24,7 +24,7 @@ class RaconteurMainWindow(wx.Frame):
         wx.Frame.__init__(self, None,title="Raconteur\t|\tYour Life is a Story",size=(800,700))
         self.story = None
         self.__setupLayoutAndWidgets()
-        
+
         def quit(evt):
             self.videoPanel.pause()
             self.peoplePanel.pause()

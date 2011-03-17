@@ -6,6 +6,7 @@ Created on Feb 3, 2011
 import os
 import wx
 import stream.video
+import vision.recognizer
 import util.image
 from gui.widgets.dialogs import ManageAFaceDialog
 import shutil
@@ -78,15 +79,19 @@ class PeoplePanel(wx.Panel):
         self.pause()
         d=ManageAFaceDialog(self,wx.ID_ANY,video)
         action = d.ShowModal()
-        if action == ManageAFaceDialog.RECOG_FACE:
-            name = d.nameCtrl.GetValue()
+        if action == ManageAFaceDialog.ADD_FACE:
+            name = d.nameCtrl.GetValue()            
             dest = self.parent.story.getPersonDir(name)
             util.filesystem.ensureDirectoryExists(dest)
             dest = os.path.join(dest,util.filesystem.generateUniqueFileName(dest,".avi"))
-            shutil.move(video.file_path,dest)            
+            shutil.move(video.file_path,dest)
         elif action == ManageAFaceDialog.DEL_FACE:
             self.faceVideos.remove(video)
             os.remove(video.file_path)
+        elif action == ManageAFaceDialog.RECOG_FACE:
+            hist = vision.recognizer.recognize(self.parent.story.getPeopleDir(), video)
+            print hist            
+            
         d.Destroy()
         self.loadPeople()
         if wasPlaying: self.play()
