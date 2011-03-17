@@ -182,7 +182,7 @@ class ManageAFaceDialog(wx.Dialog):
         wx.Dialog.__init__(self, parent, id, **kwargs)
         
         self.vidPanel = videoPanel.VideoPanel(self,wx.ID_ANY,video)
-        self.vidPanel.SetMinSize((200,200))
+        self.vidPanel.SetMinSize(video.getSize())
         
         def quit(evt):
             self.vidPanel.pause()
@@ -210,8 +210,13 @@ class ManageAFaceDialog(wx.Dialog):
         discardButton = wx.Button(self,self.DEL_FACE,label="Discard this face")        
         discardButton.Bind(wx.EVT_BUTTON,discard)
         
+        vidBox = wx.BoxSizer(wx.HORIZONTAL)
+        vidBox.AddStretchSpacer(1)
+        vidBox.Add(self.vidPanel,0,wx.EXPAND)
+        vidBox.AddStretchSpacer(1)
+        
         vStack = wx.BoxSizer(wx.VERTICAL)
-        vStack.Add(self.vidPanel,0,wx.EXPAND)
+        vStack.Add(vidBox,0,wx.EXPAND)
         vStack.Add(label,0,wx.EXPAND)
         vStack.Add(self.nameCtrl,0,wx.EXPAND)                
         buttonsBox = wx.BoxSizer(wx.HORIZONTAL)

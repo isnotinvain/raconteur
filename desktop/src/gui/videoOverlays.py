@@ -52,9 +52,10 @@ class VideoOverlay(object):
         """
         Draw this video overlay for a specific frame
         """
-                
-        for sprite in self.sprites[frameNo]:
-            sprite.draw(dc,scaleFactor)
+
+        if frameNo in self.sprites:
+            for sprite in self.sprites[frameNo]:
+                sprite.draw(dc,scaleFactor)
 
 
 class Rect(VideoOverlaySprite):

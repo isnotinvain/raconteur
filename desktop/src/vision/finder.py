@@ -21,11 +21,13 @@ class ObjectFinder(object):
             raise Exception("Couldn't load cascade file: "+cascade_path)
         self.scaleTo = scaleTo
     
-    def findInImage(self,img,scale_factor=1.1, min_neighbors=3, flags=0, min_size=(10,10)):
-        # TODO: is it worth it to convert to greyscale first?
+    def findInImage(self,img,scale_factor=1.1, min_neighbors=3, flags=0, min_size=(10,10)):                      
         factor = 1.0
         if self.scaleTo:
             img,factor = cvScaleToSize(img,*self.scaleTo,returnFactor=True)
+        
+        #gray = cv.CreateImage((img.width,img.height), img.depth, 1)
+        #cv.CvtColor(img, gray, cv.CV_RGB2GRAY)
         
         objects = cv.HaarDetectObjects(img,self.cascade,cv.CreateMemStorage(),scale_factor, min_neighbors, flags,min_size)
 
