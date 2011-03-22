@@ -11,8 +11,7 @@ class VideoScrollPanel(wx.ScrolledWindow):
         self.orientation = orientation
         self.SetSizer(wx.BoxSizer(orientation))
         self.loadVideos([])
-        self.SetScrollRate(20,20)
-        self.zoom = 0.0        
+        self.zoom = 0.0
     
     def onPaint(self,event):
         dc = wx.AutoBufferedPaintDC(self)
@@ -43,7 +42,11 @@ class VideoScrollPanel(wx.ScrolledWindow):
                 
                 video.SetMinSize((w,h))
                 video.SetMaxSize((w,h))
+                
         self.Layout()
+        self.FitInside()
+        self.SetScrollRate(20,20)
+                
         if event: event.Skip()
     
     def loadVideos(self,filePaths):

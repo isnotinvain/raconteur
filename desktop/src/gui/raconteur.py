@@ -1,6 +1,7 @@
 import sys
 import wx
 import widgets
+import widgets.videoScrollPanel
 import uistructure
 import stream.story
 import util.filesystem
@@ -47,7 +48,14 @@ class RaconteurMainWindow(wx.Frame):
         util.filesystem.ensureDirectoryExists(self.story.getUnrecognizedPeopleDir())
         self.story.crawl("video")
         self.SetTitle(self.story.name)
-        self.timelinePanel.loadThumbs()
+        
+        paths = []
+        for key in sorted(self.story.stream_files["video"].iterkeys()):
+            paths.append(self.story.stream_files["video"][key])
+        
+        self.timeline.loadVideos(paths[0:5])
+        
+        self.Layout()
         self.Refresh()
         self.Update()
             
@@ -84,35 +92,24 @@ class RaconteurMainWindow(wx.Frame):
                 
         self.videoPanel = widgets.VideoPanel(self,wx.ID_ANY)
         self.peoplePanel = widgets.PeoplePanel(self,wx.ID_ANY)        
-        self.timelinePanel = widgets.TimelinePanel(self,wx.ID_ANY)
-        self.timelineZoomer = wx.Slider(self,wx.ID_ANY,0,0,1000,style=wx.SL_VERTICAL|wx.SL_INVERSE)
+        self.timeline = widgets.videoScrollPanel.VideoContainer(self,wx.HORIZONTAL)
+
         self.peopleZoomer = wx.Slider(self,wx.ID_ANY,0,0,1000)
-        
-        def onZoomTl(event):
-            self.timelinePanel.setZoom(self.timelineZoomer.GetValue()/1000.0)
-            self.timelinePanel.Refresh()
-        
+                
         def onZoomPpl(event):
             self.peoplePanel.setZoom(self.peopleZoomer.GetValue()/1000.0)
             self.peoplePanel.Refresh()
         
-        self.timelineZoomer.Bind(wx.EVT_SCROLL,onZoomTl)
         self.peopleZoomer.Bind(wx.EVT_SCROLL,onZoomPpl)
         self.peoplePauser = wx.Button(self,wx.ID_ANY,label="||")
         self.peoplePauser.Bind(wx.EVT_BUTTON,self.peoplePanel.playPause)
-        
-        self.timelineScroller = wx.Slider(self,wx.ID_ANY,0,0,1000)
+
         self.peopleScroller = wx.Slider(self,wx.ID_ANY,0,0,1000,style=wx.SL_VERTICAL)
-        
-        def onScrollTl(event):
-            self.timelinePanel.setPos(self.timelineScroller.GetValue()/1000.0)
-            self.timelinePanel.Refresh()
-        
+                
         def onScrollPpl(event):
             self.peoplePanel.setPos(self.peopleScroller.GetValue()/1000.0)
             self.peoplePanel.Refresh()
             
-        self.timelineScroller.Bind(wx.EVT_SCROLL,onScrollTl)
         self.peopleScroller.Bind(wx.EVT_SCROLL,onScrollPpl)
 
         pplSizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -130,17 +127,10 @@ class RaconteurMainWindow(wx.Frame):
         hsizer.Add(pplStack,20,wx.EXPAND)
         
         vsizer = wx.BoxSizer(wx.VERTICAL)
-        vsizer.Add(hsizer,80,wx.EXPAND)
+        vsizer.Add(hsizer,80,wx.EXPAND)        
         
-        hhsizer = wx.BoxSizer(wx.HORIZONTAL)
-        hhsizer.Add(self.timelineZoomer,0,wx.EXPAND)
-        hhsizer.SetItemMinSize(0,self.timelineZoomer.GetMinSize())
-        hhsizer.Add(self.timelinePanel,100,wx.EXPAND)
-        
-        vsizer.Add(hhsizer,20,wx.EXPAND)
-        vsizer.Add(self.timelineScroller,0,wx.EXPAND)
-        vsizer.SetItemMinSize(2,self.timelineScroller.GetMinSize())
-        
+        vsizer.Add(self.timeline,20,wx.EXPAND)
+                
         self.SetSizer(vsizer)
         self.SetAutoLayout(True)
 
