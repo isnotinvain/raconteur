@@ -56,11 +56,13 @@ class VideoScrollPanel(wx.Panel):
                 vidPanel.SetMinSize((w,h))
                 vidPanel.SetMaxSize((w,h))
                 
+                extraH = float(height) - h
+                
                 if self.orientation != wx.HORIZONTAL:
-                    vidPanel.SetPosition((0,x))
+                    vidPanel.SetPosition((extraH/2,x))
                     x+=h
                 else:
-                    vidPanel.SetPosition((x,0))
+                    vidPanel.SetPosition((x,extraH/2))
                     x+=w
     
     def uiUpdate(self,event=None):
@@ -72,7 +74,7 @@ class VideoScrollPanel(wx.Panel):
         self.totalWidth = 0
         self.totalHeight = 0
         for path in filePaths:            
-            vidPanel = VideoPanel(self,path)
+            vidPanel = ClickToPlayVideoPanel(self,path)            
             self.totalWidth += vidPanel.size[0]
             self.totalHeight += vidPanel.size[1]
             self.videos.append(vidPanel)
@@ -100,8 +102,7 @@ class VideoPanel(wx.Panel):
         self.videoPen = wx.Pen((100,100,100),4)
         self.videoBrush = wx.TRANSPARENT_BRUSH
         
-        self.Bind(wx.EVT_PAINT,self.onPaint)
-        self.Bind(wx.EVT_LEFT_UP,self.onClick)
+        self.Bind(wx.EVT_PAINT,self.onPaint)        
         
     def onPaint(self,event):
         dc = wx.AutoBufferedPaintDC(self)
@@ -112,12 +113,7 @@ class VideoPanel(wx.Panel):
         dc.SetBrush(self.videoBrush)
         dc.SetPen(self.videoPen)
         dc.DrawRectangle(0,0,w,h)
-        
-    def onClick(self,event):
-        self.load()
-        self.play()
-        self.Layout()        
-    
+            
     def load(self):
         self.video = wx.media.MediaCtrl(self,size=self.size)
         self.video.Load(self.path)
@@ -134,8 +130,18 @@ class VideoPanel(wx.Panel):
 
     def stop(self,event=None):
         self.video.Stop()
+
+class ClickToPlayVideoPanel(VideoPanel):
+    def __init__(self,parent,path,**kwargs):
+        VideoPanel.__init__(self, parent, path,**kwargs)
+        self.Bind(wx.EVT_LEFT_UP,self.onClick)
+    
+    def onClick(self,event):
+        self.load()
+        self.play()
+        self.Layout()
         
-class VideoContainer(wx.Panel):
+class VideoStack(wx.Panel):
     def __init__(self,parent,orientation,**kwargs):
         wx.Panel.__init__(self,parent)
         

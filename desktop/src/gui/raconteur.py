@@ -54,10 +54,6 @@ class RaconteurMainWindow(wx.Frame):
             paths.append(self.story.stream_files["video"][key])
         
         self.timeline.loadThumbs(paths)
-        
-        self.Layout()
-        self.Refresh()
-        self.Update()
             
     def __setupLayoutAndWidgets(self):
         self.CreateStatusBar()
@@ -92,7 +88,7 @@ class RaconteurMainWindow(wx.Frame):
                 
         self.videoPanel = widgets.VideoPanel(self,wx.ID_ANY)
         self.peoplePanel = widgets.PeoplePanel(self,wx.ID_ANY)        
-        self.timeline = widgets.videoScrollPanel.VideoContainer(self,wx.HORIZONTAL)
+        self.timeline = widgets.videoScrollPanel.VideoStack(self,wx.HORIZONTAL)
 
         self.peopleZoomer = wx.Slider(self,wx.ID_ANY,0,0,1000)
                 

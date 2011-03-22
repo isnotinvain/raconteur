@@ -17,7 +17,7 @@ class Test(wx.Frame):
            
     def __setupLayoutAndWidgets(self):
         
-        scrolio = widgets.videoScrollPanel.VideoContainer(self,wx.HORIZONTAL)
+        scrolio = widgets.videoScrollPanel.VideoStack(self,wx.HORIZONTAL)
         videos = ["/media/Staggering/Raconteur/raw_data/2011/3/8/video/1299617428.mov","/media/Staggering/Raconteur/raw_data/2011/3/8/video/1299617428.mov","/media/Staggering/Raconteur/raw_data/2011/3/8/video/1299617520.mov"]
         scrolio.loadThumbs(videos)        
                 
