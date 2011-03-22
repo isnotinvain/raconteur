@@ -16,7 +16,7 @@ class VideoScrollPanel(wx.ScrolledWindow):
         self.zoom = 1.0
     
     def onPaint(self,event):
-        dc = wx.AutoBufferedPaintDC(self)        
+        dc = wx.AutoBufferedPaintDC(self)
         event.Skip()
                 
     def scaleVideos(self,event=None):
@@ -32,8 +32,7 @@ class VideoScrollPanel(wx.ScrolledWindow):
                 w,h = util.geometry.getScaledDimensions(video.GetBestSize(), (dependent,zoom))
                 video.SetMinSize((w,h))
                 video.SetMaxSize((w,h))
-
-        self.GetParent().Refresh()
+        self.Layout()
         if event: event.Skip()
     
     def loadVideos(self,filePaths):
@@ -48,6 +47,7 @@ class VideoScrollPanel(wx.ScrolledWindow):
             capture = None
             
             video = wx.media.MediaCtrl(self,size=size)
+            video.Bind(wx.media.EVT_MEDIA_LOADED, self.scaleVideos)
             video.Load(path)
             self.GetSizer().Add(video,0,wx.EXPAND)
             video.SetMinSize((-1,-1))
@@ -61,6 +61,10 @@ class VideoContainer(wx.Panel):
         self.scrollwindow = VideoScrollPanel(self,orientation,**kwargs)       
         box = wx.BoxSizer(orientation)
         
+        def onZoom(event):
+            self.scrollwindow.zoom = self.zoomControl.GetValue()/1000.0
+            self.scrollwindow.scaleVideos()
+        
         if orientation == wx.HORIZONTAL:            
             self.zoomControl = wx.Slider(self,wx.ID_ANY,0,0,1000,style=wx.SL_VERTICAL|wx.SL_INVERSE)            
             box.Add(self.zoomControl,0,wx.EXPAND)
@@ -69,6 +73,8 @@ class VideoContainer(wx.Panel):
             self.zoomControl = wx.Slider(self,wx.ID_ANY,0,0,1000)            
             box.Add(self.scrollwindow,1,wx.EXPAND)
             box.Add(self.zoomControl,0,wx.EXPAND)
+        
+        self.zoomControl.Bind(wx.EVT_SLIDER,onZoom)
         
         self.SetSizer(box)
     
