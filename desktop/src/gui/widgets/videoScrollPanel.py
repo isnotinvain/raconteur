@@ -79,10 +79,11 @@ class VideoScrollPanel(wx.Panel):
         self.uiUpdate()
 
 class VideoPanel(wx.Panel):
+
     def __init__(self,parent,path,**kwargs):            
         wx.Panel.__init__(self,parent,**kwargs)
         self.path = path
-        box = wx.BoxSizer(wx.HORIZONTAL)
+        box = wx.BoxSizer(wx.HORIZONTAL)       
         
         #HACK to get size of video
         capture = cv.CreateFileCapture(path)
@@ -90,11 +91,17 @@ class VideoPanel(wx.Panel):
             raise Exception("Couldn't load file: " + path)
         self.size = cv.GetCaptureProperty(capture, cv.CV_CAP_PROP_FRAME_WIDTH),cv.GetCaptureProperty(capture, cv.CV_CAP_PROP_FRAME_HEIGHT)
         self.SetMinSize((-1,-1))
+                
         self.thumb = cv.QueryFrame(capture)
         self.thumb = util.image.cvToWx(self.thumb)
         capture = None        
         self.SetSizer(box)
+        
+        self.videoPen = wx.Pen((100,100,100),4)
+        self.videoBrush = wx.TRANSPARENT_BRUSH
+        
         self.Bind(wx.EVT_PAINT,self.onPaint)
+        self.Bind(wx.EVT_LEFT_UP,self.onClick)
         
     def onPaint(self,event):
         dc = wx.AutoBufferedPaintDC(self)
@@ -102,6 +109,14 @@ class VideoPanel(wx.Panel):
         thumb = self.thumb.Scale(w,h,wx.IMAGE_QUALITY_NORMAL)
         thumb = wx.BitmapFromImage(thumb)
         dc.DrawBitmap(thumb,0,0)
+        dc.SetBrush(self.videoBrush)
+        dc.SetPen(self.videoPen)
+        dc.DrawRectangle(0,0,w,h)
+        
+    def onClick(self,event):
+        self.load()
+        self.play()
+        self.Layout()        
     
     def load(self):
         self.video = wx.media.MediaCtrl(self,size=self.size)
@@ -110,6 +125,15 @@ class VideoPanel(wx.Panel):
         sz = self.GetSizer()
         sz.Clear(True)
         sz.Add(self.video,1,wx.EXPAND)
+    
+    def play(self,event=None):
+        self.video.Play()
+    
+    def pause(self,event=None):
+        self.video.Pause()
+
+    def stop(self,event=None):
+        self.video.Stop()
         
 class VideoContainer(wx.Panel):
     def __init__(self,parent,orientation,**kwargs):
