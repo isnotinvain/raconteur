@@ -19,7 +19,7 @@ class Test(wx.Frame):
         
         scrolio = widgets.videoScrollPanel.VideoContainer(self,wx.HORIZONTAL)
         videos = ["/media/Staggering/Raconteur/raw_data/2011/3/8/video/1299617428.mov","/media/Staggering/Raconteur/raw_data/2011/3/8/video/1299617428.mov","/media/Staggering/Raconteur/raw_data/2011/3/8/video/1299617520.mov"]
-        scrolio.loadVideos(videos)        
+        scrolio.loadThumbs(videos)        
                 
         vsizer = wx.BoxSizer(wx.VERTICAL)
         vsizer.Add(scrolio,1,wx.EXPAND)

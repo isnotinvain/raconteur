@@ -53,7 +53,7 @@ class RaconteurMainWindow(wx.Frame):
         for key in sorted(self.story.stream_files["video"].iterkeys()):
             paths.append(self.story.stream_files["video"][key])
         
-        self.timeline.loadVideos(paths[0:5])
+        self.timeline.loadThumbs(paths[0:5])
         
         self.Layout()
         self.Refresh()

@@ -1,18 +1,15 @@
 import wx
 import wx.media
 import cv
+import util.image
 
 class VideoScrollPanel(wx.Panel):
     
     def __init__(self,parent,orientation,**kwargs):            
         wx.Panel.__init__(self,parent,**kwargs)
         self.Bind(wx.EVT_SIZE,self.onSize)
-        
-        self.brush = wx.TRANSPARENT_BRUSH
-        self.pen = wx.Pen((100,100,100),2)
-        
         self.orientation = orientation
-        self.loadVideos([])
+        self.loadThumbs([])
         self.zoom = 0.0
         self.scroll = 0.0
                     
@@ -20,7 +17,7 @@ class VideoScrollPanel(wx.Panel):
         self.uiUpdate()
         event.Skip()
         
-    def scaleVideos(self):
+    def recalc(self):
         if self.videos:
             width,height = self.GetClientSize()
             
@@ -33,8 +30,8 @@ class VideoScrollPanel(wx.Panel):
             minFactor = width / float(totalWidth)
             factors = []
             xTotal = 0
-            for video in self.videos:
-                w,h = video.GetBestSize()
+            for vidPanel in self.videos:                
+                w,h = vidPanel.size
                 if w == 0 or h == 0 : return
                 if self.orientation != wx.HORIZONTAL:
                     maxFactor = float(height) / w
@@ -50,46 +47,69 @@ class VideoScrollPanel(wx.Panel):
             xDelta = xTotal - width
             if xDelta < 0: xDelta = 0
             x = xDelta*self.scroll*-1
-            for i,video in enumerate(self.videos):
-                w,h = video.GetBestSize()
+            for i,vidPanel in enumerate(self.videos):
+                w,h = vidPanel.size
                 factor = factors[i]
                 w*=factor
                 h*=factor
-                video.SetSize((w,h))
-                video.SetMinSize((w,h))
-                video.SetMaxSize((w,h))
+                vidPanel.SetSize((w,h))
+                vidPanel.SetMinSize((w,h))
+                vidPanel.SetMaxSize((w,h))
                 
                 if self.orientation != wx.HORIZONTAL:
-                    video.SetPosition((0,x))
+                    vidPanel.SetPosition((0,x))
                     x+=h
                 else:
-                    video.SetPosition((x,0))
+                    vidPanel.SetPosition((x,0))
                     x+=w
     
     def uiUpdate(self,event=None):
-        self.scaleVideos()
+        self.recalc()
+        self.Refresh()
     
-    def loadVideos(self,filePaths):
+    def loadThumbs(self,filePaths):
         self.videos = []
         self.totalWidth = 0
         self.totalHeight = 0
-        for path in filePaths:
-            
-            #HACK to get size of video
-            capture = cv.CreateFileCapture(path)
-            if not capture or str(capture) == "<Capture (nil)>":
-                raise Exception("Couldn't load file: " + path)
-            size = cv.GetCaptureProperty(capture, cv.CV_CAP_PROP_FRAME_WIDTH),cv.GetCaptureProperty(capture, cv.CV_CAP_PROP_FRAME_HEIGHT)            
-            capture = None
-            
-            self.totalWidth += size[0]
-            self.totalHeight += size[1]
-            
-            video = wx.media.MediaCtrl(self,size=size)
-            video.Bind(wx.media.EVT_MEDIA_LOADED, self.uiUpdate)
-            video.Load(path)            
-            self.videos.append(video)
+        for path in filePaths:            
+            vidPanel = VideoPanel(self,path)
+            self.totalWidth += vidPanel.size[0]
+            self.totalHeight += vidPanel.size[1]
+            self.videos.append(vidPanel)
         self.uiUpdate()
+
+class VideoPanel(wx.Panel):
+    def __init__(self,parent,path,**kwargs):            
+        wx.Panel.__init__(self,parent,**kwargs)
+        self.path = path
+        box = wx.BoxSizer(wx.HORIZONTAL)
+        
+        #HACK to get size of video
+        capture = cv.CreateFileCapture(path)
+        if not capture or str(capture) == "<Capture (nil)>":
+            raise Exception("Couldn't load file: " + path)
+        self.size = cv.GetCaptureProperty(capture, cv.CV_CAP_PROP_FRAME_WIDTH),cv.GetCaptureProperty(capture, cv.CV_CAP_PROP_FRAME_HEIGHT)
+        self.SetMinSize((-1,-1))
+        self.thumb = cv.QueryFrame(capture)
+        self.thumb = util.image.cvToWx(self.thumb)
+        capture = None        
+        self.SetSizer(box)
+        self.Bind(wx.EVT_PAINT,self.onPaint)
+        
+    def onPaint(self,event):
+        dc = wx.AutoBufferedPaintDC(self)
+        w,h = dc.GetSize()
+        thumb = self.thumb.Scale(w,h,wx.IMAGE_QUALITY_NORMAL)
+        thumb = wx.BitmapFromImage(thumb)
+        dc.DrawBitmap(thumb,0,0)
+    
+    def load(self):
+        self.video = wx.media.MediaCtrl(self,size=self.size)
+        self.video.Load(self.path)
+        self.video.SetMinSize((-1,-1))
+        sz = self.GetSizer()
+        sz.Clear(True)
+        sz.Add(self.video,1,wx.EXPAND)
         
 class VideoContainer(wx.Panel):
     def __init__(self,parent,orientation,**kwargs):
@@ -128,6 +148,6 @@ class VideoContainer(wx.Panel):
         
         self.SetSizer(opBox)
     
-    def loadVideos(self,filePaths):
-        self.scrollwindow.loadVideos(filePaths)
+    def loadThumbs(self,filePaths):
+        self.scrollwindow.loadThumbs(filePaths)
         
