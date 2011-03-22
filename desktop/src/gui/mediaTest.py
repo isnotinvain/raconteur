@@ -29,6 +29,7 @@ class Test(wx.Frame):
         def test(event):
             print self.video.Tell()/float(self.video.Length())
         
+        self.SetAutoLayout(True)
         #self.timer = wx.Timer(self)
         #self.Bind(wx.EVT_TIMER,test)
         #self.timer.Start(1000.0/30.0)

@@ -1,7 +1,6 @@
 import wx
 import wx.media
 import cv
-import util.geometry
 
 class VideoScrollPanel(wx.ScrolledWindow):
     
@@ -13,23 +12,35 @@ class VideoScrollPanel(wx.ScrolledWindow):
         self.SetSizer(wx.BoxSizer(orientation))
         self.loadVideos([])
         self.SetScrollRate(20,20)
-        self.zoom = 1.0
+        self.zoom = 0.0        
     
     def onPaint(self,event):
         dc = wx.AutoBufferedPaintDC(self)
         event.Skip()
                 
     def scaleVideos(self,event=None):
-        if self.videos:                     
-            dependent,zoomable = self.GetClientSize()
+        if self.videos:
+            width,height = self.GetClientSize()
             
             if self.orientation != wx.HORIZONTAL:
-                dependent,zoomable = zoomable,dependent
-
-            zoom = zoomable * self.zoom
-
+                width,height = height,width
+                totalWidth = self.totalHeight
+            else:
+                totalWidth = self.totalWidth            
+            
+            minFactor = width / float(totalWidth)            
             for video in self.videos:
-                w,h = util.geometry.getScaledDimensions(video.GetBestSize(), (dependent,zoom))
+                w,h = video.GetBestSize()                    
+                if w == 0 or h == 0 : return
+                if self.orientation != wx.HORIZONTAL:
+                    maxFactor = float(height) / w
+                else:
+                    maxFactor = float(height) / h
+                                        
+                factor = minFactor + (maxFactor-minFactor)*self.zoom
+                w*=factor
+                h*=factor
+                
                 video.SetMinSize((w,h))
                 video.SetMaxSize((w,h))
         self.Layout()
@@ -37,6 +48,8 @@ class VideoScrollPanel(wx.ScrolledWindow):
     
     def loadVideos(self,filePaths):
         self.videos = []
+        self.totalWidth = 0
+        self.totalHeight = 0
         for path in filePaths:
             
             #HACK to get size of video
@@ -45,6 +58,9 @@ class VideoScrollPanel(wx.ScrolledWindow):
                 raise Exception("Couldn't load file: " + path)
             size = cv.GetCaptureProperty(capture, cv.CV_CAP_PROP_FRAME_WIDTH),cv.GetCaptureProperty(capture, cv.CV_CAP_PROP_FRAME_HEIGHT)            
             capture = None
+            
+            self.totalWidth += size[0]
+            self.totalHeight += size[1]
             
             video = wx.media.MediaCtrl(self,size=size)
             video.Bind(wx.media.EVT_MEDIA_LOADED, self.scaleVideos)
@@ -80,5 +96,4 @@ class VideoContainer(wx.Panel):
     
     def loadVideos(self,filePaths):
         self.scrollwindow.loadVideos(filePaths)
-        
         
