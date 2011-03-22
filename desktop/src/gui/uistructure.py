@@ -64,50 +64,54 @@ def onAnalyze(self,event):
         d.Destroy()
 
         if faceFind:
-            self.currentVideo.reset()
+            video = stream.video.Video(self.currentVideo)
             if faceScale:
                 finder = vision.finder.ObjectFinder(scaleTo=faceScale)
             else:
                 finder = vision.finder.ObjectFinder()
             progDialog = wx.ProgressDialog("Extracting Face Boundaries","Working...",maximum=1000,parent=self,style=wx.PD_CAN_ABORT)
-            self.currentVideo.face_bounds = finder.findInVideo(self.videoPanel.video,progDialog=progDialog,**faceParams)
-            self.currentVideo.writeFaceBounds()
+            video.face_bounds = finder.findInVideo(self.videoPanel.video,progDialog=progDialog,**faceParams)
+            video.writeFaceBounds()
             progDialog.Destroy()
-                    
+            video = None
         
         if faceTrack:
-            self.currentVideo.loadFaceBounds()
+            video = stream.video.Video(self.currentVideo)
+            video.loadFaceBounds()
             tracker = vision.tracker.ObjectTracker(**trackParams)
-            self.currentVideo.face_tracks = tracker.extractAndInerpolateTracks(self.currentVideo.face_bounds)
-            self.currentVideo.writeFaceTracks()
-        
+            video.face_tracks = tracker.extractAndInerpolateTracks(video.face_bounds)
+            video.writeFaceTracks()
+            video = None
+            
         if faceExtract:
+            video = stream.video.Video(self.currentVideo)
+            
             self.peoplePanel.pause()
-            self.currentVideo.loadFaceBounds()
-            self.currentVideo.loadFaceTracks()
+            video.loadFaceBounds()
+            video.loadFaceTracks()
 
-            self.currentVideo.calcDuration()
-            progDialog = wx.ProgressDialog("Extracting Faces","Working...",maximum=self.currentVideo.getNormalizedFrameCount(),parent=self,style=wx.PD_CAN_ABORT)
-            faceGroups = vision.tracker.ObjectTracker.getFacesFromTracks(self.currentVideo,progDialog)
+            video.calcDuration()
+            progDialog = wx.ProgressDialog("Extracting Faces","Working...",maximum=video.getNormalizedFrameCount(),parent=self,style=wx.PD_CAN_ABORT)
+            faceGroups = vision.tracker.ObjectTracker.getFacesFromTracks(video,progDialog)
             progDialog.Destroy()
             
             numFaces = reduce(lambda x,y: x+y,map(len,faceGroups))
                         
             progDialog = wx.ProgressDialog("Saving Faces","Working...",maximum=numFaces,parent=self,style=wx.PD_CAN_ABORT)
             prog = 0
-            root = os.path.join(self.story.getUnrecognizedPeopleDir(),self.currentVideo.creation)                
+            root = os.path.join(self.story.getUnrecognizedPeopleDir(),video.creation)                
             util.filesystem.ensureDirectoryExists(root)
             for fl in os.listdir(root):
                 os.remove(os.path.join(root,fl))
                 
             for i,faceGroup in enumerate(faceGroups):
                 filename = root+"/"+str(i)+".avi"
-                writer = cv.CreateVideoWriter(filename, cv.CV_FOURCC('P', 'I', 'M', '1'), self.currentVideo.getFps(), extractParams['scaleTo'], True)
+                writer = cv.CreateVideoWriter(filename, cv.CV_FOURCC('P', 'I', 'M', '1'), video.getFps(), extractParams['scaleTo'], True)
                 for face in faceGroup:
                     cont,_ = progDialog.Update(prog,"Saving Faces")
                     if not cont: 
                         progDialog.Destroy()
-                        self.currentVideo.reset()
+                        video.reset()
                         return                                         
                     scaled = cv.CreateImage(extractParams['scaleTo'],face.depth,face.nChannels)
                     cv.Resize(face,scaled,cv.CV_INTER_LINEAR)
@@ -115,22 +119,22 @@ def onAnalyze(self,event):
                     prog+=1
             progDialog.Destroy()
             self.peoplePanel.loadPeople()
-        
-        self.currentVideo.reset()
+            video = None
 
 def onShowOverlays(self,event):
     bounds = False
     tracks = False
     recognize = False
-        
+    
+    video = stream.video.Video(self.currentVideo)
     try:
-        self.currentVideo.loadFaceBounds()
+        video.loadFaceBounds()
         bounds = True
     except:
         pass
     
     try:
-        self.currentVideo.loadFaceTracks()
+        video.loadFaceTracks()
         tracks = True
     except:
         pass
@@ -148,11 +152,11 @@ def onShowOverlays(self,event):
         self.videoPanel.overlays = []
         
         if bounds:
-            overlay = videoOverlays.overlayFromFaceBounds(self.currentVideo.face_bounds)
+            overlay = videoOverlays.overlayFromFaceBounds(video.face_bounds)
             self.videoPanel.overlays.append(overlay)
             self.videoPanel.play()
         if tracks:
-            overlay = videoOverlays.overlayFromTracks(self.currentVideo.face_tracks,self.currentVideo.face_bounds)
+            overlay = videoOverlays.overlayFromTracks(video.face_tracks,video.face_bounds)
             self.videoPanel.overlays.append(overlay)
             self.videoPanel.play()
                 

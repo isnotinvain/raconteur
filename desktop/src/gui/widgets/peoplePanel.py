@@ -40,7 +40,9 @@ class PeoplePanel(wx.Panel):
         self.playing = False
 
     def loadPeople(self):
-        peopleDir = os.path.join(self.parent.story.getUnrecognizedPeopleDir(),self.parent.currentVideo.creation)
+        video = stream.video.Video(self.parent.currentVideo)
+        peopleDir = os.path.join(self.parent.story.getUnrecognizedPeopleDir(),video.creation)
+        video = None
         if os.path.exists(peopleDir):
             self.faceVideos = []
             for v in os.listdir(peopleDir):

@@ -132,8 +132,9 @@ class RaconteurMainWindow(wx.Frame):
 
     def loadVideo(self,event):
         self.videoPanel.load(event.path)
-        self.Layout()
-        #self.currentVideo = self.videoPanel.video
+        self.currentVideo = event.path
+        self.peoplePanel.loadPeople()
+        self.Layout()        
 
 if __name__ == "__main__":
     app = wx.App(False)
