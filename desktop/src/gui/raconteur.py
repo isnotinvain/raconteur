@@ -1,7 +1,7 @@
 import sys
 import wx
 import widgets
-import widgets.videoScrollPanel
+import widgets.video
 import uistructure
 import stream.story
 import util.filesystem
@@ -27,7 +27,6 @@ class RaconteurMainWindow(wx.Frame):
         self.__setupLayoutAndWidgets()
 
         def quit(evt):
-            self.videoPanel.pause()
             self.peoplePanel.pause()
             evt.Skip()        
         self.Bind(wx.EVT_CLOSE,quit)
@@ -86,9 +85,10 @@ class RaconteurMainWindow(wx.Frame):
             self.toolbar.AddControl(button)
         self.toolbar.Realize()
                 
-        self.videoPanel = widgets.VideoPanel(self,wx.ID_ANY)
+        self.videoPanel = widgets.video.VideoPanel(self)
         self.peoplePanel = widgets.PeoplePanel(self,wx.ID_ANY)        
-        self.timeline = widgets.videoScrollPanel.VideoStack(self,wx.HORIZONTAL)
+        self.timeline = widgets.video.VideoStack(self,wx.HORIZONTAL)
+        self.Bind(widgets.video.ClickToPlayVideoPanel.EVT_LOAD_VIDEO,self.loadVideo)
 
         self.peopleZoomer = wx.Slider(self,wx.ID_ANY,0,0,1000)
                 
@@ -130,11 +130,10 @@ class RaconteurMainWindow(wx.Frame):
         self.SetSizer(vsizer)
         self.SetAutoLayout(True)
 
-    def loadVideo(self,path):
-        self.videoPanel.loadVideo(path)
-        self.Refresh()
-        self.Update()
-        self.currentVideo = self.videoPanel.video
+    def loadVideo(self,event):
+        self.videoPanel.load(event.path)
+        self.Layout()
+        #self.currentVideo = self.videoPanel.video
 
 if __name__ == "__main__":
     app = wx.App(False)

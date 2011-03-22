@@ -1,5 +1,6 @@
 import wx
 import wx.media
+import wx.lib.newevent
 import cv
 import util.image
 
@@ -74,19 +75,43 @@ class VideoScrollPanel(wx.Panel):
         self.totalWidth = 0
         self.totalHeight = 0
         for path in filePaths:            
-            vidPanel = ClickToPlayVideoPanel(self,path)            
+            vidPanel = ClickToPlayVideoPanel(self,path)
+            vidPanel.loadThumb()
             self.totalWidth += vidPanel.size[0]
             self.totalHeight += vidPanel.size[1]
             self.videos.append(vidPanel)
         self.uiUpdate()
 
 class VideoPanel(wx.Panel):
-
-    def __init__(self,parent,path,**kwargs):            
+    def __init__(self,parent,path=None,**kwargs):            
         wx.Panel.__init__(self,parent,**kwargs)
         self.path = path
         box = wx.BoxSizer(wx.HORIZONTAL)       
+        self.videoPen = wx.TRANSPARENT_PEN
+        self.videoBrush = wx.TRANSPARENT_BRUSH
+        self.video = None
+        self.thumb = None
         
+        if path: self.loadThumb()
+        
+        self.SetSizer(box)
+                
+        self.Bind(wx.EVT_PAINT,self.onPaint)
+        
+    def onPaint(self,event):
+        if not self.thumb: return
+        dc = wx.AutoBufferedPaintDC(self)
+        w,h = dc.GetSize()
+        thumb = self.thumb.Scale(w,h,wx.IMAGE_QUALITY_NORMAL)
+        thumb = wx.BitmapFromImage(thumb)
+        dc.DrawBitmap(thumb,0,0)
+        dc.SetBrush(self.videoBrush)
+        dc.SetPen(self.videoPen)
+        dc.DrawRectangle(0,0,w,h)
+
+    def loadThumb(self,path=None):
+        if not path: path = self.path
+        if not path: return
         #HACK to get size of video
         capture = cv.CreateFileCapture(path)
         if not capture or str(capture) == "<Capture (nil)>":
@@ -96,25 +121,14 @@ class VideoPanel(wx.Panel):
                 
         self.thumb = cv.QueryFrame(capture)
         self.thumb = util.image.cvToWx(self.thumb)
-        capture = None        
-        self.SetSizer(box)
+        capture = None
+
+    def load(self,path=None):
+        if not path: path = self.path
+        if not path: return       
+        self.path = path
+        self.loadThumb()
         
-        self.videoPen = wx.Pen((100,100,100),4)
-        self.videoBrush = wx.TRANSPARENT_BRUSH
-        
-        self.Bind(wx.EVT_PAINT,self.onPaint)        
-        
-    def onPaint(self,event):
-        dc = wx.AutoBufferedPaintDC(self)
-        w,h = dc.GetSize()
-        thumb = self.thumb.Scale(w,h,wx.IMAGE_QUALITY_NORMAL)
-        thumb = wx.BitmapFromImage(thumb)
-        dc.DrawBitmap(thumb,0,0)
-        dc.SetBrush(self.videoBrush)
-        dc.SetPen(self.videoPen)
-        dc.DrawRectangle(0,0,w,h)
-            
-    def load(self):
         self.video = wx.media.MediaCtrl(self,size=self.size)
         self.video.Load(self.path)
         self.video.SetMinSize((-1,-1))
@@ -123,23 +137,53 @@ class VideoPanel(wx.Panel):
         sz.Add(self.video,1,wx.EXPAND)
     
     def play(self,event=None):
-        self.video.Play()
+        if self.video:
+            self.video.Play()
+    
+    def playPause(self,event=None):
+        if self.video:
+            if self.video.GetState() == wx.media.MEDIASTATE_PLAYING:
+                self.pause()
+            else:
+                self.play()
     
     def pause(self,event=None):
-        self.video.Pause()
+        if self.video:
+            self.video.Pause()
 
     def stop(self,event=None):
-        self.video.Stop()
+        if self.video:
+            self.video.Stop()
 
 class ClickToPlayVideoPanel(VideoPanel):
-    def __init__(self,parent,path,**kwargs):
+    LoadVideoEvent, EVT_LOAD_VIDEO = wx.lib.newevent.NewCommandEvent()
+    
+    def __init__(self,parent,path=None,**kwargs):
         VideoPanel.__init__(self, parent, path,**kwargs)
-        self.Bind(wx.EVT_LEFT_UP,self.onClick)
+        self.Bind(wx.EVT_LEFT_UP,self.onClick)        
+        self.Bind(wx.EVT_RIGHT_UP,self.onRClick)
+        self.videoPen = wx.Pen((100,100,100),4)
+        self.videoBrush = wx.TRANSPARENT_BRUSH
+
+    def load(self,path=None):
+        VideoPanel.load(self,path)
+        self.video.Bind(wx.EVT_LEFT_UP,self.onVClick)
+        self.video.Bind(wx.EVT_RIGHT_UP,self.onRClick)
+    
+    def onRClick(self,event):
+        evt = self.LoadVideoEvent(self.GetId(),path=self.path)
+        wx.PostEvent(self.GetParent(),evt)
     
     def onClick(self,event):
         self.load()
         self.play()
-        self.Layout()
+        self.Layout()        
+    
+    def onVClick(self,event):
+        self.stop()
+        self.GetSizer().Clear(True)
+        self.video = None
+        
         
 class VideoStack(wx.Panel):
     def __init__(self,parent,orientation,**kwargs):
