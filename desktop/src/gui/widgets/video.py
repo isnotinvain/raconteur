@@ -91,13 +91,33 @@ class VideoPanel(wx.Panel):
         self.videoBrush = wx.TRANSPARENT_BRUSH
         self.video = None
         self.thumb = None
+        self.overlays = []
         
         if path: self.loadThumb()
         
         self.SetSizer(box)
                 
-        self.Bind(wx.EVT_PAINT,self.onPaint)
+        self.Bind(wx.EVT_PAINT,self.onPaint)  
+    
+    def enableOverlays(self):
+        self.timer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER,self.onOverlay)      
+        self.timer.Start(10)
         
+    def disableOverlays(self):
+        self.timer.Stop()
+        self.timer = None
+        
+    def onOverlay(self,event):
+        if self.video:
+            dc = wx.WindowDC(self.video)
+            for overlay in self.overlays:
+                sec = self.video.Tell()
+                sec /= 1000.0
+                frameno = int(sec * self.framerate)
+                factors = (float(self.video.GetSize()[0])/self.size[0],float(self.video.GetSize()[1])/self.size[1])
+                overlay.drawFrame(dc,factors,frameno)
+                
     def onPaint(self,event):
         if not self.thumb: return
         dc = wx.AutoBufferedPaintDC(self)
@@ -108,15 +128,17 @@ class VideoPanel(wx.Panel):
         dc.SetBrush(self.videoBrush)
         dc.SetPen(self.videoPen)
         dc.DrawRectangle(0,0,w,h)
-
+        
     def loadThumb(self,path=None):
         if not path: path = self.path
         if not path: return
-        #HACK to get size of video
+        #HACK to get size of video and framerate
         capture = cv.CreateFileCapture(path)
         if not capture or str(capture) == "<Capture (nil)>":
             raise Exception("Couldn't load file: " + path)
         self.size = cv.GetCaptureProperty(capture, cv.CV_CAP_PROP_FRAME_WIDTH),cv.GetCaptureProperty(capture, cv.CV_CAP_PROP_FRAME_HEIGHT)
+        self.SetInitialSize(self.size)
+        self.framerate = cv.GetCaptureProperty(capture, cv.CV_CAP_PROP_FPS)
         self.SetMinSize((-1,-1))
                 
         self.thumb = cv.QueryFrame(capture)

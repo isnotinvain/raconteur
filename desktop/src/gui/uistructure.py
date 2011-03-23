@@ -154,12 +154,11 @@ def onShowOverlays(self,event):
         if bounds:
             overlay = videoOverlays.overlayFromFaceBounds(video.face_bounds)
             self.videoPanel.overlays.append(overlay)
-            self.videoPanel.play()
         if tracks:
             overlay = videoOverlays.overlayFromTracks(video.face_tracks,video.face_bounds)
             self.videoPanel.overlays.append(overlay)
-            self.videoPanel.play()
-                
+        
+        video = None
     else: d.Destroy()
     
 def onNewStory(self,event):

@@ -86,6 +86,7 @@ class RaconteurMainWindow(wx.Frame):
         self.toolbar.Realize()
                 
         self.videoPanel = widgets.video.VideoPanel(self)
+        self.videoPanel.enableOverlays()
         self.peoplePanel = widgets.PeoplePanel(self,wx.ID_ANY)        
         self.timeline = widgets.video.VideoStack(self,wx.HORIZONTAL)
         self.Bind(widgets.video.ClickToPlayVideoPanel.EVT_LOAD_VIDEO,self.loadVideo)

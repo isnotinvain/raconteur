@@ -34,7 +34,7 @@ class VideoOverlaySprite(object):
     """
     Base class for sprites in video overlays
     """
-    def draw(self,dc,scaleFactor):
+    def draw(self,dc,scaleFactors):
         """
         Draw this object to dc
         """
@@ -48,14 +48,14 @@ class VideoOverlay(object):
         self.sprites = sprites
         self.scale = 1.0
     
-    def drawFrame(self,dc,scaleFactor,frameNo):
+    def drawFrame(self,dc,scaleFactors,frameNo):
         """
         Draw this video overlay for a specific frame
         """
 
         if frameNo in self.sprites:
             for sprite in self.sprites[frameNo]:
-                sprite.draw(dc,scaleFactor)
+                sprite.draw(dc,scaleFactors)
 
 
 class Rect(VideoOverlaySprite):
@@ -67,35 +67,26 @@ class Rect(VideoOverlaySprite):
         self.x = x
         self.y = y
         self.w = w
-        self.h = h
+        self.h = h        
         
         self.color = color
         self.fillColor = fillColor
-        self.penWidth = penWidth
-        
-        # scaled information
-        self.sx = x
-        self.sy = y
-        self.sw = w
-        self.sh = h
-        self.oldScaleFactor = 1.0
-        self.scaleFactor = 1.0
-        
+        self.penWidth = penWidth        
         self.pen = wx.Pen(self.color, self.penWidth)        
         if self.fillColor:
             self.brush = wx.Brush(self.fillColor)
         else:
             self.brush = wx.Brush((0,0,0),style=wx.TRANSPARENT) 
 
-    def scale(self,factor):
-        self.sx = self.x * factor
-        self.sy = self.y * factor
-        self.sw = self.w * factor
-        self.sh = self.h * factor        
+    def scale(self,factors):
+        xfactor,yfactor = factors
+        self.sx = self.x * xfactor
+        self.sy = self.y * yfactor
+        self.sw = self.w * xfactor
+        self.sh = self.h * yfactor        
         
-    def draw(self,dc,scaleFactor):
-        if not self.oldScaleFactor or self.oldScaleFactor != scaleFactor:
-            self.scale(scaleFactor)
+    def draw(self,dc,scaleFactors):
+        self.scale(scaleFactors)
         
         dc.SetPen(self.pen)
         dc.SetBrush(self.brush)
