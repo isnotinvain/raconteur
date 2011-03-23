@@ -188,9 +188,9 @@ def onAbout(self,event):
 def onPlayPause(self,event):
     self.videoPanel.playPause()
 
-def onReset(self,event):
-    self.videoPanel.pause()
-    self.videoPanel.reset()    
+def onReset(self,event):    
+    self.videoPanel.stop()
+    self.videoPanel.overlays = []
 
 def onTrain(self,event):
     ids = vision.recognizer.train(self.story.getPeopleDir())

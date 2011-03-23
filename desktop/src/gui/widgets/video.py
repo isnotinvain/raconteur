@@ -114,7 +114,8 @@ class VideoPanel(wx.Panel):
             for overlay in self.overlays:
                 sec = self.video.Tell()
                 sec /= 1000.0
-                frameno = int(sec * self.framerate)
+                frameno = sec * self.framerate
+                frameno= int(frameno - self.framerate)
                 factors = (float(self.video.GetSize()[0])/self.size[0],float(self.video.GetSize()[1])/self.size[1])
                 overlay.drawFrame(dc,factors,frameno)
                 
