@@ -27,8 +27,8 @@ class RaconteurMainWindow(wx.Frame):
         self.__setupLayoutAndWidgets()
 
         def quit(evt):
-            self.peoplePanel.pause()
-            evt.Skip()        
+            evt.Skip()
+                    
         self.Bind(wx.EVT_CLOSE,quit)
         
         self.Show(True)
@@ -87,41 +87,17 @@ class RaconteurMainWindow(wx.Frame):
                 
         self.videoPanel = widgets.video.VideoPanel(self)
         self.videoPanel.enableOverlays()
-        self.peoplePanel = widgets.PeoplePanel(self,wx.ID_ANY)        
+        self.peoplePanel = widgets.PeoplePanel(self,wx.VERTICAL)        
         self.timeline = widgets.video.VideoStack(self,wx.HORIZONTAL)
-        self.Bind(widgets.video.ClickToPlayVideoPanel.EVT_LOAD_VIDEO,self.loadVideo)
-
-        self.peopleZoomer = wx.Slider(self,wx.ID_ANY,0,0,1000)
-                
-        def onZoomPpl(event):
-            self.peoplePanel.setZoom(self.peopleZoomer.GetValue()/1000.0)
-            self.peoplePanel.Refresh()
         
-        self.peopleZoomer.Bind(wx.EVT_SCROLL,onZoomPpl)
-        self.peoplePauser = wx.Button(self,wx.ID_ANY,label="||")
-        self.peoplePauser.Bind(wx.EVT_BUTTON,self.peoplePanel.playPause)
-
-        self.peopleScroller = wx.Slider(self,wx.ID_ANY,0,0,1000,style=wx.SL_VERTICAL)
-                
-        def onScrollPpl(event):
-            self.peoplePanel.setPos(self.peopleScroller.GetValue()/1000.0)
-            self.peoplePanel.Refresh()
-            
-        self.peopleScroller.Bind(wx.EVT_SCROLL,onScrollPpl)
-
-        pplSizer = wx.BoxSizer(wx.HORIZONTAL)
-        pplSizer.Add(self.peopleScroller,0,wx.EXPAND)
-        pplSizer.Add(self.peoplePanel,100,wx.EXPAND)
-        pplStack = wx.BoxSizer(wx.VERTICAL)
-        pplStack.Add(pplSizer,100,wx.EXPAND)
-        pplStack.Add(self.peopleZoomer,0,wx.EXPAND)
-        pplStack.Add(self.peoplePauser,0,wx.EXPAND)
+        self.timeline.Bind(widgets.video.ClickToPlayVideoPanel.EVT_LOAD_VIDEO,self.loadVideo)
+        self.peoplePanel.Bind(widgets.video.ClickToPlayVideoPanel.EVT_LOAD_VIDEO,self.peoplePanel.onLoad)
         
         hsizer = wx.BoxSizer(wx.HORIZONTAL)
         hsizer.Add(self.toolbar,0,wx.EXPAND)
         hsizer.SetItemMinSize(0,self.toolbar.GetMinSize())
         hsizer.Add(self.videoPanel,80,wx.EXPAND)
-        hsizer.Add(pplStack,20,wx.EXPAND)
+        hsizer.Add(self.peoplePanel,20,wx.EXPAND)
         
         vsizer = wx.BoxSizer(wx.VERTICAL)
         vsizer.Add(hsizer,80,wx.EXPAND)
@@ -134,7 +110,11 @@ class RaconteurMainWindow(wx.Frame):
     def loadVideo(self,event):
         self.videoPanel.load(event.path)
         self.currentVideo = event.path
-        self.peoplePanel.loadPeople()
+        ppl = self.peoplePanel.crawlUnrecognized()
+        if ppl:
+            self.peoplePanel.loadThumbs(ppl)
+            #self.peoplePanel.loadVideos(ppl)
+        
         self.Layout()        
 
 if __name__ == "__main__":

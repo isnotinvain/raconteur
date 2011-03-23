@@ -5,7 +5,8 @@ Created on Feb 3, 2011
 '''
 
 import wx
-import videoPanel
+import wx.media
+import video
 
 class NewStoryDialog(wx.Dialog):
     def __init__(self, parent, id,**kwargs):
@@ -183,53 +184,32 @@ class ManageAFaceDialog(wx.Dialog):
     DEL_FACE = wx.NewId()
     RECOG_FACE = wx.NewId()
     ADD_FACE = wx.NewId()
-    def __init__(self, parent, id,video,**kwargs):
+    def __init__(self, parent, id,video_path,**kwargs):
         kwargs['title'] = "Manage this Face"
         wx.Dialog.__init__(self, parent, id, **kwargs)
-        
-        self.vidPanel = videoPanel.VideoPanel(self,wx.ID_ANY,video)
-        self.vidPanel.SetMinSize(video.getSize())
-        
-        def quit(evt):
-            self.vidPanel.pause()
-            evt.Skip()
-            
-        self.Bind(wx.EVT_CLOSE,quit)
-        
-        
-        self.vidPanel.loop()
         
         label = wx.StaticText(self,wx.ID_ANY,label="Enter this person's name:")        
         self.nameCtrl = wx.TextCtrl(self,wx.ID_ANY)
         
         def add(event):
-            self.vidPanel.pause()
             self.EndModal(self.ADD_FACE)
-        
+                    
         addButton = wx.Button(self,self.RECOG_FACE,label="Add to database")
         addButton.Bind(wx.EVT_BUTTON,add)
         
         def recognize(event):
-            self.vidPanel.pause()
             self.EndModal(self.RECOG_FACE)
         
         recognizeButton = wx.Button(self,self.RECOG_FACE,label="Recognize Face")
         recognizeButton.Bind(wx.EVT_BUTTON,recognize)
 
         def discard(event):
-            self.vidPanel.pause()
             self.EndModal(self.DEL_FACE)
         
         discardButton = wx.Button(self,self.DEL_FACE,label="Discard this face")        
         discardButton.Bind(wx.EVT_BUTTON,discard)
-        
-        vidBox = wx.BoxSizer(wx.HORIZONTAL)
-        vidBox.AddStretchSpacer(1)
-        vidBox.Add(self.vidPanel,0,wx.EXPAND)
-        vidBox.AddStretchSpacer(1)
-        
+
         vStack = wx.BoxSizer(wx.VERTICAL)
-        vStack.Add(vidBox,0,wx.EXPAND)
         vStack.Add(label,0,wx.EXPAND)
         vStack.Add(self.nameCtrl,0,wx.EXPAND)                
         buttonsBox = wx.BoxSizer(wx.HORIZONTAL)

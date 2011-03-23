@@ -81,7 +81,10 @@ class VideoScrollPanel(wx.Panel):
             self.totalHeight += vidPanel.size[1]
             self.videos.append(vidPanel)
         self.uiUpdate()
-
+        
+    def clear(self):
+        self.videos = []        
+        
 class VideoPanel(wx.Panel):
     def __init__(self,parent,path=None,**kwargs):            
         wx.Panel.__init__(self,parent,**kwargs)
@@ -211,6 +214,7 @@ class ClickToPlayVideoPanel(VideoPanel):
 class VideoStack(wx.Panel):
     def __init__(self,parent,orientation,**kwargs):
         wx.Panel.__init__(self,parent)
+        self.parent = parent
         
         self.scrollwindow = VideoScrollPanel(self,orientation,**kwargs)       
         obox = wx.BoxSizer(orientation)
@@ -233,7 +237,7 @@ class VideoStack(wx.Panel):
             opBox.Add(self.scrollControl,0,wx.EXPAND)
         else:
             self.zoomControl = wx.Slider(self,wx.ID_ANY,0,0,1000)
-            self.scrollControl = wx.Slider(self,wx.ID_ANY,0,0,1000,style=wx.SL_VERTICAL|wx.SL_INVERSE)
+            self.scrollControl = wx.Slider(self,wx.ID_ANY,0,0,1000,style=wx.SL_VERTICAL)
             obox.Add(self.scrollwindow,1,wx.EXPAND)
             obox.Add(self.zoomControl,0,wx.EXPAND)
             opBox = wx.BoxSizer(wx.HORIZONTAL)
@@ -247,4 +251,7 @@ class VideoStack(wx.Panel):
     
     def loadThumbs(self,filePaths):
         self.scrollwindow.loadThumbs(filePaths)
+        
+    def clear(self):
+        self.scrollwindow.clear()
         

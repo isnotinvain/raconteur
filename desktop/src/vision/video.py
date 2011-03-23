@@ -15,6 +15,11 @@ class CvVideo(object):
     A more pythonic wrapper for video streams, currently wraps openCV videos
     TODO: create a stream interface and conform to it
     """
+    
+    @classmethod
+    def getCreation(cls,file_path):
+        return file_path[file_path.rfind("/")+1:file_path.rfind(".")]
+    
     def __init__(self, file_path):
         self.file_path = file_path
         if not os.path.exists(file_path):
@@ -23,7 +28,7 @@ class CvVideo(object):
         
         self.face_bounds = None
         self.face_tracks = None
-        self.creation = file_path[file_path.rfind("/")+1:file_path.rfind(".")]
+        self.creation = self.getCreation(file_path)
         self.duration = None
         self.normalizedFrameCount = 0
              
