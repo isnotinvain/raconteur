@@ -23,9 +23,13 @@ class PeoplePanel(video.VideoStack):
             util.filesystem.ensureDirectoryExists(dest)
             dest = os.path.join(dest,util.filesystem.generateUniqueFileName(dest,".avi"))
             shutil.move(event.path,dest)
-        elif action == ManageAFaceDialog.DEL_FACE:
-            self.faceVideos.remove(video)
+            self.clear()
             os.remove(event.path)
+            self.loadThumbs(self.crawlUnrecognized())
+        elif action == ManageAFaceDialog.DEL_FACE:
+            self.clear()
+            os.remove(event.path)
+            self.loadThumbs(self.crawlUnrecognized())
         elif action == ManageAFaceDialog.RECOG_FACE:
             #hist = vision.recognizer.recognize(self.parent.story.getPeopleDir(), video)
             #print hist

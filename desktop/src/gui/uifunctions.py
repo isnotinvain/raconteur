@@ -86,7 +86,6 @@ def onAnalyze(self,event):
         if faceExtract:
             video = vision.video.CvVideo(self.currentVideo)
             
-            self.peoplePanel.pause()
             video.loadFaceBounds()
             video.loadFaceTracks()
 
@@ -118,7 +117,7 @@ def onAnalyze(self,event):
                     cv.WriteFrame(writer, scaled)
                     prog+=1
             progDialog.Destroy()
-            self.peoplePanel.loadPeople()
+            self.peoplePanel.loadThumbs(self.peoplePanel.crawlUnrecognized())
             video = None
 
 def onShowOverlays(self,event):
