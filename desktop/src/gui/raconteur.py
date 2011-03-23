@@ -2,7 +2,7 @@ import sys
 import wx
 import widgets
 import widgets.video
-import uistructure
+import uifunctions
 import stream.story
 import util.filesystem
 
@@ -58,7 +58,7 @@ class RaconteurMainWindow(wx.Frame):
         self.CreateStatusBar()
         
         menu_bar = wx.MenuBar()
-        for menu,items in uistructure.menu:            
+        for menu,items in uifunctions.menu:            
             wxmenu = wx.Menu()            
             for i in items:
                 if len(i) == 3:
@@ -77,7 +77,7 @@ class RaconteurMainWindow(wx.Frame):
         self.SetMenuBar(menu_bar)
         
         self.toolbar = wx.ToolBar(self,wx.ID_ANY,style=wx.TB_VERTICAL)
-        for tool,callback in uistructure.tools:
+        for tool,callback in uifunctions.tools:
             id = wx.NewId()
             button = wx.Button(self.toolbar, id, tool)
             setattr(self.__class__,"_toolbar_on_"+str(id),callback)

@@ -5,7 +5,7 @@ Created on Feb 3, 2011
 '''
 import wx
 import util.image
-import stream.video
+import vision.video
 
 class VideoPanel(wx.Panel):
     '''
@@ -36,7 +36,7 @@ class VideoPanel(wx.Panel):
     
     def loadVideo(self,path):
         self.overlays = []
-        self.video = stream.video.Video(path)
+        self.video = vision.video.CvVideo(path)
         self.cv_frame = self.video.getNextFrame()
         self.current_frame = util.image.cvToWx(self.cv_frame)
         self.timer_tick = 1000/self.video.getFps()

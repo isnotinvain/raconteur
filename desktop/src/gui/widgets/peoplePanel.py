@@ -5,7 +5,7 @@ Created on Feb 3, 2011
 '''
 import os
 import wx
-import stream.video
+import vision.video
 import vision.recognizer
 import util.image
 from gui.widgets.dialogs import ManageAFaceDialog
@@ -40,14 +40,14 @@ class PeoplePanel(wx.Panel):
         self.playing = False
 
     def loadPeople(self):
-        video = stream.video.Video(self.parent.currentVideo)
+        video = vision.video.CvVideo(self.parent.currentVideo)
         peopleDir = os.path.join(self.parent.story.getUnrecognizedPeopleDir(),video.creation)
         video = None
         if os.path.exists(peopleDir):
             self.faceVideos = []
             for v in os.listdir(peopleDir):
                 if v[0] == ".": continue
-                self.faceVideos.append(stream.video.Video(os.path.join(peopleDir,v)))
+                self.faceVideos.append(vision.video.CvVideo(os.path.join(peopleDir,v)))
             
             if len(self.faceVideos) > 0:
                 w = self.faceVideos[0].getNextFrame().width

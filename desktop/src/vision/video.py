@@ -10,7 +10,7 @@ import util.filesystem
 import gst
 
 # TODO: inherit from some Stream object probably
-class Video(object):
+class CvVideo(object):
     """
     A more pythonic wrapper for video streams, currently wraps openCV videos
     TODO: create a stream interface and conform to it

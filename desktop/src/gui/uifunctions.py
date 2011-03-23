@@ -3,12 +3,12 @@ import cPickle
 import wx
 import cv
 import widgets
+import widgets.video_overlays
 import stream.story
 import stream.importer
 import vision.finder
 import vision.tracker
 import vision.recognizer
-import videoOverlays
 import util.filesystem
 
 def checkStory(self,evnt=None):
@@ -64,7 +64,7 @@ def onAnalyze(self,event):
         d.Destroy()
 
         if faceFind:
-            video = stream.video.Video(self.currentVideo)
+            video = vision.video.CvVideo(self.currentVideo)
             if faceScale:
                 finder = vision.finder.ObjectFinder(scaleTo=faceScale)
             else:
@@ -76,7 +76,7 @@ def onAnalyze(self,event):
             video = None
         
         if faceTrack:
-            video = stream.video.Video(self.currentVideo)
+            video = vision.video.CvVideo(self.currentVideo)
             video.loadFaceBounds()
             tracker = vision.tracker.ObjectTracker(**trackParams)
             video.face_tracks = tracker.extractAndInerpolateTracks(video.face_bounds)
@@ -84,7 +84,7 @@ def onAnalyze(self,event):
             video = None
             
         if faceExtract:
-            video = stream.video.Video(self.currentVideo)
+            video = vision.video.CvVideo(self.currentVideo)
             
             self.peoplePanel.pause()
             video.loadFaceBounds()
@@ -126,7 +126,7 @@ def onShowOverlays(self,event):
     tracks = False
     recognize = False
     
-    video = stream.video.Video(self.currentVideo)
+    video = vision.video.CvVideo(self.currentVideo)
     try:
         video.loadFaceBounds()
         bounds = True
@@ -152,10 +152,10 @@ def onShowOverlays(self,event):
         self.videoPanel.overlays = []
         
         if bounds:
-            overlay = videoOverlays.overlayFromFaceBounds(video.face_bounds)
+            overlay = widgets.video_overlays.overlayFromFaceBounds(video.face_bounds)
             self.videoPanel.overlays.append(overlay)
         if tracks:
-            overlay = videoOverlays.overlayFromTracks(video.face_tracks,video.face_bounds)
+            overlay = widgets.video_overlays.overlayFromTracks(video.face_tracks,video.face_bounds)
             self.videoPanel.overlays.append(overlay)
         
         video = None
