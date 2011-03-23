@@ -188,9 +188,22 @@ class ManageAFaceDialog(wx.Dialog):
         kwargs['title'] = "Manage this Face"
         wx.Dialog.__init__(self, parent, id, **kwargs)
         
+        vidpanel = video.VideoPanel(self,video_path)        
+        vidpanel.load()
+        
+        def onLoad(event):
+            vidpanel.SetInitialSize((200,200))
+            vidpanel.SetMinSize((200,200))
+            self.Layout()
+            self.Fit()
+            self.Refresh()
+            vidpanel.play()
+        
+        vidpanel.Bind(wx.media.EVT_MEDIA_LOADED,onLoad)
+        
         label = wx.StaticText(self,wx.ID_ANY,label="Enter this person's name:")        
         self.nameCtrl = wx.TextCtrl(self,wx.ID_ANY)
-        
+                
         def add(event):
             self.EndModal(self.ADD_FACE)
                     
@@ -210,6 +223,13 @@ class ManageAFaceDialog(wx.Dialog):
         discardButton.Bind(wx.EVT_BUTTON,discard)
 
         vStack = wx.BoxSizer(wx.VERTICAL)
+        
+        vidbox = wx.BoxSizer(wx.HORIZONTAL)
+        vidbox.AddStretchSpacer(1)
+        vidbox.Add(vidpanel,0,wx.EXPAND)
+        vidbox.AddStretchSpacer(1)
+        
+        vStack.Add(vidbox,0,wx.EXPAND)
         vStack.Add(label,0,wx.EXPAND)
         vStack.Add(self.nameCtrl,0,wx.EXPAND)                
         buttonsBox = wx.BoxSizer(wx.HORIZONTAL)
