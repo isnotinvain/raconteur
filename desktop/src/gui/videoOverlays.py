@@ -67,11 +67,11 @@ class Rect(VideoOverlaySprite):
         self.x = x
         self.y = y
         self.w = w
-        self.h = h        
+        self.h = h
         
         self.color = color
         self.fillColor = fillColor
-        self.penWidth = penWidth        
+        self.penWidth = penWidth
         self.pen = wx.Pen(self.color, self.penWidth)        
         if self.fillColor:
             self.brush = wx.Brush(self.fillColor)

@@ -124,7 +124,7 @@ class RaconteurMainWindow(wx.Frame):
         hsizer.Add(pplStack,20,wx.EXPAND)
         
         vsizer = wx.BoxSizer(wx.VERTICAL)
-        vsizer.Add(hsizer,80,wx.EXPAND)        
+        vsizer.Add(hsizer,80,wx.EXPAND)
         
         vsizer.Add(self.timeline,20,wx.EXPAND)
                 

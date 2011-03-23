@@ -111,7 +111,7 @@ def onAnalyze(self,event):
                     cont,_ = progDialog.Update(prog,"Saving Faces")
                     if not cont: 
                         progDialog.Destroy()
-                        video.reset()
+                        video = None
                         return                                         
                     scaled = cv.CreateImage(extractParams['scaleTo'],face.depth,face.nChannels)
                     cv.Resize(face,scaled,cv.CV_INTER_LINEAR)
@@ -188,7 +188,7 @@ def onAbout(self,event):
 def onPlayPause(self,event):
     self.videoPanel.playPause()
 
-def onReset(self,event):    
+def onReset(self,event):
     self.videoPanel.stop()
     self.videoPanel.overlays = []
 
