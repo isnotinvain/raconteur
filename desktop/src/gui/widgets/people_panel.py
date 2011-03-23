@@ -8,7 +8,7 @@ import shutil
 
 import wx
 import util.filesystem
-from widgets.dialogs import ManageAFaceDialog
+from widgets import ManageAFaceDialog
 import video
 import vision.video
 
@@ -37,7 +37,7 @@ class PeoplePanel(video.VideoStack):
         d.Destroy()
         
         self.clear()
-        self.loadThumbs(self.crawlUnrecognized())
+        self.loadThumbs(self.crawlUnrecognized())        
 
     def crawlUnrecognized(self):
         peopleDir = os.path.join(self.parent.story.getUnrecognizedPeopleDir(),vision.video.CvVideo.getCreation(self.parent.currentVideo))

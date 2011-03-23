@@ -83,7 +83,9 @@ class VideoScrollPanel(wx.Panel):
         self.uiUpdate()
         
     def clear(self):
-        self.videos = []        
+        self.DestroyChildren()
+        self.videos = []
+        
         
 class VideoPanel(wx.Panel):
     def __init__(self,parent,path=None,**kwargs):            
