@@ -24,7 +24,6 @@ class PeoplePanel(video.VideoStack):
             dest = os.path.join(dest,util.filesystem.generateUniqueFileName(dest,".avi"))
             shutil.move(event.path,dest)
             self.clear()
-            os.remove(event.path)
             self.loadThumbs(self.crawlUnrecognized())
         elif action == ManageAFaceDialog.DEL_FACE:
             self.clear()

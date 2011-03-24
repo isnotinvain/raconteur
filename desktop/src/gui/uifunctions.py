@@ -69,8 +69,8 @@ def onAnalyze(self,event):
                 finder = vision.finder.ObjectFinder(scaleTo=faceScale)
             else:
                 finder = vision.finder.ObjectFinder()
-            progDialog = wx.ProgressDialog("Extracting Face Boundaries","Working...",maximum=1000,parent=self,style=wx.PD_CAN_ABORT)
-            video.face_bounds = finder.findInVideo(self.videoPanel.video,progDialog=progDialog,**faceParams)
+            progDialog = wx.ProgressDialog("Extracting Face Boundaries","Working...",maximum=1000,parent=self,style=wx.PD_CAN_ABORT)            
+            video.face_bounds = finder.findInVideo(video,progDialog=progDialog,**faceParams)
             video.writeFaceBounds()
             progDialog.Destroy()
             video = None

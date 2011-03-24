@@ -113,10 +113,10 @@ class AnalyzeDialog(wx.Dialog):
         self.faceParams = wx.TextCtrl(panel, wx.ID_ANY,value="{'scale_factor':1.1, 'min_neighbors':3, 'flags':0, 'min_size':(10,10)}")
         
         self.trackCheck = wx.CheckBox(panel,wx.ID_ANY,label="Track Faces in Video")
-        self.trackParams = wx.TextCtrl(panel, wx.ID_ANY,value="{'look_ahead_threshold':10,'similarity':0.75,'min_track_size':10}")
+        self.trackParams = wx.TextCtrl(panel, wx.ID_ANY,value="{'look_ahead_threshold':10,'similarity':0.60,'min_track_size':30}")
         
         self.extractCheck = wx.CheckBox(panel,wx.ID_ANY,label="Extract Faces from Video")
-        self.extractParams = wx.TextCtrl(panel, wx.ID_ANY,value="{'scaleTo':(100,100)}")
+        self.extractParams = wx.TextCtrl(panel, wx.ID_ANY,value="{'scaleTo':(200,200)}")
         
         self.recognizeCheck = wx.CheckBox(panel,wx.ID_ANY,label="Recognize Faces in Video")
         self.recognizeParams = wx.TextCtrl(panel, wx.ID_ANY,value="{}")

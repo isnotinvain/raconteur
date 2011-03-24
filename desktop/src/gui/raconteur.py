@@ -110,6 +110,7 @@ class RaconteurMainWindow(wx.Frame):
     def loadVideo(self,event):
         self.videoPanel.load(event.path)
         self.currentVideo = event.path
+        self.peoplePanel.clear()
         ppl = self.peoplePanel.crawlUnrecognized()
         if ppl:
             self.peoplePanel.loadThumbs(ppl)
