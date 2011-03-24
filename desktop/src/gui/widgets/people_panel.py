@@ -31,9 +31,8 @@ class PeoplePanel(video.VideoStack):
             os.remove(event.path)
             self.loadThumbs(self.crawlUnrecognized())
         elif action == ManageAFaceDialog.RECOG_FACE:
-            #hist = vision.recognizer.recognize(self.parent.story.getPeopleDir(), video)
-            #print hist
-            pass            
+            hist = vision.recognizer.recognize(self.parent.story.getPeopleDir(), event.path)
+            print hist            
         d.Destroy()
         
         self.clear()

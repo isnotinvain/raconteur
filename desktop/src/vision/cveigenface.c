@@ -51,15 +51,23 @@ cveigenface_train(PyObject *self, PyObject *args) {
 	int success;
 
     if(!PyArg_ParseTuple(args, "Os", &dataDict, &outFile)) return NULL;
-
+    
+    printf("Loading training images...\n");
     success = loadTrainingImages(dataDict,&faces,&numFaces,&truth,&peopleIDs);
+    printf("Done loading training images...\n");
+
     if(!success) {
     	PyErr_SetString(FileLoadError, "Couldn't load a training video file\n");
 		return NULL;
     }
-    
+
+    printf("Doing Training\n");
     doTraining(faces, numFaces, &eigenVectors, &avgTrainingImg, &eigenValues,&projection);
+    printf("Done Training\n");
+
+    printf("Storing Data\n");
     storeTrainingData(outFile,numFaces-1, numFaces, truth, eigenValues, projection, avgTrainingImg, eigenVectors);
+    printf("Done Storing Data\n");
     
     return peopleIDs;
 }
@@ -141,24 +149,26 @@ static int loadTrainingImages(PyObject* dataDict, IplImage*** faces, int* numFac
     char* path;
     int vid,numPeople=0,numVideos;
     int faceIndex = 0;
-    IplImage* frame;    
+    int skipNFrames = 10;
+    IplImage* frame;
     CvCapture* video;
     CvSize size;
-    
+
     PyObject *key, *value;
 	Py_ssize_t pos = 0;
-
 	while (PyDict_Next(dataDict, &pos, &key, &value)) {
 		numVideos = PyList_Size(value);
 		for(vid=0;vid<numVideos;vid++) {
 			pyPath = PyList_GetItem(value,vid);
 			path = PyString_AsString(pyPath);
-			video = cvCaptureFromFile(path);			
-			(*numFaces) += cvGetCaptureProperty(video,CV_CAP_PROP_FRAME_COUNT)-1;
+			video = cvCaptureFromFile(path);
+            int framesUsed = cvGetCaptureProperty(video,CV_CAP_PROP_FRAME_COUNT);
+            framesUsed /= skipNFrames;
+            (*numFaces) += framesUsed;
 			cvReleaseCapture(&video);
 		}
 	}
-    
+
 	*faces = (IplImage **)cvAlloc((*numFaces)*sizeof(IplImage *));
     *truth = cvCreateMat(1,*numFaces,CV_32SC1);
 
@@ -172,14 +182,19 @@ static int loadTrainingImages(PyObject* dataDict, IplImage*** faces, int* numFac
 			path = PyString_AsString(pyPath);
 			video = cvCaptureFromFile(path);
 			frame = cvQueryFrame(video);
+            int fnum = 0;
             if(frame!=NULL) {
                 size.width = frame->width;
                 size.height = frame->height;
 			    while(frame != NULL) {
-                    (*faces)[faceIndex] = cvCreateImage(size,frame->depth,1);
-                    cvCvtColor(frame,(*faces)[faceIndex],CV_RGB2GRAY);
-                    *((*truth)->data.i+faceIndex) = numPeople-1;
-                    faceIndex++;
+                    if(fnum%skipNFrames==0) {
+                        (*faces)[faceIndex] = cvCreateImage(size,frame->depth,1);
+                        cvCvtColor(frame,(*faces)[faceIndex],CV_RGB2GRAY);
+                        cvEqualizeHist((*faces)[faceIndex],(*faces)[faceIndex]);
+                        *((*truth)->data.i+faceIndex) = numPeople;
+                        faceIndex++;
+                    }
+                    fnum++;
 				    frame = cvQueryFrame(video);
 			    }
             }
@@ -208,6 +223,7 @@ static int loadTestImages(char* testVideo, IplImage*** faces, int* numTestFaces)
         while(frame != NULL) {
             (*faces)[faceIndex] = cvCreateImage(size,frame->depth,1);
             cvCvtColor(frame,(*faces)[faceIndex],CV_RGB2GRAY);
+            cvEqualizeHist((*faces)[faceIndex],(*faces)[faceIndex]);
             faceIndex++;
             frame = cvQueryFrame(video);
         }
@@ -263,17 +279,19 @@ static void storeTrainingData(char* outFile, int nEigens, int numFaces, CvMat* t
 	cvReleaseFileStorage(&fileStorage);
 }
 
+/*
 int faceGetter(int index, void* buffer, void* user_data) {
     memcpy(buffer,((IplImage**)(user_data))[index],((IplImage**)(user_data))[index]->nSize);
     return CV_NO_ERR;
 }
+*/
 
 static void doTraining(IplImage** faces,int numFaces,IplImage*** eigenVectors, IplImage** avgTrainingImg, CvMat** eigenValues, CvMat** projection) {
 	int i,nEigens,offset;
 	CvTermCriteria calcLimit;
 	CvSize faceImgSize;
-    CvInput getter;
-    getter.callback = faceGetter;
+    //CvInput getter;
+    //getter.callback = faceGetter;
 
 	nEigens = numFaces-1;
     
@@ -289,7 +307,7 @@ static void doTraining(IplImage** faces,int numFaces,IplImage*** eigenVectors, I
 
 	calcLimit = cvTermCriteria( CV_TERMCRIT_ITER, nEigens, 1);
 
-
+    printf("\tcalcEigenObjects\n");
 	// compute average image, eigenvalues, and eigenvectors
 	cvCalcEigenObjects(
 		numFaces,
@@ -301,6 +319,7 @@ static void doTraining(IplImage** faces,int numFaces,IplImage*** eigenVectors, I
 		&calcLimit,
 		*avgTrainingImg,
 		(*eigenValues)->data.fl);
+    printf("\tdone calcEigenObjects\n");
 
 	cvNormalize(*eigenValues, *eigenValues, 1, 0, CV_L1, 0);
 
@@ -308,7 +327,7 @@ static void doTraining(IplImage** faces,int numFaces,IplImage*** eigenVectors, I
 	offset = (*projection)->step / sizeof(float);
 	for(i=0; i<numFaces; i++) {
 		float pct = i; pct /= numFaces;
-		printf("%f\n",pct);
+		printf("\tprojection: %f\n",pct);
 		cvEigenDecomposite(
 			faces[i],
 			nEigens,
