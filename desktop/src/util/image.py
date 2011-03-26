@@ -9,6 +9,11 @@ import cv
 import geometry
 import wx
 
+def cvGrayCopy(img):
+    gray = cv.CreateImage((img.width,img.height),img.depth,1)
+    cv.CvtColor(img, gray, cv.CV_RGB2GRAY)    
+    return gray
+
 def getCvSubRect(img,rect):
     rect = tuple(map(int,rect))
     subView = cv.GetSubRect(img, rect)
