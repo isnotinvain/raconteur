@@ -196,6 +196,7 @@ def onTrain(self,event):
     f = open(os.path.join(self.story.getPeopleDir(),".ids"),"w")
     cPickle.dump(ids,f)
     f.close()
+	print ids
     
 tools = (
             ("Import", onImport),

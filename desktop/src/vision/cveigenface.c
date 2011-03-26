@@ -51,8 +51,9 @@ cveigenface_train(PyObject *self, PyObject *args) {
 	int success;
 
     if(!PyArg_ParseTuple(args, "Os", &dataDict, &outFile)) return NULL;
-    
+  
     printf("Loading training images...\n");
+
     success = loadTrainingImages(dataDict,&faces,&numFaces,&truth,&peopleIDs);
     printf("Done loading training images...\n");
 
@@ -162,7 +163,7 @@ static int loadTrainingImages(PyObject* dataDict, IplImage*** faces, int* numFac
 			pyPath = PyList_GetItem(value,vid);
 			path = PyString_AsString(pyPath);
 			video = cvCaptureFromFile(path);
-            int framesUsed = cvGetCaptureProperty(video,CV_CAP_PROP_FRAME_COUNT);
+            int framesUsed = cvGetCaptureProperty(video,CV_CAP_PROP_FRAME_COUNT)-1;
             framesUsed /= skipNFrames;
             (*numFaces) += framesUsed;
 			cvReleaseCapture(&video);
@@ -182,7 +183,7 @@ static int loadTrainingImages(PyObject* dataDict, IplImage*** faces, int* numFac
 			path = PyString_AsString(pyPath);
 			video = cvCaptureFromFile(path);
 			frame = cvQueryFrame(video);
-            int fnum = 0;
+            int fnum = 1;
             if(frame!=NULL) {
                 size.width = frame->width;
                 size.height = frame->height;
