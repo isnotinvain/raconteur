@@ -25,11 +25,11 @@ def recognize(peopleDir,video_path):
     
     id2name = dict((v,k) for k,v in ids.iteritems())
     
-    recog = cveigenface.recognize(video_path,os.path.join(peopleDir,".trainingData"))
+    recog = cveigenface.recognize(video_path,os.path.join(peopleDir,".trainingData"),True)
     
     hist = dict((v,0.0) for v in ids)
     total = 0.0
-    for id in recog:
+    for id,_ in recog:
         hist[id2name[id]] += 1
         total += 1
     

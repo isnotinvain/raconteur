@@ -29,14 +29,15 @@ static int loadTestImages(char* testVideo, IplImage*** faces, int* numFaces);
 
 static int loadTrainingData(char* dataFilePath, int* nEigens,int* nTrainFaces, CvMat** truth, CvMat** eigenValues, CvMat** projection, IplImage** avgTrainingImg, IplImage*** eigenVectors);
 
-int findNearestNeighbor(float* projectedTestFace, int nTrainFaces, int nEigens, CvMat* trainProjection);
+int findNearestNeighbor(float* projectedTestFace, int nTrainFaces, int nEigens, CvMat* trainProjection, CvMat* eigenValues, int euclideanDistance,double* dist);
 
 int faceGetter(int index, void* buffer, void* user_data);
 
 static PyObject* FileLoadError;
 
-// train(self,data,outFile)
+// train(self,dataDict,outFile)
 // data is a dictionary mapping personID to a list of video files, outFile a string
+// returns a dict mapping people to their ID numbers (which are what recognize returns)
 static PyObject *
 cveigenface_train(PyObject *self, PyObject *args) {
     PyObject *dataDict,*peopleIDs;
@@ -73,6 +74,11 @@ cveigenface_train(PyObject *self, PyObject *args) {
     return peopleIDs;
 }
 
+
+//recognize(self,testVideoPath,trainingDataPath,useEuclidean)
+// testVideoPath: string
+// trainingDataPath: string
+// useEuclidean: if(!useEuclidean) { use malhalanobis distance instead of euclidean }
 static PyObject *
 cveigenface_recognize(PyObject *self, PyObject *args) {    
     Py_ssize_t numTestFaces;
@@ -81,11 +87,13 @@ cveigenface_recognize(PyObject *self, PyObject *args) {
     IplImage *avgTrainingImg, **eigenVectors, **faces; 
     char *testVideo,*dataFilePath;
     float* projectedTestFace;
-    int i;
+    int i,euclideanDistance;
+    double dist;
     
     PyObject *recognition;
+    PyObject *recogEntry;
     
-    if(!PyArg_ParseTuple(args, "ss", &testVideo,&dataFilePath)) return NULL;
+    if(!PyArg_ParseTuple(args, "ssi", &testVideo,&dataFilePath,&euclideanDistance)) return NULL;
     
     success = loadTestImages(testVideo,&faces,&numTestFaces);
     if(!success) {
@@ -112,16 +120,21 @@ cveigenface_recognize(PyObject *self, PyObject *args) {
 			avgTrainingImg,
 			projectedTestFace);
 
-		iNearest = findNearestNeighbor(projectedTestFace, nTrainFaces, nEigens, trainProjection);		
+		iNearest = findNearestNeighbor(projectedTestFace, nTrainFaces, nEigens, trainProjection,eigenValues,euclideanDistance,&dist);
 		nearest  = truth->data.i[iNearest];
-		PyObject* pyNearest = Py_BuildValue("i",nearest);
-		PyTuple_SetItem(recognition,i,pyNearest);
+        recogEntry = PyTuple_New(2);
+        PyObject *pyNearest,*pyDist;
+		pyNearest = Py_BuildValue("i",nearest);
+		pyDist = Py_BuildValue("d",dist);
+        PyTuple_SetItem(recogEntry,0,pyNearest);
+        PyTuple_SetItem(recogEntry,1,pyDist);
+		PyTuple_SetItem(recognition,i,recogEntry);
 	}
     
     return recognition;
 }
 
-int findNearestNeighbor(float* projectedTestFace, int nTrainFaces, int nEigens, CvMat* trainProjection) {
+int findNearestNeighbor(float* projectedTestFace, int nTrainFaces, int nEigens, CvMat* trainProjection, CvMat* eigenValues, int euclideanDistance, double* dist) {
 	double leastDistSq = DBL_MAX;
 	int i, iTrain, iNearest = 0;
 
@@ -132,16 +145,21 @@ int findNearestNeighbor(float* projectedTestFace, int nTrainFaces, int nEigens, 
 			float d_i =
 				projectedTestFace[i] -
 				trainProjection->data.fl[iTrain*nEigens + i];
-			//distSq += d_i*d_i / eigenValues->data.fl[i];  // Mahalanobis
-			distSq += d_i*d_i; // Euclidean
+            if(euclideanDistance) {
+                // Euclidean distance
+                distSq += d_i*d_i;
+            } else {
+                // Mahalanobis distance
+                distSq += d_i*d_i / eigenValues->data.fl[i];
+            }
 		}
-
+        //printf("Distance: %f\n",distSq);
 		if(distSq < leastDistSq) {
 			leastDistSq = distSq;
 			iNearest = iTrain;
 		}
 	}
-
+    (*dist) = leastDistSq;
 	return iNearest;
 }
 
