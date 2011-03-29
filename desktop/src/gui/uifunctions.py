@@ -1,4 +1,5 @@
 import os
+import fnmatch
 import cPickle
 import wx
 import cv
@@ -25,20 +26,20 @@ def onImport(self,event):
     if d.ShowModal()==wx.ID_OK:
         streamType = d.streamTypeCtrl.GetValue()        
         directory = d.directoryCtrl.GetValue()
+        regex = d.regexCtrl.GetValue()        
         d.Destroy()
         imp = stream.importer.StreamImporter(streamType,self.story.path,d.moveCheck.GetValue())
         progDialog = wx.ProgressDialog("Importing","Importing...",maximum=1000,parent=self,style=wx.PD_CAN_ABORT)        
-        try:            
-            imp.importDirectory(directory,progDialog=progDialog)
+        filter = lambda x : fnmatch.fnmatch(x,regex)
+        try:
+            imp.importDirectory(directory,progDialog=progDialog,filter_function=filter)
         except stream.importer.NoSuchDirectoryError:
             widgets.misc.messageBox(self, "Directory does not exist:\n"+directory, "Woops!")
             progDialog.Destroy()
             return
         progDialog.Destroy()
-        self.story.crawl(streamType)
-        self.timelinePanel.loadThumbs()
+        self.reloadTimeline()        
         self.Refresh()
-        self.Update()
     else: d.Destroy()
     
 def onAnalyze(self,event):
@@ -196,7 +197,7 @@ def onTrain(self,event):
     f = open(os.path.join(self.story.getPeopleDir(),".ids"),"w")
     cPickle.dump(ids,f)
     f.close()
-	print ids
+    print ids
     
 tools = (
             ("Import", onImport),

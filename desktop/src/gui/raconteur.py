@@ -45,9 +45,11 @@ class RaconteurMainWindow(wx.Frame):
             return
         util.filesystem.ensureDirectoryExists(self.story.getPeopleDir())
         util.filesystem.ensureDirectoryExists(self.story.getUnrecognizedPeopleDir())
-        self.story.crawl("video")
         self.SetTitle(self.story.name)
-        
+        self.reloadTimeline()
+
+    def reloadTimeline(self):        
+        self.story.crawl("video")
         paths = []
         for key in sorted(self.story.stream_files["video"].iterkeys()):
             paths.append(self.story.stream_files["video"][key])

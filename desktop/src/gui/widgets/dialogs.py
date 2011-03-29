@@ -64,7 +64,9 @@ class ImportDialog(wx.Dialog):
         
         dirLabel = wx.StaticText(panel,wx.ID_ANY,label="Enter the path to the file / root of the files you want to import")                
         self.directoryCtrl = wx.TextCtrl(panel,wx.ID_ANY)
-        self.directoryCtrl.SetEditable(False) 
+        self.directoryCtrl.SetEditable(False)
+        regexLabel = wx.StaticText(panel,wx.ID_ANY,label="Enter an optional filter regex such as (*.avi)")
+        self.regexCtrl = wx.TextCtrl(panel,wx.ID_ANY)
         
         def browse(event):
             d = wx.DirDialog(self, message="Select a directory",style = wx.DD_DEFAULT_STYLE|wx.DD_DIR_MUST_EXIST)
@@ -82,6 +84,8 @@ class ImportDialog(wx.Dialog):
         dirhbox.Add(self.directoryCtrl,90,wx.EXPAND)
         dirhbox.Add(self.directoryButton,10,wx.EXPAND)
         pvbox.Add(dirhbox,0,wx.EXPAND)
+        pvbox.Add(regexLabel,0,wx.EXPAND)
+        pvbox.Add(self.regexCtrl,0,wx.EXPAND)
         pvbox.Add(streamTypeLabel,0,wx.EXPAND)
         pvbox.Add(self.streamTypeCtrl,0,wx.EXPAND)
         pvbox.Add(self.moveCheck,0,wx.EXPAND)
