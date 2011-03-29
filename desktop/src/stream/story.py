@@ -4,7 +4,7 @@ import cPickle
 import util
 
 class Story(object):
-    
+
     @classmethod
     def load(cls,path):
         f = open(os.path.join(path,".raconteur"),"r")
@@ -12,11 +12,11 @@ class Story(object):
         f.close()
         story.path = path
         return story
-    
+
     def __init__(self,name,path):
         self.path = path
         self.name = name
-        self.stream_files = {}        
+        self.stream_files = {}
         self.stream_creations = {}
         self.people = []
 
@@ -25,41 +25,41 @@ class Story(object):
         f = open(os.path.join(self.path,".raconteur"),"w")
         cPickle.dump(self,f)
         f.close()
-        
+
     def crawl(self,streamType):
         """
         finds all files of a particular stream type
         """
-        self.stream_files[streamType] = {}        
-        for root, _, files in os.walk(self.path):            
+        self.stream_files[streamType] = {}
+        for root, _, files in os.walk(self.path):
             if root[root.rfind("/")+1:] == streamType:
                 for file in files:
                     if file[0] == ".": continue
                     creation_stamp = int(file[:file.rfind('.')])
                     self.stream_files[streamType][creation_stamp] = os.path.join(root,file)
-        
+
         self.stream_creations[streamType] = sorted(self.stream_files[streamType])
-                
+
     def getStreamsInRange(self,start,end,streamType):
         creations = self.stream_creations[streamType]
         s = bisect.bisect_left(creations,start)
         if s == len(creations): return []
-        
+
         e = bisect.bisect_right(creations,end)
         if not e: return []
-                
+
         return map(lambda x : (x,self.stream_files[streamType][x]),creations[s:e])
-    
+
     def addPerson(self,person):
         if person not in self.people:
             self.people.append(person)
-    
+
     def getPeopleDir(self):
         return os.path.join(self.path,".people")
-    
+
     def getUnrecognizedPeopleDir(self):
         return os.path.join(self.getPeopleDir(),"unrecognized")
-    
+
     def getPersonDir(self,person):
         if not person in self.people:
             self.addPerson(person)

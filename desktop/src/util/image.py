@@ -11,7 +11,7 @@ import wx
 
 def cvGrayCopy(img):
     gray = cv.CreateImage((img.width,img.height),img.depth,1)
-    cv.CvtColor(img, gray, cv.CV_RGB2GRAY)    
+    cv.CvtColor(img, gray, cv.CV_RGB2GRAY)
     return gray
 
 def getCvSubRect(img,rect):
@@ -30,14 +30,14 @@ def saveImage(img,path,scaleTo=None):
 
 def cvToWx(img):
     img = cv.CloneImage(img)
-    cv.CvtColor(img, img, cv.CV_BGR2RGB)        
+    cv.CvtColor(img, img, cv.CV_BGR2RGB)
     return wx.ImageFromBuffer(img.width,img.height,img.tostring())
 
 def cvScaleToSize(img,max_width,max_height,returnFactor=False):
     """
-    @return a scaled copy of img that fits inside max_width,max_height    
+    @return a scaled copy of img that fits inside max_width,max_height
     """
-    
+
     size,factor = geometry.getScaledDimensions((img.width,img.height),(max_width,max_height),True)
     size = map(int,size)
 
@@ -47,6 +47,6 @@ def cvScaleToSize(img,max_width,max_height,returnFactor=False):
         return scaled,factor
     return scaled
 
-def cvDrawObjectBoundaries(img,objects,color=(255,0,0)):        
+def cvDrawObjectBoundaries(img,objects,color=(255,0,0)):
     for (x,y,w,h),_ in objects:
         cv.Rectangle(img, (x,y), (x+w,y+h), color)

@@ -9,7 +9,7 @@
     http://www.cognotics.com/opencv/servo_2007_series/part_5/index.html
     Article originally appeared in SERVO Magazine
     Tutorial was posted without a license, if you wish me to take down this
-    file please let me know: alex@isnotinvain.com    
+    file please let me know: alex@isnotinvain.com
 
 */
 
@@ -54,7 +54,7 @@ cveigenface_train(PyObject *self, PyObject *args) {
     int skipNFrames;
 
     if(!PyArg_ParseTuple(args, "Osi", &dataDict, &outFile,&skipNFrames)) return NULL;
-  
+
     printf("Loading training images...\n");
 
     success = loadTrainingImages(dataDict,&faces,&numFaces,&truth,&peopleIDs,skipNFrames);
@@ -103,35 +103,35 @@ cveigenface_train(PyObject *self, PyObject *args) {
 // trainingDataPath: string
 // useEuclidean: if(!useEuclidean) { use malhalanobis distance instead of euclidean }
 static PyObject *
-cveigenface_recognize(PyObject *self, PyObject *args) {    
+cveigenface_recognize(PyObject *self, PyObject *args) {
     Py_ssize_t numTestFaces;
     int success, nEigens, nTrainFaces;
     CvMat *truth=NULL, *eigenValues=NULL, *trainProjection=NULL;
-    IplImage *avgTrainingImg=NULL, **eigenVectors=NULL, **faces=NULL; 
+    IplImage *avgTrainingImg=NULL, **eigenVectors=NULL, **faces=NULL;
     char *testVideo,*dataFilePath;
     float* projectedTestFace=NULL;
     int i,euclideanDistance;
     double dist;
-    
+
     PyObject *recognition;
     PyObject *recogEntry;
-    
+
     if(!PyArg_ParseTuple(args, "ssi", &testVideo,&dataFilePath,&euclideanDistance)) return NULL;
-    
+
     success = loadTestImages(testVideo,&faces,&numTestFaces);
     if(!success) {
     	PyErr_SetString(FileLoadError, "Couldn't load a test video file\n");
 		return NULL;
     }
-    
+
     success = loadTrainingData(dataFilePath, &nEigens, &nTrainFaces, &truth, &eigenValues, &trainProjection, &avgTrainingImg, &eigenVectors);
     if(!success) {
     	PyErr_SetString(FileLoadError, "Couldn't load training data\n");
 		return NULL;
     }
-    
+
     recognition = PyTuple_New(numTestFaces);
-    
+
 	projectedTestFace = (float *)cvAlloc(nEigens*sizeof(float));
 	for(i=0;i<numTestFaces;i++) {
 		int iNearest, nearest;
@@ -153,7 +153,7 @@ cveigenface_recognize(PyObject *self, PyObject *args) {
         PyTuple_SetItem(recogEntry,1,pyDist);
 		PyTuple_SetItem(recognition,i,recogEntry);
 	}
-    
+
     // clean up
     if(faces){
         for(i=0;i<numTestFaces;i++) {
@@ -269,14 +269,14 @@ static int loadTrainingImages(PyObject* dataDict, IplImage*** faces, int* numFac
 }
 
 static int loadTestImages(char* testVideo, IplImage*** faces, int* numTestFaces) {
-    CvCapture *video;	
-    IplImage* frame; 
+    CvCapture *video;
+    IplImage* frame;
     int faceIndex = 0;
     CvSize size;
 
     video = cvCaptureFromFile(testVideo);
 	(*numTestFaces) = cvGetCaptureProperty(video,CV_CAP_PROP_FRAME_COUNT)-1;
-	
+
 	*faces = (IplImage **)cvAlloc((*numTestFaces)*sizeof(IplImage *));
 
     frame = cvQueryFrame(video);
@@ -293,7 +293,7 @@ static int loadTestImages(char* testVideo, IplImage*** faces, int* numTestFaces)
     }
 
 	cvReleaseCapture(&video);
-	
+
 	return 1;
 }
 
@@ -363,7 +363,7 @@ static void doTraining(IplImage** faces,int numFaces,IplImage*** eigenVectors, I
     //getter.callback = faceGetter;
 
 	nEigens = numFaces-1;
-    
+
 	faceImgSize.width  = faces[0]->width;
 	faceImgSize.height = faces[0]->height;
 
@@ -391,8 +391,8 @@ static void doTraining(IplImage** faces,int numFaces,IplImage*** eigenVectors, I
     printf("\tdone calcEigenObjects\n");
 
 	cvNormalize(*eigenValues, *eigenValues, 1, 0, CV_L1, 0);
-    
-    for(i=0;i<nEigens;i++) {    
+
+    for(i=0;i<nEigens;i++) {
         cvNormalize((*eigenVectors)[i], (*eigenVectors)[i], 1, 0, CV_MINMAX, 0);
     }
 
@@ -415,10 +415,10 @@ static void doTraining(IplImage** faces,int numFaces,IplImage*** eigenVectors, I
 static PyMethodDef EigenfaceMethods[] = {
     {"train",  cveigenface_train, METH_VARARGS,
      "Create training data on a set of face images"},
-     
+
      {"recognize",  cveigenface_recognize, METH_VARARGS,
      "Recognize a face given training data"},
-     
+
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 
@@ -428,7 +428,7 @@ initcveigenface(void)
 {
     PyObject* m = Py_InitModule("cveigenface", EigenfaceMethods);
     if(m==NULL) return;
-    
+
     FileLoadError = PyErr_NewException("cveigenface.FileLoadError", NULL, NULL);
     Py_INCREF(FileLoadError);
     PyModule_AddObject(m, "FileLoadError", FileLoadError);

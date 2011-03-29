@@ -18,7 +18,7 @@ class PeoplePanel(video.VideoStack):
         d=ManageAFaceDialog(self,wx.ID_ANY,event.path)
         action = d.ShowModal()
         if action == ManageAFaceDialog.ADD_FACE:
-            name = d.nameCtrl.GetValue()            
+            name = d.nameCtrl.GetValue()
             dest = self.parent.story.getPersonDir(name)
             util.filesystem.ensureDirectoryExists(dest)
             dest = os.path.join(dest,util.filesystem.generateUniqueFileName(dest,".avi"))
@@ -31,11 +31,11 @@ class PeoplePanel(video.VideoStack):
             self.loadThumbs(self.crawlUnrecognized())
         elif action == ManageAFaceDialog.RECOG_FACE:
             hist = vision.recognizer.recognize(self.parent.story.getPeopleDir(), event.path)
-            print hist            
+            print hist
         d.Destroy()
-        
+
         self.clear()
-        self.loadThumbs(self.crawlUnrecognized())        
+        self.loadThumbs(self.crawlUnrecognized())
 
     def crawlUnrecognized(self):
         peopleDir = os.path.join(self.parent.story.getUnrecognizedPeopleDir(),vision.video.CvVideo.getCreation(self.parent.currentVideo))
@@ -46,5 +46,5 @@ class PeoplePanel(video.VideoStack):
                 faceVideos.append(os.path.join(peopleDir,v))
         else:
             faceVideos = []
-        
+
         return faceVideos

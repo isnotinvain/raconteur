@@ -15,7 +15,7 @@ class ObjectTracker(object):
         self.look_ahead_threshold = look_ahead_threshold
         self.similarity = similarity
         self.min_track_size = min_track_size
-        
+
     def _trackBound(self,raw_bounds,tracked,bound,f):
         """
         Track a single bound through the video
@@ -36,10 +36,10 @@ class ObjectTracker(object):
                     miss = False
                     break
             if miss:
-                miss_count += 1                          
+                miss_count += 1
             frame_count += 1
         return track
-    
+
     def extractTracks(self,raw_bounds,progDialog=None,progressUpdateRate=100):
         """
         The main algorithm of the ObjectTracker,
@@ -49,7 +49,7 @@ class ObjectTracker(object):
         """
         tracks = []
         tracked = set()
-        for f,frame_bounds in enumerate(raw_bounds):            
+        for f,frame_bounds in enumerate(raw_bounds):
             for bound,_ in frame_bounds:
                 if (f,bound) in tracked: continue
                 track = self._trackBound(raw_bounds,tracked,bound,f)
@@ -62,12 +62,12 @@ class ObjectTracker(object):
                 if not cont: return tracks
                 pass
         return tracks
-    
+
     def interpolateTracks(self,tracks):
         """
         Scans through each track and makes it continuous by filling in frames that are missing.
-        When a series of missing frames is found, it is filled in with a tween from the frame 
-        before the gap to the frame that ends the gap 
+        When a series of missing frames is found, it is filled in with a tween from the frame
+        before the gap to the frame that ends the gap
         """
         for track in tracks:
             frames = sorted(track)
@@ -80,23 +80,23 @@ class ObjectTracker(object):
                     for i,rect in enumerate(tween):
                         track[lastFrame+i] = tween[i]
                 lastFrame = frameNo
-    
+
     def extractAndInerpolateTracks(self,raw_bounds,progDialog=None,progressUpdateRate=100):
         tracks = self.extractTracks(raw_bounds,progDialog,progressUpdateRate)
         self.interpolateTracks(tracks)
         return tracks
-    
+
     @classmethod
-    def getFacesFromTracks(cls,video,progDialog=None):    
+    def getFacesFromTracks(cls,video,progDialog=None):
         faces = {}
         for track in video.face_tracks:
             faces[id(track)] = []
-            
+
         for frameNo,frame in enumerate(video.frames()):
                 for track in video.face_tracks:
                     if frameNo in track:
-                        face = util.image.getCvSubRect(frame, track[frameNo])                    
-                        faces[id(track)].append(face)                    
+                        face = util.image.getCvSubRect(frame, track[frameNo])
+                        faces[id(track)].append(face)
                         if progDialog:
                             cont,_ = progDialog.Update(frameNo,"Extracting faces...")
                             if not cont: return
