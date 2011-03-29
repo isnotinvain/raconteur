@@ -217,8 +217,8 @@ def onTrain(self,event):
 tools = (
             ("Import", onImport),
             ("Analyze", onAnalyze),
-            ("Train", onTrain),
-            ("Overlays", onShowOverlays),
+            ("Visualize", onShowOverlays),
+            ("Train", onTrain),            
             ("Play",onPlayPause)
         )
 
