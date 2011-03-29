@@ -193,7 +193,22 @@ def onReset(self,event):
     self.videoPanel.overlays = []
 
 def onTrain(self,event):
-    ids = vision.recognizer.train(self.story.getPeopleDir())
+    d = wx.TextEntryDialog(self,message="How many frames per face video should I skip?")
+    d.SetValue("10")
+    skipNFrames = None
+    if d.ShowModal()==wx.ID_OK:
+        skipNFrames = int(d.GetValue())
+    else:
+        d.Destroy()
+        return
+    
+    d.Destroy()
+    
+    if skipNFrames:
+        ids = vision.recognizer.train(self.story.getPeopleDir(),skipNFrames)
+    else:
+        ids = vision.recognizer.train(self.story.getPeopleDir())
+
     f = open(os.path.join(self.story.getPeopleDir(),".ids"),"w")
     cPickle.dump(ids,f)
     f.close()

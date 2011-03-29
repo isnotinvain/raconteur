@@ -19,7 +19,7 @@
 #include "highgui.h"
 
 
-static int loadTrainingImages(PyObject* dataDict, IplImage*** faces, int* numFaces,CvMat** truth, PyObject** peopleIDs);
+static int loadTrainingImages(PyObject* dataDict, IplImage*** faces, int* numFaces,CvMat** truth, PyObject** peopleIDs,int skipNFrames);
 
 static void doTraining(IplImage** faces,int numFaces,IplImage*** eigenVectors, IplImage** avgTrainingImg, CvMat** eigenValues, CvMat** projection);
 
@@ -35,27 +35,29 @@ int faceGetter(int index, void* buffer, void* user_data);
 
 static PyObject* FileLoadError;
 
-// train(self,dataDict,outFile)
+// train(self,dataDict,outFile,skipNFrames)
 // data is a dictionary mapping personID to a list of video files, outFile a string
+// skipNFrames an int describing how many frames to skip in each video
 // returns a dict mapping people to their ID numbers (which are what recognize returns)
 static PyObject *
 cveigenface_train(PyObject *self, PyObject *args) {
     PyObject *dataDict,*peopleIDs;
     char* outFile;
-    IplImage** faces = 0;
-    CvMat* truth;
+    IplImage** faces=NULL;
+    CvMat* truth=NULL;
     int numFaces = 0;
-    IplImage** eigenVectors=0;
-    IplImage* avgTrainingImg=0;
-    CvMat* eigenValues=0;
-    CvMat* projection = 0;
+    IplImage** eigenVectors=NULL;
+    IplImage* avgTrainingImg=NULL;
+    CvMat* eigenValues=NULL;
+    CvMat* projection=NULL;
 	int success;
+    int skipNFrames;
 
-    if(!PyArg_ParseTuple(args, "Os", &dataDict, &outFile)) return NULL;
+    if(!PyArg_ParseTuple(args, "Osi", &dataDict, &outFile,&skipNFrames)) return NULL;
   
     printf("Loading training images...\n");
 
-    success = loadTrainingImages(dataDict,&faces,&numFaces,&truth,&peopleIDs);
+    success = loadTrainingImages(dataDict,&faces,&numFaces,&truth,&peopleIDs,skipNFrames);
     printf("Done loading training images...\n");
 
     if(!success) {
@@ -70,7 +72,28 @@ cveigenface_train(PyObject *self, PyObject *args) {
     printf("Storing Data\n");
     storeTrainingData(outFile,numFaces-1, numFaces, truth, eigenValues, projection, avgTrainingImg, eigenVectors);
     printf("Done Storing Data\n");
-    
+
+    // clean up
+    int i = 0;
+    if(faces){
+        for(i=0;i<numFaces;i++) {
+            cvReleaseImage(&(faces[i]));
+        }
+        cvFree(&faces);
+    }
+
+    if(eigenVectors) {
+        for(i=0;i<numFaces-1;i++) {
+            cvReleaseImage(&(eigenVectors[i]));
+        }
+        cvFree(&eigenVectors);
+    }
+
+    if(avgTrainingImg) cvReleaseImage(&avgTrainingImg);
+    if(truth) cvReleaseMat(&truth);
+    if(eigenValues) cvReleaseMat(&eigenValues);
+    if(projection) cvReleaseMat(&projection);
+
     return peopleIDs;
 }
 
@@ -82,11 +105,11 @@ cveigenface_train(PyObject *self, PyObject *args) {
 static PyObject *
 cveigenface_recognize(PyObject *self, PyObject *args) {    
     Py_ssize_t numTestFaces;
-    int success,nEigens, nTrainFaces;
-    CvMat *truth, *eigenValues, *trainProjection;
-    IplImage *avgTrainingImg, **eigenVectors, **faces; 
+    int success, nEigens, nTrainFaces;
+    CvMat *truth=NULL, *eigenValues=NULL, *trainProjection=NULL;
+    IplImage *avgTrainingImg=NULL, **eigenVectors=NULL, **faces=NULL; 
     char *testVideo,*dataFilePath;
-    float* projectedTestFace;
+    float* projectedTestFace=NULL;
     int i,euclideanDistance;
     double dist;
     
@@ -131,6 +154,28 @@ cveigenface_recognize(PyObject *self, PyObject *args) {
 		PyTuple_SetItem(recognition,i,recogEntry);
 	}
     
+    // clean up
+    if(faces){
+        for(i=0;i<numTestFaces;i++) {
+            cvReleaseImage(&(faces[i]));
+        }
+        cvFree(&faces);
+    }
+
+    if(eigenVectors) {
+        for(i=0;i<nEigens;i++) {
+            cvReleaseImage(&(eigenVectors[i]));
+        }
+        cvFree(&eigenVectors);
+    }
+
+
+    if(avgTrainingImg) cvReleaseImage(&avgTrainingImg);
+    if(truth) cvReleaseMat(&truth);
+    if(eigenValues) cvReleaseMat(&eigenValues);
+    if(trainProjection) cvReleaseMat(&trainProjection);
+    if(projectedTestFace) cvFree(&projectedTestFace);
+
     return recognition;
 }
 
@@ -163,12 +208,11 @@ int findNearestNeighbor(float* projectedTestFace, int nTrainFaces, int nEigens, 
 	return iNearest;
 }
 
-static int loadTrainingImages(PyObject* dataDict, IplImage*** faces, int* numFaces, CvMat** truth, PyObject** peopleIDs) {
+static int loadTrainingImages(PyObject* dataDict, IplImage*** faces, int* numFaces, CvMat** truth, PyObject** peopleIDs, int skipNFrames) {
     PyObject *pyPath;
     char* path;
     int vid,numPeople=0,numVideos;
     int faceIndex = 0;
-    int skipNFrames = 10;
     IplImage* frame;
     CvCapture* video;
     CvSize size;
@@ -228,7 +272,7 @@ static int loadTestImages(char* testVideo, IplImage*** faces, int* numTestFaces)
     CvCapture *video;	
     IplImage* frame; 
     int faceIndex = 0;
-    CvSize size; 
+    CvSize size;
 
     video = cvCaptureFromFile(testVideo);
 	(*numTestFaces) = cvGetCaptureProperty(video,CV_CAP_PROP_FRAME_COUNT)-1;
