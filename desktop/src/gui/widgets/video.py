@@ -40,7 +40,9 @@ class VideoScrollPanel(wx.Panel):
                 else:
                     maxFactor = float(height) / h
                     xInc = w
-                
+                    
+                if maxFactor < minFactor: minFactor = maxFactor
+                                                   
                 factor = minFactor + (maxFactor-minFactor)*self.zoom
                 factors.append(factor)
                 xTotal += factor*xInc

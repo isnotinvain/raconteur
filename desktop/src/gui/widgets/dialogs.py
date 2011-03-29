@@ -66,7 +66,7 @@ class ImportDialog(wx.Dialog):
         self.directoryCtrl = wx.TextCtrl(panel,wx.ID_ANY)
         self.directoryCtrl.SetEditable(False)
         regexLabel = wx.StaticText(panel,wx.ID_ANY,label="Enter an optional filter regex such as (*.avi)")
-        self.regexCtrl = wx.TextCtrl(panel,wx.ID_ANY)
+        self.regexCtrl = wx.TextCtrl(panel,wx.ID_ANY,value="*")
         
         def browse(event):
             d = wx.DirDialog(self, message="Select a directory",style = wx.DD_DEFAULT_STYLE|wx.DD_DIR_MUST_EXIST)

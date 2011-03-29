@@ -30,10 +30,9 @@ class RaconteurMainWindow(wx.Frame):
             evt.Skip()
                     
         self.Bind(wx.EVT_CLOSE,quit)
-        
-        self.Show(True)
         self.loadStory(storyPath)
         self.currentVideo = None
+        self.Show(True)
 
     def loadStory(self,path):
         if not path: return
