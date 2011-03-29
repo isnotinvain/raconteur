@@ -209,7 +209,7 @@ def onTrain(self,event):
     else:
         ids = vision.recognizer.train(self.story.getPeopleDir())
 
-    f = open(os.path.join(self.story.getPeopleDir(),".ids"),"w")
+    f = open(os.path.join(self.story.getPeopleDir(),".trainingData",".ids"),"w")
     cPickle.dump(ids,f)
     f.close()
     print ids

@@ -1,7 +1,7 @@
 import os
 import cPickle
 import cveigenface
-
+import util.filesystem
     
 def train(peopleDir,skipNFrames=10):
     people = os.listdir(peopleDir)
@@ -15,11 +15,13 @@ def train(peopleDir,skipNFrames=10):
             vid = os.path.join(peopleDir,person,f)
             videos[person].append(vid)
     
+    util.filesystem.ensureDirectoryExists(os.path.join(peopleDir,".trainingData"))
+    util.filesystem.ensureDirectoryExists(os.path.join(peopleDir,".trainingData","eigenFaces"))
     peopleIDs = cveigenface.train(videos,os.path.join(peopleDir,".trainingData"),skipNFrames)
     return peopleIDs
 
 def recognize(peopleDir,video_path,useEuclidean=True):
-    f = open(os.path.join(peopleDir,".ids"),"r")
+    f = open(os.path.join(peopleDir,".trainingData",".ids"),"r")
     ids = cPickle.load(f)
     f.close()
     

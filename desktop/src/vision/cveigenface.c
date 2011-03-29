@@ -298,12 +298,12 @@ static int loadTestImages(char* testVideo, IplImage*** faces, int* numTestFaces)
 }
 
 static int loadTrainingData(char* dataFilePath, int* nEigens,int* nTrainFaces, CvMat** truth, CvMat** eigenValues, CvMat** projection, IplImage** avgTrainingImg, IplImage*** eigenVectors) {
-
 	CvFileStorage * fileStorage;
 	int i;
-	fileStorage = cvOpenFileStorage(dataFilePath, 0, CV_STORAGE_READ);
+    char varname[1000];
+    sprintf(varname,"%s/data.yaml",dataFilePath);
+	fileStorage = cvOpenFileStorage(varname, 0, CV_STORAGE_READ);
 	if(!fileStorage) return 0;
-
 	*nEigens = cvReadIntByName(fileStorage, 0, "nEigens", 0);
 	*nTrainFaces = cvReadIntByName(fileStorage, 0, "numFaces", 0);
 	*truth = (CvMat *)cvReadByName(fileStorage, 0, "truth", 0);
@@ -313,12 +313,14 @@ static int loadTrainingData(char* dataFilePath, int* nEigens,int* nTrainFaces, C
 	*eigenVectors = (IplImage **)cvAlloc((*nTrainFaces)*sizeof(IplImage *));
 
 	for(i=0;i<(*nEigens);i++) {
-		char varname[200];
-		sprintf(varname, "eigenVect_%d", i);
-		(*eigenVectors)[i] = (IplImage *)cvReadByName(fileStorage, 0, varname, 0);
+		sprintf(varname, "%s/eigenFaces/%d.bmp",dataFilePath, i);
+		IplImage* img = cvLoadImage(varname,CV_LOAD_IMAGE_GRAYSCALE);
+        (*eigenVectors)[i] = cvCreateImage(cvSize(img->width,img->height),IPL_DEPTH_32F,1);
+        cvConvertScale(img,(*eigenVectors)[i],1.0/255.0,0);
+        cvReleaseImage(&img);
 	}
 
-	cvReleaseFileStorage( &fileStorage );
+	cvReleaseFileStorage(&fileStorage);
 	return 1;
 }
 
@@ -326,19 +328,23 @@ static void storeTrainingData(char* outFile, int nEigens, int numFaces, CvMat* t
 
 	CvFileStorage * fileStorage;
 	int i;
-	fileStorage = cvOpenFileStorage(outFile, 0, CV_STORAGE_WRITE);
+    char varname[1000];
+    sprintf(varname,"%s/data.yaml",outFile);
+	fileStorage = cvOpenFileStorage(varname, 0, CV_STORAGE_WRITE);
 	cvWriteInt(fileStorage, "nEigens", nEigens);
 	cvWriteInt(fileStorage, "numFaces", numFaces);
 	cvWrite(fileStorage, "truth", truth, cvAttrList(0,0));
 	cvWrite(fileStorage, "eigenValues", eigenValues, cvAttrList(0,0));
 	cvWrite(fileStorage, "projection", projection, cvAttrList(0,0));
 	cvWrite(fileStorage, "avgTrainingImg", avgTrainingImg, cvAttrList(0,0));
+
 	for(i=0; i<nEigens; i++) {
-		char varname[200];
-		sprintf(varname, "eigenVect_%d", i);
-		cvWrite(fileStorage, varname, eigenVectors[i], cvAttrList(0,0));
+		sprintf(varname, "%s/eigenFaces/%d.bmp",outFile, i);
+        IplImage* img = cvCreateImage(cvSize(eigenVectors[i]->width,eigenVectors[i]->height),IPL_DEPTH_8U,1);
+        cvConvertScale(eigenVectors[i],img,255.0,0);
+        cvSaveImage(varname,img,0);
+        cvReleaseImage(&img);
 	}
-	
 	cvReleaseFileStorage(&fileStorage);
 }
 
@@ -385,6 +391,10 @@ static void doTraining(IplImage** faces,int numFaces,IplImage*** eigenVectors, I
     printf("\tdone calcEigenObjects\n");
 
 	cvNormalize(*eigenValues, *eigenValues, 1, 0, CV_L1, 0);
+    
+    for(i=0;i<nEigens;i++) {    
+        cvNormalize((*eigenVectors)[i], (*eigenVectors)[i], 1, 0, CV_MINMAX, 0);
+    }
 
 	*projection = cvCreateMat(numFaces, nEigens, CV_32FC1);
 	offset = (*projection)->step / sizeof(float);
