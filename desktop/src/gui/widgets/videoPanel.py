@@ -11,8 +11,8 @@ class VideoPanel(wx.Panel):
     '''
     A panel that can draw a video inside itself
     '''
-    def __init__(self,parent,id,video=None,**kwargs):
-        wx.Panel.__init__(self,parent,id,**kwargs)
+    def __init__(self, parent, id, video=None, **kwargs):
+        wx.Panel.__init__(self, parent, id, **kwargs)
         self.SetBackgroundStyle(wx.BG_STYLE_CUSTOM)
         self.Bind(wx.EVT_PAINT, self.onPaint)
         self.Bind(wx.EVT_SIZE, self.onPaint)
@@ -24,23 +24,23 @@ class VideoPanel(wx.Panel):
         self.frameScaleFactor = 1.0
         self.timer = wx.Timer(self, wx.ID_ANY)
         self.timer_tick = None
-        self.Bind(wx.EVT_TIMER,self.onNextFrame)
+        self.Bind(wx.EVT_TIMER, self.onNextFrame)
         self.overlays = []
         self.playing = False
-        self.bgBrush = wx.Brush((0,0,0))
+        self.bgBrush = wx.Brush((0, 0, 0))
         self.bgPen = wx.TRANSPARENT_PEN
         self.should_loop = False
 
         if video:
             self.loadVideo(video.file_path)
 
-    def loadVideo(self,path):
+    def loadVideo(self, path):
         self.overlays = []
         self.video = vision.video.CvVideo(path)
         self.cv_frame = self.video.getNextFrame()
         self.current_frame = util.image.cvToWx(self.cv_frame)
-        self.timer_tick = 1000/self.video.getFps()
-        if self.timer_tick == 0: self.timer_tick = 1000/30
+        self.timer_tick = 1000 / self.video.getFps()
+        if self.timer_tick == 0: self.timer_tick = 1000 / 30
         self.onNextFrame(None)
         self.Refresh()
         self.Update()
@@ -73,7 +73,7 @@ class VideoPanel(wx.Panel):
         self.overlays = []
         self.onNextFrame(None)
 
-    def onNextFrame(self,event):
+    def onNextFrame(self, event):
         self.cv_frame = self.video.getNextFrame()
         if not self.cv_frame:
             self.video.reset()
@@ -83,26 +83,26 @@ class VideoPanel(wx.Panel):
         self.current_frame = util.image.cvToWx(self.cv_frame)
         self.Refresh()
 
-    def onPaint(self,event):
+    def onPaint(self, event):
         dc = wx.AutoBufferedPaintDC(self)
         #dc = wx.PaintDC(self)
-        dcW,dcH = dc.GetSize()
+        dcW, dcH = dc.GetSize()
         if dcW < 0 or dcH < 0: return
 
         dc.SetBrush(self.bgBrush)
         dc.SetPen(self.bgPen)
-        dc.DrawRectangle(0,0,dcW,dcH)
+        dc.DrawRectangle(0, 0, dcW, dcH)
         if self.video:
             self.drawCurrentFrame(dc)
             for overlay in self.overlays:
-                overlay.drawFrame(dc,self.frameScaleFactor,self.video.getNormalizedFrameNum())
+                overlay.drawFrame(dc, self.frameScaleFactor, self.video.getNormalizedFrameNum())
 
-    def drawCurrentFrame(self,dc):
+    def drawCurrentFrame(self, dc):
         if not self.old_size:
             self.old_size = dc.GetSize()
         if not self.current_frame_bmp or self.old_size != dc.GetSize():
-            (desired_width,desired_height),factor = util.geometry.getScaledDimensions(self.current_frame.GetSize(), dc.GetSize(),True)
+            (desired_width, desired_height), factor = util.geometry.getScaledDimensions(self.current_frame.GetSize(), dc.GetSize(), True)
             self.frameScaleFactor = factor
-            img = self.current_frame.Scale(desired_width,desired_height,wx.IMAGE_QUALITY_NORMAL)
+            img = self.current_frame.Scale(desired_width, desired_height, wx.IMAGE_QUALITY_NORMAL)
             self.current_frame_bmp = wx.BitmapFromImage(img)
-        dc.DrawBitmap(self.current_frame_bmp,0,0)
+        dc.DrawBitmap(self.current_frame_bmp, 0, 0)

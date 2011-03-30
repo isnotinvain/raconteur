@@ -12,7 +12,7 @@ if __name__ == "__main__":
     if len(sys.argv) < 4: raise Exception("Requires 3 or 5 command line arguments: <source file or directory> <destination directory> <stream type> |optional| <unix wildcards> <move>")
 
     if len(sys.argv) >= 5:
-        filter = lambda x : fnmatch.fnmatch(x,sys.argv[4])
+        filter = lambda x : fnmatch.fnmatch(x, sys.argv[4])
     else:
         filter = None
 
@@ -22,11 +22,11 @@ if __name__ == "__main__":
             move = True
 
     if not os.path.exists(sys.argv[1]):
-        raise Exception(sys.argv[1]+" is not a valid path")
+        raise Exception(sys.argv[1] + " is not a valid path")
 
-    importer = StreamImporter(sys.argv[3],sys.argv[2],move)
+    importer = StreamImporter(sys.argv[3], sys.argv[2], move)
 
     if os.path.isdir(sys.argv[1]):
-        importer.importDirectory(sys.argv[1],filter)
+        importer.importDirectory(sys.argv[1], filter)
     else:
-        importer.importFile(sys.argv[1],filter)
+        importer.importFile(sys.argv[1], filter)

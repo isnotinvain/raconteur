@@ -21,24 +21,24 @@ def dotPrefixFilePath(path):
         a/b/.c.txt
     """
     lastSlash = path.rfind("/")
-    d = path[:lastSlash+1]
-    f = path[lastSlash+1:]
-    f = "."+f
-    return os.path.join(d,f)
+    d = path[:lastSlash + 1]
+    f = path[lastSlash + 1:]
+    f = "." + f
+    return os.path.join(d, f)
 
-def generateUniqueFileName(dir,extension,prefix=""):
+def generateUniqueFileName(dir, extension, prefix=""):
     """
     generate a filename that does not exist in dir that begins with prefix
     if <prefix>.<extension> does not exist, then it is used.
     """
     extension = extension.lower()
 
-    if prefix and not os.path.exists(os.path.join(dir,prefix+extension)):
-        return prefix+extension
+    if prefix and not os.path.exists(os.path.join(dir, prefix + extension)):
+        return prefix + extension
 
-    f = prefix + "_" + str(random.randint(0,100000000000)) + extension
-    while os.path.exists(os.path.join(dir,f)):
-        f = prefix + "_" + str(random.randint(0,100000000000)) + extension
+    f = prefix + "_" + str(random.randint(0, 100000000000)) + extension
+    while os.path.exists(os.path.join(dir, f)):
+        f = prefix + "_" + str(random.randint(0, 100000000000)) + extension
 
     return f
 
@@ -47,9 +47,9 @@ def datetimeToPath(d):
     convert a datetime to a file path in the form:
     year/month/day/
     """
-    return os.path.join(str(d.year),str(d.month),str(d.day))
+    return os.path.join(str(d.year), str(d.month), str(d.day))
 
-def getStreamRawDataPath(start_date,stream_type):
+def getStreamRawDataPath(start_date, stream_type):
     """
     return the folder that a raw datafile would be found in
     given datetime start_date
@@ -58,7 +58,7 @@ def getStreamRawDataPath(start_date,stream_type):
     @param stream_type: a string describing the type of stream, eg "video"
     """
 
-    return os.path.join(datetimeToPath(start_date),stream_type)
+    return os.path.join(datetimeToPath(start_date), stream_type)
 
 def ensureDirectoryExists(dir_path):
     """

@@ -17,8 +17,8 @@ class CvVideo(object):
     """
 
     @classmethod
-    def getCreation(cls,file_path):
-        return file_path[file_path.rfind("/")+1:file_path.rfind(".")]
+    def getCreation(cls, file_path):
+        return file_path[file_path.rfind("/") + 1:file_path.rfind(".")]
 
     def __init__(self, file_path):
         self.file_path = file_path
@@ -49,7 +49,7 @@ class CvVideo(object):
             yield img
 
     def getFrameNum(self):
-        return cv.GetCaptureProperty(self.capture,cv.CV_CAP_PROP_POS_FRAMES)
+        return cv.GetCaptureProperty(self.capture, cv.CV_CAP_PROP_POS_FRAMES)
 
     def getNormalizedFrameNum(self):
         return self.normalizedFrameNum
@@ -70,46 +70,46 @@ class CvVideo(object):
         return self.normalizedFrameCount
 
     def getFrameCount(self):
-        return cv.GetCaptureProperty(self.capture,cv.CV_CAP_PROP_FRAME_COUNT)
+        return cv.GetCaptureProperty(self.capture, cv.CV_CAP_PROP_FRAME_COUNT)
 
     def getRatio(self):
-        return cv.GetCaptureProperty(self.capture,cv.CV_CAP_PROP_POS_AVI_RATIO)
+        return cv.GetCaptureProperty(self.capture, cv.CV_CAP_PROP_POS_AVI_RATIO)
 
     def getSize(self):
-        return (cv.GetCaptureProperty(self.capture,cv.CV_CAP_PROP_FRAME_WIDTH),cv.GetCaptureProperty(self.capture,cv.CV_CAP_PROP_FRAME_HEIGHT))
+        return (cv.GetCaptureProperty(self.capture, cv.CV_CAP_PROP_FRAME_WIDTH), cv.GetCaptureProperty(self.capture, cv.CV_CAP_PROP_FRAME_HEIGHT))
 
     def getFps(self):
-        return cv.GetCaptureProperty(self.capture,cv.CV_CAP_PROP_FPS)
+        return cv.GetCaptureProperty(self.capture, cv.CV_CAP_PROP_FPS)
 
     def loadFaceBounds(self):
-        p = util.filesystem.dotPrefixFilePath(self.file_path+".face_bounds.pickle")
-        f = open(p,"r")
+        p = util.filesystem.dotPrefixFilePath(self.file_path + ".face_bounds.pickle")
+        f = open(p, "r")
         self.face_bounds = cPickle.load(f)
         f.close()
 
     def writeFaceBounds(self):
-        p = util.filesystem.dotPrefixFilePath(self.file_path+".face_bounds.pickle")
-        f = open(p,"w")
-        cPickle.dump(self.face_bounds,f)
+        p = util.filesystem.dotPrefixFilePath(self.file_path + ".face_bounds.pickle")
+        f = open(p, "w")
+        cPickle.dump(self.face_bounds, f)
         f.close()
 
     def loadFaceTracks(self):
-        p = util.filesystem.dotPrefixFilePath(self.file_path+".face_tracks.pickle")
-        f = open(p,"r")
+        p = util.filesystem.dotPrefixFilePath(self.file_path + ".face_tracks.pickle")
+        f = open(p, "r")
         self.face_tracks = cPickle.load(f)
         f.close()
 
     def writeFaceTracks(self):
-        p = util.filesystem.dotPrefixFilePath(self.file_path+".face_tracks.pickle")
-        f = open(p,"w")
-        cPickle.dump(self.face_tracks,f)
+        p = util.filesystem.dotPrefixFilePath(self.file_path + ".face_tracks.pickle")
+        f = open(p, "w")
+        cPickle.dump(self.face_tracks, f)
         f.close()
 
     def printPositionData(self):
-        print "Frame num: " + str(cv.GetCaptureProperty(self.capture,cv.CV_CAP_PROP_POS_FRAMES))
-        print "Ratio: " + str(cv.GetCaptureProperty(self.capture,cv.CV_CAP_PROP_POS_AVI_RATIO))
-        print "Millis: " + str(cv.GetCaptureProperty(self.capture,cv.CV_CAP_PROP_POS_MSEC))
-        print "FPS: " + str(cv.GetCaptureProperty(self.capture,cv.CV_CAP_PROP_FPS))
+        print "Frame num: " + str(cv.GetCaptureProperty(self.capture, cv.CV_CAP_PROP_POS_FRAMES))
+        print "Ratio: " + str(cv.GetCaptureProperty(self.capture, cv.CV_CAP_PROP_POS_AVI_RATIO))
+        print "Millis: " + str(cv.GetCaptureProperty(self.capture, cv.CV_CAP_PROP_POS_MSEC))
+        print "FPS: " + str(cv.GetCaptureProperty(self.capture, cv.CV_CAP_PROP_FPS))
 
 # proper encoding:
 # mencoder <in> -ovc lavc -lavcopts vcodec=mpeg1video:vqscale=1 -oac lavc -o <out>

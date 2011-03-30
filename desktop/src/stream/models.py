@@ -1,7 +1,7 @@
 from elixir import *
 
 class Person(Entity):
-    name = Field(Text(),primary_key=True)
+    name = Field(Text(), primary_key=True)
     appearsIn = ManyToMany('Video')
 
     def __repr__(self):
