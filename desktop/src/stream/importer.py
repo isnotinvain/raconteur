@@ -26,7 +26,7 @@ class StreamImporter(object):
     of streams.
     """
 
-    def __init__(self,stream_type,root_destination_dir,move=False):
+    def __init__(self, stream_type, root_destination_dir, move=False, stream_db_type=None):
         """
         @param stream_type: a string representing what kind of stream this is, eg "video" or "image" or "gps"
                             should be a valid folder name in the filesystem
@@ -37,7 +37,8 @@ class StreamImporter(object):
         @raise NotADirectoryError:
         """
 
-        self.stream_type= stream_type
+        self.stream_type = stream_type
+        self.stream_db_type = stream_db_type
         self.root_destination_dir = root_destination_dir
         self.move = move
 
@@ -51,7 +52,7 @@ class StreamImporter(object):
             print self.root_destination_dir + " is not a directory!"
             raise
 
-    def importDirectory(self,dir_path,filter_function=None,progDialog=None):
+    def importDirectory(self, dir_path, filter_function=None, progDialog=None):
         """
         imports the contents of a directory to self.root_destination_dir
 
@@ -65,19 +66,19 @@ class StreamImporter(object):
 
         numFiles = 0
         # count the files first
-        for root,_,files in os.walk(dir_path):
+        for root, _, files in os.walk(dir_path):
             for name in files:
-                path = os.path.join(root,name)
+                path = os.path.join(root, name)
                 if filter_function:
                     if filter_function(path):
-                        numFiles+=1
+                        numFiles += 1
                 else:
-                    numFiles+=1
+                    numFiles += 1
         # process each file in dir_path (recursively)
-        i=0
-        for root,_,files in os.walk(dir_path):
+        i = 0
+        for root, _, files in os.walk(dir_path):
             for name in files:
-                path = os.path.join(root,name)
+                path = os.path.join(root, name)
                 skip = False
                 if filter_function:
                     if not filter_function(path):
@@ -85,12 +86,12 @@ class StreamImporter(object):
 
                 if not skip:
                     if progDialog:
-                        cont,_ = progDialog.Update(i/float(numFiles)*1000,"Importing "+name)
+                        cont, _ = progDialog.Update(i / float(numFiles) * 1000, "Importing " + name)
                         if not cont : return
                     self.importFile(path)
-                    i+=1
+                    i += 1
 
-    def importFile(self,file_path):
+    def importFile(self, file_path):
         """
         imports file_path to self.root_destination_dir
 
@@ -125,13 +126,16 @@ class StreamImporter(object):
 
         # figure out where to put the file
         dest_dir = fsutil.getStreamRawDataPath(start_date, self.stream_type)
-        dest_dir = os.path.join(self.root_destination_dir,dest_dir)
+        dest_dir = os.path.join(self.root_destination_dir, dest_dir)
         _, extension = os.path.splitext(file_path)
-        filename = fsutil.generateUniqueFileName(dest_dir,extension,str(int(start_stamp)))
-        dest_file = os.path.join(dest_dir,filename)
+        filename = fsutil.generateUniqueFileName(dest_dir, extension, str(int(start_stamp)))
+        dest_file = os.path.join(dest_dir, filename)
 
         # make sure dest_dir exists
         fsutil.ensureDirectoryExists(dest_dir)
 
         #copy the file
-        copy_function(file_path,dest_file)
+        copy_function(file_path, dest_file)
+
+        if self.stream_db_type:
+            self.stream_db_type(path=dest_file, creation=int(start_stamp))

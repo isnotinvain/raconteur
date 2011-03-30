@@ -1,66 +1,63 @@
 import os
 import bisect
 import cPickle
+import elixir
+import models
 import util
 
 class Story(object):
 
     @classmethod
-    def load(cls,path):
-        f = open(os.path.join(path,".raconteur"),"r")
+    def load(cls, path):
+        f = open(os.path.join(path, ".raconteur"), "r")
         story = cPickle.load(f)
         f.close()
         story.path = path
+        cls.connect(story)
         return story
 
-    def __init__(self,name,path):
+    def __init__(self, name, path):
         self.path = path
         self.name = name
-        self.stream_files = {}
-        self.stream_creations = {}
-        self.people = []
+        self.connect()
+        elixir.create_all()
+        elixir.session.commit()
+
+    def commit(self):
+        elixir.session.commit()
+
+    def connect(self):
+        elixir.metadata.bind = "sqlite+pysqlite:///" + os.path.join(self.path, ".raconteur-db.sql")
+        elixir.metadata.bind.echo = False
+        elixir.setup_all()
 
     def save(self):
         util.filesystem.ensureDirectoryExists(self.path)
-        f = open(os.path.join(self.path,".raconteur"),"w")
-        cPickle.dump(self,f)
+        f = open(os.path.join(self.path, ".raconteur"), "w")
+        cPickle.dump(self, f)
         f.close()
 
-    def crawl(self,streamType):
-        """
-        finds all files of a particular stream type
-        """
-        self.stream_files[streamType] = {}
-        for root, _, files in os.walk(self.path):
-            if root[root.rfind("/")+1:] == streamType:
-                for file in files:
-                    if file[0] == ".": continue
-                    creation_stamp = int(file[:file.rfind('.')])
-                    self.stream_files[streamType][creation_stamp] = os.path.join(root,file)
-
-        self.stream_creations[streamType] = sorted(self.stream_files[streamType])
-
-    def getStreamsInRange(self,start,end,streamType):
+    def getStreamsInRange(self, start, end, streamType):
         creations = self.stream_creations[streamType]
-        s = bisect.bisect_left(creations,start)
+        s = bisect.bisect_left(creations, start)
         if s == len(creations): return []
 
-        e = bisect.bisect_right(creations,end)
+        e = bisect.bisect_right(creations, end)
         if not e: return []
 
-        return map(lambda x : (x,self.stream_files[streamType][x]),creations[s:e])
+        return map(lambda x : (x, self.stream_files[streamType][x]), creations[s:e])
 
-    def addPerson(self,person):
-        if person not in self.people:
-            self.people.append(person)
+    def addPerson(self, name):
+        models.Person(name=name)
+        elixir.session.commit()
 
     def getPeopleDir(self):
-        return os.path.join(self.path,".people")
+        return os.path.join(self.path, ".people")
 
     def getUnrecognizedPeopleDir(self):
-        return os.path.join(self.getPeopleDir(),"unrecognized")
+        return os.path.join(self.getPeopleDir(), "unrecognized")
 
-    def getPersonDir(self,person):
-        if not person in self.people:
-            self.addPerson(person)
-        return os.path.join(self.getPeopleDir(),person)
+    def getPersonDir(self, name):
+        if not models.Person.get(name):
+            self.addPerson(name)
+        return os.path.join(self.getPeopleDir(), name)
