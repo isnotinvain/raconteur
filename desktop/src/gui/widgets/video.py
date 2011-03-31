@@ -6,13 +6,19 @@ import util.image
 
 class VideoScrollPanel(wx.Panel):
 
-    def __init__(self, parent, orientation, **kwargs):
+    def __init__(self, parent, orientation, clickToPlay=True, **kwargs):
         wx.Panel.__init__(self, parent, **kwargs)
         self.Bind(wx.EVT_SIZE, self.onSize)
         self.orientation = orientation
         self.loadThumbs([])
         self.zoom = 0.0
         self.scroll = 0.0
+        self.clicktoPlay = clickToPlay
+        if clickToPlay:
+            self.vidPanelType = ClickToPlayVideoPanel
+        else:
+            self.vidPanelType = VideoPanel
+
 
     def onSize(self, event):
         self.uiUpdate()
@@ -77,7 +83,7 @@ class VideoScrollPanel(wx.Panel):
         self.totalWidth = 0
         self.totalHeight = 0
         for path in filePaths:
-            vidPanel = ClickToPlayVideoPanel(self, path)
+            vidPanel = self.vidPanelType(self, path)
             vidPanel.loadThumb()
             self.totalWidth += vidPanel.size[0]
             self.totalHeight += vidPanel.size[1]
@@ -216,11 +222,12 @@ class ClickToPlayVideoPanel(VideoPanel):
 
 
 class VideoStack(wx.Panel):
-    def __init__(self, parent, orientation, **kwargs):
+    def __init__(self, parent, orientation, clickToPlay=True, **kwargs):
         wx.Panel.__init__(self, parent)
         self.parent = parent
+        self.clickToPlay = clickToPlay
 
-        self.scrollwindow = VideoScrollPanel(self, orientation, **kwargs)
+        self.scrollwindow = VideoScrollPanel(self, orientation, clickToPlay, **kwargs)
         obox = wx.BoxSizer(orientation)
 
         def onZoom(event):
@@ -258,3 +265,7 @@ class VideoStack(wx.Panel):
 
     def clear(self):
         self.scrollwindow.clear()
+
+    def bindAll(self, func):
+        for vp in self.scrollwindow.videos:
+            vp.Bind(wx.EVT_LEFT_UP, func)

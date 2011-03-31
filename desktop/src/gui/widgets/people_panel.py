@@ -8,7 +8,6 @@ import shutil
 
 import wx
 import util.filesystem
-from widgets import ManageAFaceDialog
 import video
 import vision.video
 

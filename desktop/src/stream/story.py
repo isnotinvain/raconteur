@@ -42,8 +42,11 @@ class Story(object):
         f.close()
 
     def addPerson(self, name):
-        models.Person(name=name)
-        self.commit()
+        person = models.Person.get(name)
+        if not person:
+            person = models.Person(name=name)
+            self.commit()
+        return person
 
     def getPeopleDir(self):
         return os.path.join(self.path, ".people")
@@ -60,8 +63,13 @@ class Story(object):
         return os.path.join(self.getPeopleDir(), "unrecognized")
 
     def getPersonDir(self, name):
+        if name == "<unrecognized>":
+            self.getUnrecognizedPerson()
+            return self.getUnrecognizedPeopleDir()
+
         if not models.Person.get(name):
-            self.addPerson(name)
+            raise Exception("No such name!")
+
         return os.path.join(self.getPeopleDir(), name)
 
     def clearDb(self):

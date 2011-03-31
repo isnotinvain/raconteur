@@ -1,4 +1,5 @@
 import os
+import shutil
 import fnmatch
 import cPickle
 import wx
@@ -211,7 +212,7 @@ def onReset(self, event):
     self.videoPanel.stop()
     self.videoPanel.overlays = []
 
-def onTrain(self, event):
+def onRecog(self, event):
     d = wx.TextEntryDialog(self, message="How many frames per face video should I skip?")
     d.SetValue("10")
     skipNFrames = None
@@ -232,6 +233,34 @@ def onTrain(self, event):
     cPickle.dump(ids, f)
     f.close()
     print ids
+
+def onTrain(self, event):
+    d = None
+    add = lambda x, y : onAddFace(self, d, x, y)
+    dell = lambda x : onDelFace(self, d, x)
+    d = widgets.ManageFaces(self, self.story.getUnrecognizedPerson(), add, dell)
+    d.Show()
+
+def onAddFace(self, d, path, name):
+    person = self.story.addPerson(name)
+    appearance = stream.models.PersonAppearance.get_by(faces=path)
+
+    dest = self.story.getPersonDir(name)
+    util.filesystem.ensureDirectoryExists(dest)
+    dest = os.path.join(dest, util.filesystem.generateUniqueFileName(dest, ".avi"))
+    shutil.move(path, dest)
+
+    appearance.person = person
+    appearance.faces = path
+    self.story.commit()
+    d.crawl()
+
+def onDelFace(self, d, path):
+    appearance = stream.models.PersonAppearance.get_by(faces=path)
+    appearance.delete()
+    os.remove(path)
+    self.story.commit()
+    d.crawl()
 
 tools = (
             ("Import", onImport),
