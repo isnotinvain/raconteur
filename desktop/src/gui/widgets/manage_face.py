@@ -31,7 +31,7 @@ class ManageAFacePanel(wx.Panel):
 
         vidbox = wx.BoxSizer(wx.HORIZONTAL)
         vidbox.AddStretchSpacer(1)
-        vidbox.Add(self.vidpanel, 1, wx.EXPAND)
+        vidbox.Add(self.vidpanel, 0, wx.SHAPED)
         vidbox.AddStretchSpacer(1)
 
         vStack.AddStretchSpacer(1)
@@ -46,8 +46,8 @@ class ManageAFacePanel(wx.Panel):
         self.SetSizer(vStack)
 
     def onLoad(self, event):
-        #self.Layout()
-        #self.Fit()
+        self.vidpanel.SetMinSize((200, 200))
+        self.Layout()
         self.Refresh()
         self.vidpanel.play()
 
@@ -88,10 +88,6 @@ class ManageFaces(wx.Frame):
 
     def crawl(self):
         self.stack.clear()
-        paths = []
-        for root, _, files in os.walk(self.parent.story.getPersonDir(self.person.name)):
-            for f in files:
-                path = os.path.join(root, f)
-                paths.append(path)
+        paths = map(lambda x : x.faces, self.person.person_appearances)
         self.stack.loadThumbs(paths)
         self.stack.bindAll(self.onClick)
