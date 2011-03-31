@@ -255,6 +255,8 @@ def onRecognize(self, event):
         dest = os.path.join(dest, util.filesystem.generateUniqueFileName(dest, ".avi"))
         shutil.move(face.faces, dest)
 
+        app.manuallyTagged = False
+        app.certaintyHistogram = cPickle.dumps((hist, total))
         app.person = person
         app.faces = dest
         self.story.commit()
@@ -285,12 +287,17 @@ def onAddFace(self, d, path, name):
 
     appearance.person = person
     appearance.faces = dest
+    appearance.manuallyTagged = True
+    appearance.certaintyHistogram = None
     self.story.commit()
     d.crawl()
     self.reloadPeoplePanel()
 
 def onDelFace(self, d, path):
     appearance = stream.models.PersonAppearance.get_by(faces=path)
+    if not appearance:
+        print "didn't find :%s" % path
+        return
     appearance.delete()
     os.remove(path)
     self.story.commit()

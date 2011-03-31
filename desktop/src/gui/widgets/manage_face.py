@@ -85,7 +85,7 @@ class ManageFaces(wx.Frame):
 
         self.onClick = onClick
 
-        self.stack = video.VideoStack(self, wx.VERTICAL, clickToPlay=False)
+        self.stack = video.VideoStack(self, wx.VERTICAL, video.PeopleVideoPanel)
 
         hbox = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -98,6 +98,6 @@ class ManageFaces(wx.Frame):
 
     def crawl(self):
         self.stack.clear()
-        paths = map(lambda x : x.faces, self.person.person_appearances)
-        self.stack.loadThumbs(paths)
+        pathsAndManuals = map(lambda x : (x.faces, x.manuallyTagged), self.person.person_appearances)
+        self.stack.loadThumbs(pathsAndManuals)
         self.stack.bindAll(self.onClick)

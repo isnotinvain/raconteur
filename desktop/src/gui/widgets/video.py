@@ -6,19 +6,17 @@ import util.image
 
 class VideoScrollPanel(wx.Panel):
 
-    def __init__(self, parent, orientation, clickToPlay=True, **kwargs):
+    def __init__(self, parent, orientation, vidPanelType=None, **kwargs):
         wx.Panel.__init__(self, parent, **kwargs)
         self.Bind(wx.EVT_SIZE, self.onSize)
         self.orientation = orientation
         self.loadThumbs([])
         self.zoom = 0.0
         self.scroll = 0.0
-        self.clicktoPlay = clickToPlay
-        if clickToPlay:
-            self.vidPanelType = ClickToPlayVideoPanel
+        if vidPanelType:
+            self.vidPanelType = vidPanelType
         else:
-            self.vidPanelType = VideoPanel
-
+            self.vidPanelType = ClickToPlayVideoPanel
 
     def onSize(self, event):
         self.uiUpdate()
@@ -100,8 +98,10 @@ class VideoPanel(wx.Panel):
         wx.Panel.__init__(self, parent, **kwargs)
         self.path = path
         box = wx.BoxSizer(wx.HORIZONTAL)
-        self.videoPen = wx.TRANSPARENT_PEN
-        self.videoBrush = wx.TRANSPARENT_BRUSH
+        if not hasattr(self, "videoPen"):
+            self.videoPen = wx.TRANSPARENT_PEN
+        if not hasattr(self, "videoBrush"):
+            self.videoBrush = wx.TRANSPARENT_BRUSH
         self.video = None
         self.thumb = None
         self.overlays = []
@@ -225,14 +225,47 @@ class ClickToPlayVideoPanel(VideoPanel):
         self.GetSizer().Clear(True)
         self.video = None
 
+class PeopleVideoPanel(VideoPanel):
+    LoadVideoEvent, EVT_LOAD_VIDEO = wx.lib.newevent.NewCommandEvent()
+
+    def __init__(self, parent, path=None, **kwargs):
+        if isinstance(path, tuple):
+            path, manual = path
+            self.manual = manual
+            if self.manual:
+                self.setColor((0, 0, 255))
+            else:
+                self.setColor((0, 255, 0))
+
+        VideoPanel.__init__(self, parent, path, **kwargs)
+        self.Bind(wx.EVT_LEFT_UP, self.onClick)
+        self.videoBrush = wx.TRANSPARENT_BRUSH
+
+    def setColor(self, color):
+        self.videoPen = wx.Pen(color, 4)
+
+    def load(self, path=None):
+        if isinstance(path, tuple):
+            path, manual = path
+            self.manual = manual
+            if self.manual:
+                self.setColor((100, 100, 100))
+            else:
+                self.setColor((100, 255, 100))
+
+        VideoPanel.load(self, path)
+
+    def onClick(self, event):
+        evt = self.LoadVideoEvent(self.GetId(), path=self.path)
+        evt.EventObject = self
+        wx.PostEvent(self.GetParent(), evt)
 
 class VideoStack(wx.Panel):
-    def __init__(self, parent, orientation, clickToPlay=True, **kwargs):
+    def __init__(self, parent, orientation, vidPanelType=None, **kwargs):
         wx.Panel.__init__(self, parent)
         self.parent = parent
-        self.clickToPlay = clickToPlay
 
-        self.scrollwindow = VideoScrollPanel(self, orientation, clickToPlay, **kwargs)
+        self.scrollwindow = VideoScrollPanel(self, orientation, vidPanelType, **kwargs)
         obox = wx.BoxSizer(orientation)
 
         def onZoom(event):
