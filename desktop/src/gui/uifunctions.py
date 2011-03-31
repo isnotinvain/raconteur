@@ -266,6 +266,14 @@ def onTrain(self, event):
     d = widgets.ManageFaces(self, self.story.getUnrecognizedPerson(), add, dell)
     d.Show()
 
+def onManagePerson(self, event):
+    d = None
+    add = lambda x, y : onAddFace(self, d, x, y)
+    dell = lambda x : onDelFace(self, d, x)
+    person = stream.models.PersonAppearance.get_by(faces=event.EventObject.path).person
+    d = widgets.ManageFaces(self, person, add, dell)
+    d.Show()
+
 def onAddFace(self, d, path, name):
     person = self.story.addPerson(name)
     appearance = stream.models.PersonAppearance.get_by(faces=path)
@@ -276,9 +284,10 @@ def onAddFace(self, d, path, name):
     shutil.move(path, dest)
 
     appearance.person = person
-    appearance.faces = path
+    appearance.faces = dest
     self.story.commit()
     d.crawl()
+    self.reloadPeoplePanel()
 
 def onDelFace(self, d, path):
     appearance = stream.models.PersonAppearance.get_by(faces=path)
@@ -286,6 +295,7 @@ def onDelFace(self, d, path):
     os.remove(path)
     self.story.commit()
     d.crawl()
+    self.reloadPeoplePanel()
 
 tools = (
             ("Import", onImport),
@@ -295,6 +305,8 @@ tools = (
             ("Recognize", onRecognize),
             ("Play", onPlayPause)
         )
+
+extra = ((onManagePerson, "onManagePerson"),)
 
 menu = (
             ("&File", (

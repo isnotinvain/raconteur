@@ -49,6 +49,7 @@ class RaconteurMainWindow(wx.Frame):
         #self.story.clearDb()
         self.story.recrawl("video", stream.models.Video)
         self.reloadTimeline()
+        self.reloadPeoplePanel()
 
     def reloadTimeline(self):
         paths = []
@@ -56,6 +57,17 @@ class RaconteurMainWindow(wx.Frame):
             paths.append(vid.path)
 
         self.timeline.loadThumbs(paths)
+
+    def reloadPeoplePanel(self):
+        paths = []
+        for person in stream.models.Person.query.all():
+            if person == self.story.getUnrecognizedPerson(): continue
+            app = stream.models.PersonAppearance.get_by(person=person)
+            if app:
+                vid = app.faces
+                paths.append(vid)
+
+        self.peoplePanel.loadThumbs(paths)
 
     def __setupLayoutAndWidgets(self):
         self.CreateStatusBar()
@@ -88,13 +100,16 @@ class RaconteurMainWindow(wx.Frame):
             self.toolbar.AddControl(button)
         self.toolbar.Realize()
 
+        for func, name in uifunctions.extra:
+            setattr(self.__class__, name, func)
+
         self.videoPanel = widgets.video.VideoPanel(self)
         self.videoPanel.enableOverlays()
-        self.peoplePanel = widgets.PeoplePanel(self, wx.VERTICAL)
+        self.peoplePanel = widgets.video.VideoStack(self, wx.VERTICAL)
         self.timeline = widgets.video.VideoStack(self, wx.HORIZONTAL)
 
         self.timeline.Bind(widgets.video.ClickToPlayVideoPanel.EVT_LOAD_VIDEO, self.loadVideo)
-        self.peoplePanel.Bind(widgets.video.ClickToPlayVideoPanel.EVT_LOAD_VIDEO, self.peoplePanel.onLoad)
+        self.peoplePanel.Bind(widgets.video.ClickToPlayVideoPanel.EVT_LOAD_VIDEO, self.onManagePerson)
 
         hsizer = wx.BoxSizer(wx.HORIZONTAL)
         hsizer.Add(self.toolbar, 0, wx.EXPAND)
@@ -113,11 +128,6 @@ class RaconteurMainWindow(wx.Frame):
     def loadVideo(self, event):
         self.videoPanel.load(event.path)
         self.currentVideo = event.path
-        #self.peoplePanel.clear()
-        #ppl = self.peoplePanel.crawlUnrecognized()
-        #if ppl:
-        #    self.peoplePanel.loadThumbs(ppl)
-
         self.Layout()
 
 if __name__ == "__main__":

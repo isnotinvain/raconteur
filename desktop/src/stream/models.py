@@ -30,7 +30,8 @@ class PersonAppearance(Entity):
     person = ManyToOne("Person", required=True)
     video = ManyToOne("Video", required=True)
     faces = Field(Text())
-    #manual = Field(Boolean())
+    #manualallyTagged = Field(Boolean())
+    #certaintyHistogram = Field(Text())
 
     def getTrack(self):
         return cPickle.loads(str(x.track))

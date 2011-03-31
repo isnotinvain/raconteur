@@ -191,6 +191,10 @@ class VideoPanel(wx.Panel):
         if self.video:
             self.video.Stop()
 
+    def clear(self):
+        self.GetSizer().Clear(True)
+        self.ClearBackground()
+
 class ClickToPlayVideoPanel(VideoPanel):
     LoadVideoEvent, EVT_LOAD_VIDEO = wx.lib.newevent.NewCommandEvent()
 
@@ -208,6 +212,7 @@ class ClickToPlayVideoPanel(VideoPanel):
 
     def onRClick(self, event):
         evt = self.LoadVideoEvent(self.GetId(), path=self.path)
+        evt.EventObject = self
         wx.PostEvent(self.GetParent(), evt)
 
     def onClick(self, event):

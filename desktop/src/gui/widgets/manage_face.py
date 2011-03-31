@@ -17,12 +17,16 @@ class ManageAFacePanel(wx.Panel):
 
         def add(event):
             addcallback(self.vidpanel.path, self.nameCtrl.GetValue())
+            self.vidpanel.Hide()
+            self.nameCtrl.Clear()
 
         addButton = wx.Button(self, label="Add to database")
         addButton.Bind(wx.EVT_BUTTON, add)
 
         def discard(event):
             delcallback(self.vidpanel.path)
+            self.vidpanel.Hide()
+            self.nameCtrl.Clear()
 
         discardButton = wx.Button(self, label="Discard this face")
         discardButton.Bind(wx.EVT_BUTTON, discard)
@@ -50,10 +54,14 @@ class ManageAFacePanel(wx.Panel):
         self.Layout()
         self.Refresh()
         self.vidpanel.play()
+        self.vidpanel.Show()
 
     def loadFile(self, path):
         self.vidpanel.load(path)
         self.vidpanel.load()
+
+    def clear(self):
+        self.vidpanel.clear()
 
 
 class ManageFaces(wx.Frame):
@@ -66,12 +74,14 @@ class ManageFaces(wx.Frame):
 
         self.parent = parent
         self.person = person
+        self.addcallback = addcallback
+        self.delcallback = delcallback
 
-        manageAFace = ManageAFacePanel(self, None, addcallback, delcallback)
+        self.manageAFace = ManageAFacePanel(self, None, addcallback, delcallback)
 
         def onClick(event):
             vp = event.EventObject
-            manageAFace.loadFile(vp.path)
+            self.manageAFace.loadFile(vp.path)
 
         self.onClick = onClick
 
@@ -80,7 +90,7 @@ class ManageFaces(wx.Frame):
         hbox = wx.BoxSizer(wx.HORIZONTAL)
 
         hbox.Add(self.stack, 30, wx.EXPAND)
-        hbox.Add(manageAFace, 70, wx.EXPAND)
+        hbox.Add(self.manageAFace, 70, wx.EXPAND)
 
         self.SetSizer(hbox)
 
