@@ -21,15 +21,17 @@ class Story(object):
         self.name = name
         self.connect()
         elixir.create_all()
-        elixir.session.commit()
+        self.commit()
 
     def commit(self):
         elixir.session.commit()
 
     def connect(self):
-        elixir.metadata.bind = "sqlite+pysqlite:///" + os.path.join(self.path, ".raconteur-db.sql")
+        elixir.metadata.bind = "sqlite+pysqlite:///" + self.getDbPath()
         elixir.metadata.bind.echo = False
         elixir.setup_all()
+
+    def getDbPath(self): return os.path.join(self.path, ".raconteur-db.sql")
 
     def save(self):
         util.filesystem.ensureDirectoryExists(self.path)
@@ -37,19 +39,9 @@ class Story(object):
         cPickle.dump(self, f)
         f.close()
 
-    def getStreamsInRange(self, start, end, streamType):
-        creations = self.stream_creations[streamType]
-        s = bisect.bisect_left(creations, start)
-        if s == len(creations): return []
-
-        e = bisect.bisect_right(creations, end)
-        if not e: return []
-
-        return map(lambda x : (x, self.stream_files[streamType][x]), creations[s:e])
-
     def addPerson(self, name):
         models.Person(name=name)
-        elixir.session.commit()
+        self.commit()
 
     def getPeopleDir(self):
         return os.path.join(self.path, ".people")
@@ -61,3 +53,31 @@ class Story(object):
         if not models.Person.get(name):
             self.addPerson(name)
         return os.path.join(self.getPeopleDir(), name)
+
+    def clearDb(self):
+        if os.path.exists(self.getDbPath()): os.remove(os.path.join(self.path, ".raconteur-db.sql"))
+        self.connect()
+        elixir.create_all()
+
+    def recrawl(self, streamType, streamDbType):
+        hdPaths = {}
+        for root, _, files in os.walk(self.path):
+            if root[root.rfind("/") + 1:] == streamType:
+                for file in files:
+                    if file[0] == ".": continue
+                    creation_stamp = int(file[:file.rfind('.')])
+                    fpath = os.path.join(root, file)
+                    hdPaths[fpath] = creation_stamp
+
+        dbStreams = streamDbType.query.all()
+        dbPaths = map(lambda x : x.path, dbStreams)
+
+        missing = [x for x in dbStreams if x.path not in hdPaths]
+        for m in missing:
+            m.delete()
+
+        new = [(p, c) for p, c in hdPaths.iteritems() if p not in dbPaths]
+        for p, c in new:
+            streamDbType(path=p, creation=c)
+
+        self.commit()

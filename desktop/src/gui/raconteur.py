@@ -46,6 +46,7 @@ class RaconteurMainWindow(wx.Frame):
         util.filesystem.ensureDirectoryExists(self.story.getPeopleDir())
         util.filesystem.ensureDirectoryExists(self.story.getUnrecognizedPeopleDir())
         self.SetTitle(self.story.name)
+        self.story.recrawl("video", stream.models.Video)
         self.reloadTimeline()
 
     def reloadTimeline(self):
