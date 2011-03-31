@@ -70,7 +70,7 @@ class ManageFaces(wx.Frame):
             title = "Manage Unrecognized Faces"
         else:
             title = "Manage %s's Faces" % person.name
-        wx.Frame.__init__(self, parent, title=title, size=(500, 500))
+        wx.Frame.__init__(self, parent, title=title, size=(700, 500))
 
         self.parent = parent
         self.person = person
@@ -83,14 +83,20 @@ class ManageFaces(wx.Frame):
             vp = event.EventObject
             self.manageAFace.loadFile(vp.path)
 
+        def onTimelineClick(event):
+            self.parent.loadVideo(event)
+
         self.onClick = onClick
 
         self.stack = video.VideoStack(self, wx.VERTICAL, video.PeopleVideoPanel)
+        self.timeline = video.VideoStack(self, wx.VERTICAL)
+        self.Bind(video.ClickToPlayVideoPanel.EVT_LOAD_VIDEO, onTimelineClick)
 
         hbox = wx.BoxSizer(wx.HORIZONTAL)
 
         hbox.Add(self.stack, 30, wx.EXPAND)
-        hbox.Add(self.manageAFace, 70, wx.EXPAND)
+        hbox.Add(self.manageAFace, 40, wx.EXPAND)
+        hbox.Add(self.timeline, 30, wx.EXPAND)
 
         self.SetSizer(hbox)
 
@@ -101,3 +107,7 @@ class ManageFaces(wx.Frame):
         pathsAndManuals = map(lambda x : (x.faces, x.manuallyTagged), self.person.person_appearances)
         self.stack.loadThumbs(pathsAndManuals)
         self.stack.bindAll(self.onClick)
+
+        self.timeline.clear()
+        appearances = set(map(lambda x : str(x.path), self.person.appearsIn))
+        self.timeline.loadThumbs(appearances)
