@@ -243,10 +243,21 @@ def onRecognize(self, event):
 
     unrecognized = stream.models.PersonAppearance.query.filter_by(person=self.story.getUnrecognizedPerson()).all()
     for face in unrecognized:
-        hist = vision.recognizer.recognize(self.story.getPeopleDir(), face.faces)
-        print face.faces
-        print hist
-        print
+        hist, total = vision.recognizer.recognize(self.story.getPeopleDir(), face.faces)
+        best = max(hist.itervalues())
+        for k, v in hist.iteritems():
+            if v == best:
+                break
+        person = stream.models.Person.get(k)
+        app = stream.models.PersonAppearance.get_by(faces=face.faces)
+        dest = self.story.getPersonDir(k)
+        util.filesystem.ensureDirectoryExists(dest)
+        dest = os.path.join(dest, util.filesystem.generateUniqueFileName(dest, ".avi"))
+        shutil.move(face.faces, dest)
+
+        app.person = person
+        app.faces = dest
+        self.story.commit()
 
 def onTrain(self, event):
     d = None
