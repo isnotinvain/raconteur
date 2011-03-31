@@ -212,7 +212,7 @@ def onReset(self, event):
     self.videoPanel.stop()
     self.videoPanel.overlays = []
 
-def onRecog(self, event):
+def onReTrain(self, event=None):
     d = wx.TextEntryDialog(self, message="How many frames per face video should I skip?")
     d.SetValue("10")
     skipNFrames = None
@@ -232,7 +232,21 @@ def onRecog(self, event):
     f = open(os.path.join(self.story.getPeopleDir(), ".trainingData", ".ids"), "w")
     cPickle.dump(ids, f)
     f.close()
-    print ids
+
+def onRecognize(self, event):
+    d = wx.MessageDialog(self, "Should I Recalculate the training data?", "Recognize", wx.YES_NO)
+    if d.ShowModal() == wx.ID_YES:
+        d.Destroy()
+        onReTrain(self)
+    else:
+        d.Destroy()
+
+    unrecognized = stream.models.PersonAppearance.query.filter_by(person=self.story.getUnrecognizedPerson()).all()
+    for face in unrecognized:
+        hist = vision.recognizer.recognize(self.story.getPeopleDir(), face.faces)
+        print face.faces
+        print hist
+        print
 
 def onTrain(self, event):
     d = None
@@ -267,6 +281,7 @@ tools = (
             ("Analyze", onAnalyze),
             ("Visualize", onShowOverlays),
             ("Train", onTrain),
+            ("Recognize", onRecognize),
             ("Play", onPlayPause)
         )
 
