@@ -236,7 +236,6 @@ class PeopleVideoPanel(VideoPanel):
                 self.setColor((0, 0, 255))
             else:
                 self.setColor((0, 255, 0))
-
         VideoPanel.__init__(self, parent, path, **kwargs)
         self.Bind(wx.EVT_LEFT_UP, self.onClick)
         self.videoBrush = wx.TRANSPARENT_BRUSH
@@ -245,6 +244,7 @@ class PeopleVideoPanel(VideoPanel):
         self.videoPen = wx.Pen(color, 4)
 
     def load(self, path=None):
+        print "load"
         if isinstance(path, tuple):
             path, manual = path
             self.manual = manual
