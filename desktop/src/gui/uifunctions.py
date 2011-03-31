@@ -83,24 +83,37 @@ def onAnalyze(self, event):
 
         if faceTrack:
             video = vision.video.CvVideo(self.currentVideo)
+            dbVideo = stream.models.Video.get(video.file_path)
+            stream.models.PersonAppearance.query.filter_by(video=dbVideo).delete()
+            self.story.commit()
+
             video.loadFaceBounds()
             tracker = vision.tracker.ObjectTracker(**trackParams)
-            video.face_tracks = tracker.extractAndInerpolateTracks(video.face_bounds)
-            video.writeFaceTracks()
+            face_tracks = tracker.extractAndInerpolateTracks(video.face_bounds)
+            unrecognized = self.story.getUnrecognizedPerson()
+            dbVideo = stream.models.Video.get(video.file_path)
+            for track in face_tracks:
+                track = cPickle.dumps(track)
+                stream.models.PersonAppearance(track=track, person=unrecognized, video=dbVideo)
             video = None
+            self.story.commit()
 
         if faceExtract:
             video = vision.video.CvVideo(self.currentVideo)
-
             video.loadFaceBounds()
-            video.loadFaceTracks()
+            dbVideo = stream.models.Video.get(video.file_path)
+            for x in stream.models.PersonAppearance.query.filter_by(video=dbVideo).all():
+                x.faces = None
+            self.story.commit()
+
+            dbTracks = dbVideo.getDbTracks()
+            tracks = [(x.id, cPickle.loads(str(x.track))) for x in dbTracks]
+            idToDb = dict((x.id, x) for x in dbTracks)
 
             video.calcDuration()
             progDialog = wx.ProgressDialog("Extracting Faces", "Working...", maximum=video.getNormalizedFrameCount(), parent=self, style=wx.PD_CAN_ABORT)
-            faceGroups = vision.tracker.ObjectTracker.getFacesFromTracks(video, progDialog)
+            faceTracks, numFaces = vision.tracker.ObjectTracker.getFacesFromTracks(video, tracks, progDialog)
             progDialog.Destroy()
-
-            numFaces = reduce(lambda x, y: x + y, map(len, faceGroups))
 
             progDialog = wx.ProgressDialog("Saving Faces", "Working...", maximum=numFaces, parent=self, style=wx.PD_CAN_ABORT)
             prog = 0
@@ -109,10 +122,10 @@ def onAnalyze(self, event):
             for fl in os.listdir(root):
                 os.remove(os.path.join(root, fl))
 
-            for i, faceGroup in enumerate(faceGroups):
-                filename = root + "/" + str(i) + ".avi"
+            for id, faces in faceTracks.iteritems():
+                filename = root + "/" + str(id) + ".avi"
                 writer = cv.CreateVideoWriter(filename, cv.CV_FOURCC('P', 'I', 'M', '1'), video.getFps(), extractParams['scaleTo'], True)
-                for face in faceGroup:
+                for face in faces:
                     cont, _ = progDialog.Update(prog, "Saving Faces")
                     if not cont:
                         progDialog.Destroy()
@@ -122,8 +135,10 @@ def onAnalyze(self, event):
                     cv.Resize(face, scaled, cv.CV_INTER_LINEAR)
                     cv.WriteFrame(writer, scaled)
                     prog += 1
+                idToDb[id].faces = filename
+
+            self.story.commit()
             progDialog.Destroy()
-            self.peoplePanel.loadThumbs(self.peoplePanel.crawlUnrecognized())
             video = None
 
 def onShowOverlays(self, event):
@@ -132,23 +147,22 @@ def onShowOverlays(self, event):
     recognize = False
 
     video = vision.video.CvVideo(self.currentVideo)
+    dbVideo = stream.models.Video.get(video.file_path)
+
     try:
         video.loadFaceBounds()
         bounds = True
     except:
         pass
 
-    try:
-        video.loadFaceTracks()
-        tracks = True
-    except:
-        pass
+    faceTracks = dbVideo.getTracks()
+    if faceTracks: tracks = True
 
     d = widgets.ShowOverlaysDialog(self, wx.ID_ANY, bounds, tracks, recognize)
     if d.ShowModal() == wx.ID_OK:
         if bounds:
             bounds = d.faceCheck.GetValue()
-        if tracks:
+        if faceTracks:
             tracks = d.trackCheck.GetValue()
         if recognize:
             recognize = d.extractCheck.GetValue()
@@ -160,7 +174,7 @@ def onShowOverlays(self, event):
             overlay = widgets.video_overlays.overlayFromFaceBounds(video.face_bounds)
             self.videoPanel.overlays.append(overlay)
         if tracks:
-            overlay = widgets.video_overlays.overlayFromTracks(video.face_tracks, video.face_bounds)
+            overlay = widgets.video_overlays.overlayFromTracks(faceTracks, video.face_bounds)
             self.videoPanel.overlays.append(overlay)
 
         video = None

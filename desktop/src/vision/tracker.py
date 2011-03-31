@@ -87,17 +87,19 @@ class ObjectTracker(object):
         return tracks
 
     @classmethod
-    def getFacesFromTracks(cls, video, progDialog=None):
+    def getFacesFromTracks(cls, video, tracks, progDialog=None):
         faces = {}
-        for track in video.face_tracks:
-            faces[id(track)] = []
+        numFaces = 0
+        for id, track in tracks:
+            faces[id] = []
 
         for frameNo, frame in enumerate(video.frames()):
-                for track in video.face_tracks:
+                for id, track in tracks:
                     if frameNo in track:
                         face = util.image.getCvSubRect(frame, track[frameNo])
-                        faces[id(track)].append(face)
+                        faces[id].append(face)
+                        numFaces += 1
                         if progDialog:
                             cont, _ = progDialog.Update(frameNo, "Extracting faces...")
                             if not cont: return
-        return faces.values()
+        return faces, numFaces

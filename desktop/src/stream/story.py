@@ -13,12 +13,14 @@ class Story(object):
         story = cPickle.load(f)
         f.close()
         story.path = path
+        story.unrecognizedPerson = None
         cls.connect(story)
         return story
 
     def __init__(self, name, path):
         self.path = path
         self.name = name
+        self.unrecognizedPerson = None
         self.connect()
         elixir.create_all()
         self.commit()
@@ -45,6 +47,14 @@ class Story(object):
 
     def getPeopleDir(self):
         return os.path.join(self.path, ".people")
+
+    def getUnrecognizedPerson(self):
+        if not self.unrecognizedPerson:
+            u = models.Person.get("<unrecognized>")
+            if not u:
+                u = models.Person(name="<unrecognized>")
+            self.unrecognizedPerson = u
+        return self.unrecognizedPerson
 
     def getUnrecognizedPeopleDir(self):
         return os.path.join(self.getPeopleDir(), "unrecognized")

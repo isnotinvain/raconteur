@@ -46,6 +46,7 @@ class RaconteurMainWindow(wx.Frame):
         util.filesystem.ensureDirectoryExists(self.story.getPeopleDir())
         util.filesystem.ensureDirectoryExists(self.story.getUnrecognizedPeopleDir())
         self.SetTitle(self.story.name)
+        #self.story.clearDb()
         self.story.recrawl("video", stream.models.Video)
         self.reloadTimeline()
 
@@ -112,10 +113,10 @@ class RaconteurMainWindow(wx.Frame):
     def loadVideo(self, event):
         self.videoPanel.load(event.path)
         self.currentVideo = event.path
-        self.peoplePanel.clear()
-        ppl = self.peoplePanel.crawlUnrecognized()
-        if ppl:
-            self.peoplePanel.loadThumbs(ppl)
+        #self.peoplePanel.clear()
+        #ppl = self.peoplePanel.crawlUnrecognized()
+        #if ppl:
+        #    self.peoplePanel.loadThumbs(ppl)
 
         self.Layout()
 
