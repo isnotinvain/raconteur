@@ -105,6 +105,7 @@ class ManageFaces(wx.Frame):
     def crawl(self):
         self.stack.clear()
         pathsAndManuals = map(lambda x : (x.faces, x.manuallyTagged), self.person.person_appearances)
+        pathsAndManuals = [x for x in pathsAndManuals if x[0]]
         self.stack.loadThumbs(pathsAndManuals)
         self.stack.bindAll(self.onClick)
 
