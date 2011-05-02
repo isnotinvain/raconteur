@@ -1,7 +1,10 @@
 '''
-(c) Alex Levenson 2010 | alex@isnotinvain.com | Raconteur
+Raconteur (c) Alex Levenson 2011
+All rights reserved
 
 @author: Alex Levenson (alex@isnotinvain.com)
+
+Face Finding
 '''
 
 import cv, os

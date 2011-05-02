@@ -1,3 +1,13 @@
+'''
+Raconteur (c) Alex Levenson 2011
+All rights reserved
+
+@author: Alex Levenson (alex@isnotinvain.com)
+
+Functions that get linked into RaconteurMainWindow
+I wanted to keep the UI layout and functionality seperate 
+'''
+
 import os
 import shutil
 import fnmatch

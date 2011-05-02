@@ -1,7 +1,10 @@
 '''
-Created on Jan 6, 2011
+Raconteur (c) Alex Levenson 2011
+All rights reserved
 
 @author: Alex Levenson (alex@isnotinvain.com)
+
+utility for working with opencv's video capture objects
 '''
 import cv
 import os
@@ -9,11 +12,10 @@ import cPickle
 import util.filesystem
 import gst
 
-# TODO: inherit from some Stream object probably
+
 class CvVideo(object):
     """
     A more pythonic wrapper for video streams, currently wraps openCV videos
-    TODO: create a stream interface and conform to it
     """
 
     @classmethod

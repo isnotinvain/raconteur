@@ -1,5 +1,6 @@
 '''
-Created on Jan 13, 2011
+Raconteur (c) Alex Levenson 2011
+All rights reserved
 
 @author: Alex Levenson (alex@isnotinvain.com)
 

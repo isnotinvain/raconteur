@@ -1,3 +1,12 @@
+'''
+Raconteur (c) Alex Levenson 2011
+All rights reserved
+
+@author: Alex Levenson (alex@isnotinvain.com)
+
+Main UI Entrance point
+This is the script you run to boot up Raconteur
+'''
 import sys
 import wx
 import widgets
@@ -131,6 +140,7 @@ class RaconteurMainWindow(wx.Frame):
         self.Layout()
 
 if __name__ == "__main__":
+    # Boot up Raconteur!
     app = wx.App(False)
     if len(sys.argv) == 2:
         frame = RaconteurMainWindow(sys.argv[1])

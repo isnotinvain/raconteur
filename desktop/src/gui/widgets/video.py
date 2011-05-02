@@ -1,99 +1,22 @@
+'''
+Raconteur (c) Alex Levenson 2011
+All rights reserved
+
+@author: Alex Levenson (alex@isnotinvain.com)
+
+Widgets pertaining to videos
+'''
+
 import wx
 import wx.media
 import wx.lib.newevent
 import cv
 import util.image
 
-class VideoScrollPanel(wx.Panel):
-
-    def __init__(self, parent, orientation, vidPanelType=None, **kwargs):
-        wx.Panel.__init__(self, parent, **kwargs)
-        self.Bind(wx.EVT_SIZE, self.onSize)
-        self.orientation = orientation
-        self.loadThumbs([])
-        self.zoom = 0.0
-        self.scroll = 0.0
-        if vidPanelType:
-            self.vidPanelType = vidPanelType
-        else:
-            self.vidPanelType = ClickToPlayVideoPanel
-
-    def onSize(self, event):
-        self.uiUpdate()
-        event.Skip()
-
-    def recalc(self):
-        if self.videos:
-            width, height = self.GetClientSize()
-
-            if self.orientation != wx.HORIZONTAL:
-                width, height = height, width
-                totalWidth = self.totalHeight
-            else:
-                totalWidth = self.totalWidth
-
-            minFactor = width / float(totalWidth)
-            factors = []
-            xTotal = 0
-            for vidPanel in self.videos:
-                w, h = vidPanel.size
-                if w == 0 or h == 0 : return
-                if self.orientation != wx.HORIZONTAL:
-                    maxFactor = float(height) / w
-                    xInc = h
-                else:
-                    maxFactor = float(height) / h
-                    xInc = w
-
-                if maxFactor < minFactor: minFactor = maxFactor
-
-                factor = minFactor + (maxFactor - minFactor) * self.zoom
-                factors.append(factor)
-                xTotal += factor * xInc
-
-            xDelta = xTotal - width
-            if xDelta < 0: xDelta = 0
-            x = xDelta * self.scroll * -1
-            for i, vidPanel in enumerate(self.videos):
-                w, h = vidPanel.size
-                factor = factors[i]
-                w *= factor
-                h *= factor
-                vidPanel.SetSize((w, h))
-                vidPanel.SetMinSize((w, h))
-                vidPanel.SetMaxSize((w, h))
-
-                extraH = float(height) - h
-
-                if self.orientation != wx.HORIZONTAL:
-                    vidPanel.SetPosition((extraH / 2, x))
-                    x += h
-                else:
-                    vidPanel.SetPosition((x, extraH / 2))
-                    x += w
-
-    def uiUpdate(self, event=None):
-        self.recalc()
-        self.Refresh()
-
-    def loadThumbs(self, filePaths):
-        self.videos = []
-        self.totalWidth = 0
-        self.totalHeight = 0
-        for path in filePaths:
-            vidPanel = self.vidPanelType(self, path)
-            vidPanel.loadThumb()
-            self.totalWidth += vidPanel.size[0]
-            self.totalHeight += vidPanel.size[1]
-            self.videos.append(vidPanel)
-        self.uiUpdate()
-
-    def clear(self):
-        self.DestroyChildren()
-        self.videos = []
-
-
 class VideoPanel(wx.Panel):
+    """
+    A simple panel that contains a playable video
+    """
     def __init__(self, parent, path=None, **kwargs):
         wx.Panel.__init__(self, parent, **kwargs)
         self.path = path
@@ -196,6 +119,10 @@ class VideoPanel(wx.Panel):
         self.ClearBackground()
 
 class ClickToPlayVideoPanel(VideoPanel):
+    """
+    Overrides some of VideoPanel's methods to change
+    how it handles events
+    """
     LoadVideoEvent, EVT_LOAD_VIDEO = wx.lib.newevent.NewCommandEvent()
 
     def __init__(self, parent, path=None, **kwargs):
@@ -226,6 +153,9 @@ class ClickToPlayVideoPanel(VideoPanel):
         self.video = None
 
 class PeopleVideoPanel(VideoPanel):
+    """
+    The vertical stack of people in the database
+    """
     LoadVideoEvent, EVT_LOAD_VIDEO = wx.lib.newevent.NewCommandEvent()
 
     def __init__(self, parent, path=None, **kwargs):
@@ -260,7 +190,105 @@ class PeopleVideoPanel(VideoPanel):
         evt.EventObject = self
         wx.PostEvent(self.GetParent(), evt)
 
+class VideoScrollPanel(wx.Panel):
+    """
+    Helper for the VideoStack
+    """
+    def __init__(self, parent, orientation, vidPanelType=None, **kwargs):
+        wx.Panel.__init__(self, parent, **kwargs)
+        self.Bind(wx.EVT_SIZE, self.onSize)
+        self.orientation = orientation
+        self.loadThumbs([])
+        self.zoom = 0.0
+        self.scroll = 0.0
+        if vidPanelType:
+            self.vidPanelType = vidPanelType
+        else:
+            self.vidPanelType = ClickToPlayVideoPanel
+
+    def onSize(self, event):
+        self.uiUpdate()
+        event.Skip()
+
+    def recalc(self):
+        """
+        Does the geometry for figuring out where to put and how
+        to size the videos in this panel
+        """
+        if self.videos:
+            width, height = self.GetClientSize()
+
+            if self.orientation != wx.HORIZONTAL:
+                width, height = height, width
+                totalWidth = self.totalHeight
+            else:
+                totalWidth = self.totalWidth
+
+            minFactor = width / float(totalWidth)
+            factors = []
+            xTotal = 0
+            for vidPanel in self.videos:
+                w, h = vidPanel.size
+                if w == 0 or h == 0 : return
+                if self.orientation != wx.HORIZONTAL:
+                    maxFactor = float(height) / w
+                    xInc = h
+                else:
+                    maxFactor = float(height) / h
+                    xInc = w
+
+                if maxFactor < minFactor: minFactor = maxFactor
+
+                factor = minFactor + (maxFactor - minFactor) * self.zoom
+                factors.append(factor)
+                xTotal += factor * xInc
+
+            xDelta = xTotal - width
+            if xDelta < 0: xDelta = 0
+            x = xDelta * self.scroll * -1
+            for i, vidPanel in enumerate(self.videos):
+                w, h = vidPanel.size
+                factor = factors[i]
+                w *= factor
+                h *= factor
+                vidPanel.SetSize((w, h))
+                vidPanel.SetMinSize((w, h))
+                vidPanel.SetMaxSize((w, h))
+
+                extraH = float(height) - h
+
+                if self.orientation != wx.HORIZONTAL:
+                    vidPanel.SetPosition((extraH / 2, x))
+                    x += h
+                else:
+                    vidPanel.SetPosition((x, extraH / 2))
+                    x += w
+
+    def uiUpdate(self, event=None):
+        self.recalc()
+        self.Refresh()
+
+    def loadThumbs(self, filePaths):
+        self.videos = []
+        self.totalWidth = 0
+        self.totalHeight = 0
+        for path in filePaths:
+            vidPanel = self.vidPanelType(self, path)
+            vidPanel.loadThumb()
+            self.totalWidth += vidPanel.size[0]
+            self.totalHeight += vidPanel.size[1]
+            self.videos.append(vidPanel)
+        self.uiUpdate()
+
+    def clear(self):
+        self.DestroyChildren()
+        self.videos = []
+
 class VideoStack(wx.Panel):
+    """
+    A Panel that holds a stack of videos which can be scrolled and zoomed
+    It has two orientations, horizontal and vertical
+    """
     def __init__(self, parent, orientation, vidPanelType=None, **kwargs):
         wx.Panel.__init__(self, parent)
         self.parent = parent

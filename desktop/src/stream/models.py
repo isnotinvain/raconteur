@@ -1,3 +1,12 @@
+'''
+Raconteur (c) Alex Levenson 2011
+All rights reserved
+
+@author: Alex Levenson (alex@isnotinvain.com)
+
+The database models (which become SQL tables) reside here
+'''
+
 from elixir import *
 from sqlalchemy.ext.associationproxy import AssociationProxy
 import cPickle

@@ -1,3 +1,13 @@
+'''
+Raconteur (c) Alex Levenson 2011
+All rights reserved
+
+@author: Alex Levenson (alex@isnotinvain.com)
+
+The story object for storing metadata about a particualr
+story
+'''
+
 import os
 import bisect
 import cPickle

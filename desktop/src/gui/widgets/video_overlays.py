@@ -1,22 +1,32 @@
 '''
-Created on Feb 8, 2011
+Raconteur (c) Alex Levenson 2011
+All rights reserved
 
 @author: Alex Levenson (alex@isnotinvain.com)
 
 Video overlays for HUD layers on top of video
 '''
+
 import wx
 import random
 
 def overlayFromFaceBounds(face_bounds):
-        rectSprites = {}
-        for frameNo, listOfBounds in enumerate(face_bounds):
-            rectSprites[frameNo] = []
-            for (x, y, w, h), _ in listOfBounds:
-                rectSprites[frameNo].append(Rect(x, y, w, h))
-        return VideoOverlay(rectSprites)
+    """
+    Returns a VideoOverlay given a list of rectangles
+    in the form [(frame number, (x,y,w,h))] 
+    """
+    rectSprites = {}
+    for frameNo, listOfBounds in enumerate(face_bounds):
+        rectSprites[frameNo] = []
+        for (x, y, w, h), _ in listOfBounds:
+            rectSprites[frameNo].append(Rect(x, y, w, h))
+    return VideoOverlay(rectSprites)
 
 def overlayFromTracks(tracks, face_bounds):
+    """
+    Returns a VideoOverlay representing the
+    colored face tracking bounds
+    """
     colors = {}
     for track in tracks:
         colors[id(track)] = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
@@ -42,7 +52,7 @@ class VideoOverlaySprite(object):
 
 class VideoOverlay(object):
     """
-    Base class for video over lays
+    Base class for video overlays
     """
     def __init__(self, sprites={}):
         self.sprites = sprites

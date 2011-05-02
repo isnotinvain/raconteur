@@ -1,3 +1,12 @@
+'''
+Raconteur (c) Alex Levenson 2011
+All rights reserved
+
+@author: Alex Levenson (alex@isnotinvain.com)
+
+Widgets involved with managing the faces database
+'''
+
 import os
 import wx
 import wx.media
@@ -5,7 +14,9 @@ import stream.models
 import video
 
 class ManageAFacePanel(wx.Panel):
-
+    """
+    A Panel for managing a single face
+    """
     def __init__(self, parent, video_path, addcallback, delcallback):
         wx.Panel.__init__(self, parent)
 
@@ -16,6 +27,9 @@ class ManageAFacePanel(wx.Panel):
         self.nameCtrl = wx.TextCtrl(self, wx.ID_ANY)
 
         def add(event):
+            """
+            Called when a face is added to the database
+            """
             addcallback(self.vidpanel.path, self.nameCtrl.GetValue())
             self.vidpanel.Hide()
             self.nameCtrl.Clear()
@@ -24,6 +38,9 @@ class ManageAFacePanel(wx.Panel):
         addButton.Bind(wx.EVT_BUTTON, add)
 
         def discard(event):
+            """
+            Called when a face is discarded
+            """
             delcallback(self.vidpanel.path)
             self.vidpanel.Hide()
             self.nameCtrl.Clear()
@@ -65,6 +82,9 @@ class ManageAFacePanel(wx.Panel):
 
 
 class ManageFaces(wx.Frame):
+    """
+    The dialog for managing all of a single person's faces
+    """
     def __init__(self, parent, person, addcallback, delcallback, style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER):
         if person.name == "<unrecognized>":
             title = "Manage Unrecognized Faces"

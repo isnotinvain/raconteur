@@ -1,3 +1,17 @@
+'''
+Raconteur (c) Alex Levenson 2011
+All rights reserved
+
+@author: Alex Levenson (alex@isnotinvain.com)
+
+This is for compiling and installing
+'cveigenface', my custom cpython api for
+calling opencv's eigenfaces functionality from
+withing python
+
+Usage: python setup.py install
+'''
+
 from distutils.core import setup, Extension
 
 module1 = Extension('cveigenface',

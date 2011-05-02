@@ -1,3 +1,15 @@
+'''
+Raconteur (c) Alex Levenson 2011
+All rights reserved
+
+@author: Alex Levenson (alex@isnotinvain.com)
+
+Face Recognition, relies on cveigenface.c
+which does all the real work. It's a cpython 
+file I wrote that uses opencv's c API because
+pyopencv doesn't support eigenfaces
+'''
+
 import os
 import cPickle
 import cveigenface

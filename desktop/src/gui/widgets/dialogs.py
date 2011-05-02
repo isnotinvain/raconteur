@@ -1,7 +1,10 @@
 '''
-Created on Feb 3, 2011
+Raconteur (c) Alex Levenson 2011
+All rights reserved
 
 @author: Alex Levenson (alex@isnotinvain.com)
+
+All Dialog based widgets live here
 '''
 
 import wx
@@ -9,6 +12,9 @@ import wx.media
 import video
 
 class NewStoryDialog(wx.Dialog):
+    """
+    Dialog for creating a new story
+    """
     def __init__(self, parent, id, **kwargs):
         kwargs['title'] = "Create a New Story"
         wx.Dialog.__init__(self, parent, id, **kwargs)
@@ -52,6 +58,9 @@ class NewStoryDialog(wx.Dialog):
         vbox.Fit(self)
 
 class ImportDialog(wx.Dialog):
+    """
+    Dialog for importing files to Raconteur
+    """
     def __init__(self, parent, id, **kwargs):
         kwargs['title'] = "Import to this Story"
         wx.Dialog.__init__(self, parent, id, **kwargs)
@@ -101,6 +110,9 @@ class ImportDialog(wx.Dialog):
         vbox.Fit(self)
 
 class AnalyzeDialog(wx.Dialog):
+    """
+    Dialog for running video analysis
+    """
     def __init__(self, parent, id, **kwargs):
         kwargs['title'] = "Analyze Video"
         wx.Dialog.__init__(self, parent, id, **kwargs)
@@ -148,6 +160,9 @@ class AnalyzeDialog(wx.Dialog):
         vbox.Fit(self)
 
 class ShowOverlaysDialog(wx.Dialog):
+    """
+    Dialog for determining which overlays to display in main video
+    """
     def __init__(self, parent, id, bounds, track, recognize, **kwargs):
         kwargs['title'] = "Show Overlays"
         wx.Dialog.__init__(self, parent, id, **kwargs)
