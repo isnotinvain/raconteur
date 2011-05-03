@@ -22,6 +22,7 @@ import stream.models
 import vision.finder
 import vision.tracker
 import vision.recognizer
+import vision.video
 import util.filesystem
 
 def checkStory(self, evnt=None):
